@@ -1,500 +1,2957 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bn">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>উদ্যানতত্ত্ববিদের কার্যালয় — Horticulture Center, Asambasti</title>
-<link rel="icon" href="./images/govt logo.png" />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="toast" id="toast"></div>
-<div class="sov" id="sov" onclick="cSB()"></div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>উদ্যানতত্ত্ববিদের কার্যালয় — Horticulture Center, Asambasti</title>
+    <link rel="icon" href="./images/govt logo.png" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <script src="/js/tenant-init.js"></script>
+  </head>
+  <body>
+    <div class="toast" id="toast"></div>
+    <div class="sov" id="sov" onclick="cSB()"></div>
 
-<!-- LOGIN -->
-<div class="lp" id="lp"><div class="lb"><img src="./images/favicon.jpg" alt="" style="width:80px;height:80px;border-radius:50%;margin-bottom:12px"><h1>উদ্যানতত্ত্ববিদের কার্যালয়</h1><div class="su">Horticulture Center</div><div class="lc">আসামবস্তি, রাঙামাটি</div>
-<!-- Step 1 -->
-<div id="loginStep1"><div class="lf"><label>ইমেইল</label><input id="le" placeholder="আপনার ইমেইল লিখুন"></div><div class="lf"><label>পাসওয়ার্ড</label><div class="pw-wrap"><input type="password" id="lp2" placeholder="পাসওয়ার্ড লিখুন"><button class="pw-eye" onclick="togglePwd('lp2',this)" type="button"><i class="ti ti-eye"></i></button></div></div><button class="lbtn" onclick="login()">লগইন করুন</button></div>
-<!-- Step 2: OTP -->
-<div id="loginStep2" style="display:none"><div style="background:#EAF3DE;border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:#3B6D11"><i class="ti ti-mail"></i> আপনার Email-এ <strong>৬ সংখ্যার OTP</strong> পাঠানো হয়েছে।</div><div class="lf"><label>OTP Code</label><input id="otpInput" placeholder="_ _ _ _ _ _" maxlength="6" style="text-align:center;font-size:28px;letter-spacing:10px;font-weight:700"></div><div style="font-size:12px;color:#888;margin-bottom:14px" id="otpTimer">⏱ ৫ মিনিটের মধ্যে দিন</div><button class="lbtn" onclick="verifyOtp()">✅ যাচাই করুন</button><button style="width:100%;padding:10px;background:none;border:none;color:#888;cursor:pointer;margin-top:8px;font-family:var(--fb)" onclick="backToLogin()">← ফিরে যান</button></div>
-<div class="le" id="lerr"></div></div></div>
-
-<!-- APP -->
-<div class="app" id="app">
-<aside class="sb" id="sb">
-<div class="sbl"><h1>🌿 উদ্যানতত্ত্ববিদের কার্যালয়</h1><p>Asambasti, Rangamati</p></div>
-<div style="overflow-y:auto;flex:1;padding-bottom:10px">
-<div class="ss">প্রধান / Main</div>
-<div class="ni active" onclick="go('dash',this)"><i class="ti ti-layout-dashboard"></i> ড্যাশবোর্ড</div>
-<div class="ss">উৎপাদন / Production</div>
-<div class="ni" onclick="go('seed',this)"><i class="ti ti-plant"></i> চারা তালিকা</div>
-<div class="ni" onclick="go('prod',this)"><i class="ti ti-flask"></i> উৎপাদন রেজিস্টার</div>
-<div class="ni" onclick="go('moth',this)"><i class="ti ti-tree"></i> মাদার প্ল্যান্ট</div>
-<div class="ni" onclick="go('batch',this)"><i class="ti ti-package"></i> ব্যাচ ম্যানেজমেন্ট</div>
-<div class="ss">মজুদ / Inventory</div>
-<div class="ni" onclick="go('stk',this)"><i class="ti ti-stack-2"></i> স্টক রেজিস্টার</div>
-<div class="ni" onclick="go('dmg',this)"><i class="ti ti-alert-triangle"></i> ক্ষতি / নষ্ট</div>
-<div class="ss">বিক্রয় / Sales</div>
-<div class="ni" onclick="go('sale',this)"><i class="ti ti-receipt"></i> বিক্রয় ও চালান</div>
-<div class="ni" onclick="go('income',this)"><i class="ti ti-building-bank"></i> অন্যান্য আয়</div>
-<div class="ni" onclick="go('cust',this)"><i class="ti ti-users"></i> গ্রাহক তালিকা</div>
-<div class="ss">রিপোর্ট / Reports</div>
-<div class="ni" onclick="go('rep',this)"><i class="ti ti-chart-bar"></i> রিপোর্ট ও বিশ্লেষণ</div>
-<div class="ss">সিস্টেম</div>
-<div class="ni" onclick="go('usr',this)"><i class="ti ti-shield-check"></i> ব্যবহারকারী</div>
-<div class="ni" onclick="go('bin',this)"><i class="ti ti-trash"></i> Recycle Bin</div>
-<div class="ni" onclick="go('cfg',this)"><i class="ti ti-settings"></i> সেটিংস</div>
-</div>
-<div class="sbu"><div class="av0" id="uav">MA</div><div><div style="font-size:12px;color:#fff;font-weight:500" id="unn">Admin</div><div style="font-size:10px;color:var(--st);opacity:.7" id="url">admin</div></div>
-<button class="lob" onclick="logout()" title="লগআউট"><i class="ti ti-logout"></i></button></div>
-</aside>
-
-<main class="mn">
-<div class="tb">
-<button class="mob" onclick="tSB()"><i class="ti ti-menu-2"></i></button>
-<div class="tbt" id="pt">ড্যাশবোর্ড</div>
-<div style="display:flex;gap:8px;align-items:center">
-<button class="btn btns" onclick="oM('mPwdReq')" title="পাসওয়ার্ড পরিবর্তন"><i class="ti ti-key"></i></button>
-<button class="btn btns" onclick="oM('mProd')"><i class="ti ti-plus"></i> উৎপাদন</button>
-<button class="btn btns btnp" onclick="oM('mSale')"><i class="ti ti-shopping-cart"></i> বিক্রয়</button>
-<div class="av" id="tav" onclick="openProfile()" style="cursor:pointer" title="প্রোফাইল">MA</div>
-</div>
-</div>
-
-<div class="ct">
-
-<!-- DASHBOARD -->
-<div class="pg active" id="pg-dash">
-<!-- শুধু Admin দেখবে — Pending password requests -->
-<div id="adminNotif" style="display:none;margin-bottom:16px"></div>
-<div class="sg" id="dSt"><div class="lt">লোড হচ্ছে...</div></div>
-
-<!-- Row 1: অর্থবছর + মাসিক উৎপাদন + বিক্রয় ক্যাটাগরি -->
-<div class="fy-grid">
-<div class="card">
-<div class="cdt">🎯 অর্থবছর লক্ষ্যমাত্রা বনাম অর্জন
-<span style="float:right"><select class="fc" id="fySelect" style="width:130px;padding:4px 8px;font-size:12px" onchange="lFiscalAchievement()"></select></span>
-</div>
-<div id="fyResult"><div class="lt">লোড হচ্ছে...</div></div>
-</div>
-<div class="card"><div class="cdt">মাসিক উৎপাদন <span>বীজ ও অঙ্গজ</span></div><div class="bc" id="dChart"></div><div style="display:flex;gap:12px;margin-top:8px"><div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--tm)"><div style="width:9px;height:9px;border-radius:2px;background:var(--g400)"></div> বীজ</div><div style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--tm)"><div style="width:9px;height:9px;border-radius:2px;background:var(--t400)"></div> অঙ্গজ</div></div></div>
-<div class="card"><div class="cdt">বিক্রয় - ক্যাটাগরি অনুযায়ী</div><div style="display:flex;align-items:center;gap:20px"><svg id="catSvg" width="100" height="100" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15.9" fill="none" stroke="var(--gr100,#ddd)" stroke-width="3.8"/><text x="18" y="21" text-anchor="middle" font-size="4" fill="var(--tm)" font-family="Noto Sans Bengali">বিক্রয়</text></svg><div class="dl" id="catLegend"><div style="font-size:12px;color:var(--tm)">বিক্রয় ডেটা নেই</div></div></div></div>
-</div>
-
-<!-- Row 2: কম স্টক + উৎপাদন সাফল্য + Coming Soon -->
-<div class="fy-grid">
-<div class="card"><div class="cdt">⚠ কম স্টক সতর্কতা <span id="dLowC"></span></div><div id="dLow"><div class="lt">লোড হচ্ছে...</div></div></div>
-<div class="card"><div class="cdt">উৎপাদন সাফল্যের হার</div><div id="dRate"><div class="lt">লোড হচ্ছে...</div></div></div>
-<div class="card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:150px">
-<div style="font-size:36px;margin-bottom:10px">🚀</div>
-<div style="font-weight:600;font-size:14px;color:var(--tp);margin-bottom:6px">নতুন ফিচার আসছে</div>
-<div style="font-size:12px;color:var(--tm);text-align:center">New Feature Coming Soon</div>
-</div>
-</div>
-
-<!-- Row 3: সাম্প্রতিক কার্যক্রম — Full Width -->
-<div class="card"><div class="cdt">সাম্প্রতিক কার্যক্রম <span>সর্বশেষ ৫টি</span></div><div class="tw"><table><thead><tr><th>সময়</th><th>কার্যক্রম</th><th>মডিউল</th><th>ব্যবহারকারী</th><th>অবস্থা</th></tr></thead><tbody id="dAct"><tr><td colspan="5" class="lt">লোড হচ্ছে...</td></tr></tbody></table></div></div>
-</div>
-
-<!-- SEEDLINGS -->
-<div class="pg" id="pg-seed">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px">
-<div style="display:flex;gap:8px"><input class="fc" style="width:240px" placeholder="🔍 চারা খুঁজুন..." id="sSearch" oninput="lSeed()"><select class="fc" style="width:150px" id="sCatF" onchange="lSeed()"><option value="">সব ক্যাটাগরি</option></select></div>
-<button class="btn btnp" onclick="openSeedModal()"><i class="ti ti-plus"></i> নতুন চারা</button>
-</div>
-<div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>ID</th><th>নাম / জাত</th><th>ক্যাটাগরি</th><th>মূল্য</th><th>স্টক</th><th>অবস্থা</th><th>কার্যক্রম</th></tr></thead><tbody id="sTbl"><tr><td colspan="7" class="lt">লোড হচ্ছে...</td></tr></tbody></table></div>
-<div style="padding:10px 14px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;color:var(--tm)" id="sPg"></span><div style="display:flex;gap:4px" id="sPgBtns"></div></div>
-</div>
-</div>
-
-<!-- PRODUCTION -->
-<div class="pg" id="pg-prod">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-<div style="font-size:13px;color:var(--tm)">সকল উৎপাদন ব্যাচ</div>
-<button class="btn btnp" onclick="oM('mProd')"><i class="ti ti-plus"></i> নতুন উৎপাদন</button>
-</div>
-<div class="sg" style="grid-template-columns:repeat(4,1fr)">
-<div class="sc"><div class="sl">মোট ব্যাচ</div><div class="sv" id="pTot">-</div></div>
-<div class="sc"><div class="sl">সক্রিয়</div><div class="sv" id="pAct">-</div></div>
-<div class="sc"><div class="sl">বিক্রি শেষ</div><div class="sv" id="pSold">-</div></div>
-<div class="sc"><div class="sl">গড় সাফল্য</div><div class="sv" id="pAvg">-</div></div>
-</div>
-<div class="tabs"><button class="tab active" onclick="swTab3(this,'pSeedF',['pAsexF','pPurchF'])">🌱 বীজ উৎপাদন</button><button class="tab" onclick="swTab3(this,'pAsexF',['pSeedF','pPurchF'])">🌿 অঙ্গজ বংশবিস্তার</button><button class="tab" onclick="swTab3(this,'pPurchF',['pSeedF','pAsexF'])">🛒 ক্রয়</button></div>
-<div id="pSeedF"><div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>ব্যাচ ID</th><th>চারা</th><th>বীজ পরিমাণ</th><th>বপন তারিখ</th><th>উৎপাদিত</th><th>ব্যর্থ</th><th>অঙ্কু.%</th><th>অবস্থা</th><th>কার্যক্রম</th></tr></thead><tbody id="pSTbl"><tr><td colspan="9" class="lt">লোড হচ্ছে...</td></tr></tbody></table></div></div></div>
-<div id="pAsexF" style="display:none"><div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>ব্যাচ ID</th><th>চারা</th><th>পদ্ধতি</th><th>মাদার</th><th>তারিখ</th><th>সফল</th><th>ব্যর্থ</th><th>সাফল্য%</th><th>অবস্থা</th><th>কার্যক্রম</th></tr></thead><tbody id="pATbl"><tr><td colspan="10" class="lt">লোড হচ্ছে...</td></tr></tbody></table></div></div></div>
-<div id="pPurchF" style="display:none"><div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>ব্যাচ ID</th><th>চারা</th><th>বিক্রেতা / উৎস</th><th>তারিখ</th><th>পরিমাণ</th><th>ব্যর্থ</th><th>অবস্থা</th><th>কার্যক্রম</th></tr></thead><tbody id="pPTbl"><tr><td colspan="8" class="lt">লোড হচ্ছে...</td></tr></tbody></table></div></div></div>
-</div>
-
-<!-- MOTHER -->
-<div class="pg" id="pg-moth">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><div style="font-size:13px;color:var(--tm)">অঙ্গজ বংশবিস্তারের মাদার প্ল্যান্ট</div><button class="btn btnp" onclick="oM('mMoth')"><i class="ti ti-plus"></i> যোগ করুন</button></div>
-<div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>ID</th><th>জাত</th><th>বয়স</th><th>অবস্থান</th><th>স্বাস্থ্য</th><th>অবস্থা</th><th>কার্যক্রম</th></tr></thead><tbody id="mTbl"><tr><td colspan="7" class="lt">লোড হচ্ছে...</td></tr></tbody></table></div></div>
-</div>
-
-<!-- BATCH MANAGEMENT -->
-<div class="pg" id="pg-batch">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px">
-<div style="display:flex;gap:8px"><input class="fc" style="width:200px" placeholder="🔍 ব্যাচ ID খুঁজুন..." id="btSearch" oninput="lBatch()"><select class="fc" style="width:140px" id="btStatus" onchange="lBatch()"><option value="">সব অবস্থা</option><option value="active">সক্রিয়</option><option value="partial">আংশিক</option><option value="sold_out">বিক্রি শেষ</option></select></div>
-<div style="display:flex;gap:8px"><button class="btn btns" onclick="exportCSV('prod')"><i class="ti ti-download"></i> CSV</button><button class="btn btns btnp" onclick="oM('mProd')"><i class="ti ti-plus"></i> নতুন ব্যাচ</button></div>
-</div>
-<div class="sg" style="grid-template-columns:repeat(4,1fr)">
-<div class="sc"><div class="sl">মোট ব্যাচ</div><div class="sv" id="bTot">-</div></div>
-<div class="sc"><div class="sl">সক্রিয়</div><div class="sv" id="bAct">-</div></div>
-<div class="sc"><div class="sl">বিক্রি শেষ</div><div class="sv" id="bSld">-</div></div>
-<div class="sc"><div class="sl">গড় সাফল্য</div><div class="sv" id="bAvg">-</div></div>
-</div>
-<div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>ব্যাচ ID</th><th>চারা</th><th>পদ্ধতি</th><th>তারিখ</th><th>উৎপাদিত</th><th>পাওয়া যাচ্ছে</th><th>বিক্রিত</th><th>নষ্ট</th><th>সাফল্য %</th><th>অবস্থা</th><th>কার্যক্রম</th></tr></thead><tbody id="bTbl"><tr><td colspan="11" class="lt">লোড হচ্ছে...</td></tr></tbody></table></div></div>
-</div>
-
-<!-- SETTINGS -->
-<div class="pg" id="pg-cfg">
-
-<!-- Theme Settings -->
-<div class="card" style="max-width:600px;margin-top:20px">
-<div class="cdt">🎨 থিম ও ডিজাইন</div>
-
-<!-- Color Theme -->
-<div style="margin-bottom:20px">
-<label style="font-size:13px;font-weight:600;display:block;margin-bottom:10px">রং / Color Theme</label>
-<div style="display:flex;gap:10px;flex-wrap:wrap">
-<button onclick="setTheme('green')" id="theme-green" style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;border:2px solid transparent;cursor:pointer;background:#EAF3DE;color:#3B6D11;font-family:var(--fb);font-size:13px;font-weight:600">
-<div style="width:16px;height:16px;border-radius:50%;background:#3B6D11"></div> 🌿 সবুজ</button>
-<button onclick="setTheme('blue')" id="theme-blue" style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;border:2px solid transparent;cursor:pointer;background:#EBF5FB;color:#1A5276;font-family:var(--fb);font-size:13px;font-weight:600">
-<div style="width:16px;height:16px;border-radius:50%;background:#1A5276"></div> 🌊 নীল</button>
-<button onclick="setTheme('purple')" id="theme-purple" style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;border:2px solid transparent;cursor:pointer;background:#F4ECF7;color:#6C3483;font-family:var(--fb);font-size:13px;font-weight:600">
-<div style="width:16px;height:16px;border-radius:50%;background:#6C3483"></div> 🌸 বেগুনি</button>
-<button onclick="setTheme('orange')" id="theme-orange" style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:10px;border:2px solid transparent;cursor:pointer;background:#FEF5E7;color:#CA6F1E;font-family:var(--fb);font-size:13px;font-weight:600">
-<div style="width:16px;height:16px;border-radius:50%;background:#CA6F1E"></div> 🍂 কমলা</button>
-</div>
-</div>
-
-<!-- Dark Mode -->
-<div style="display:flex;align-items:center;justify-content:space-between;padding:14px;background:var(--gr50);border-radius:10px;border:1px solid var(--bd)">
-<div>
-<div style="font-size:13px;font-weight:600">⚫ Dark Mode</div>
-<div style="font-size:11px;color:var(--tm);margin-top:2px">রাতে ব্যবহারের জন্য</div>
-</div>
-<label style="position:relative;display:inline-block;width:50px;height:26px;cursor:pointer">
-<input type="checkbox" id="darkToggle" onchange="toggleDark()" style="opacity:0;width:0;height:0">
-<span style="position:absolute;top:0;left:0;right:0;bottom:0;background:#ccc;border-radius:26px;transition:.3s" id="darkSlider"></span>
-<span style="position:absolute;top:3px;left:3px;width:20px;height:20px;background:white;border-radius:50%;transition:.3s" id="darkKnob"></span>
-</label>
-</div>
-</div>
-
-<!-- System Settings -->
-<div id="cfgAdminOnly">
-<div class="card" style="max-width:600px">
-<div class="cdt">সিস্টেম সেটিংস / System Settings</div>
-<div class="fg"><label>নার্সারির নাম (বাংলা)</label><input class="fc" id="cfgNB" value="উদ্যানতত্ত্ববিদের কার্যালয়, আসামবস্তি, রাঙামাটি"></div>
-<div class="fg"><label>Nursery Name (English)</label><input class="fc" id="cfgNE" value="Horticulture Center, Asambasti, Rangamati"></div>
-<div class="fr">
-<div class="fg"><label>কম স্টক সীমা</label><input class="fc" type="number" id="cfgLS" value="20"></div>
-<div class="fg"><label>মুদ্রা / Currency</label><select class="fc" id="cfgCur"><option value="BDT">BDT (৳)</option><option value="USD">USD ($)</option></select></div>
-</div>
-<div class="fg"><label>ভাষা / Language</label><select class="fc" id="cfgLng"><option value="bn">বাংলা</option><option value="en">English</option><option value="both">বাংলা + English</option></select></div>
-<div style="border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:16px;background:var(--gr50)">
-<div style="font-size:12px;font-weight:600;margin-bottom:8px">API সংযোগ তথ্য</div>
-<div style="font-size:12px;color:var(--tm)">সার্ভার URL: <strong>https://horticulturecenterasambasti.vercel.app</strong></div>
-<div style="font-size:12px;color:var(--tm);margin-top:4px">Supabase Project ID: <strong>pquadzybbxuaqrfchfjg</strong></div>
-</div>
-<div style="display:flex;gap:8px">
-<button class="btn btnp" onclick="saveSettings()"><i class="ti ti-check"></i> সেটিংস সংরক্ষণ</button>
-<button class="btn" onclick="testConn()"><i class="ti ti-plug"></i> সংযোগ পরীক্ষা</button>
-</div>
-</div>
-
-<!-- Category Management -->
-<div class="card" style="max-width:600px;margin-top:20px">
-<div class="cdt">📂 ক্যাটাগরি ম্যানেজমেন্ট</div>
-<div style="display:flex;gap:8px;margin-bottom:16px">
-<input class="fc" id="newCatBn" placeholder="বাংলা নাম* (যেমন: মসলা)" style="flex:1">
-<input class="fc" id="newCatEn" placeholder="English Name (optional)" style="flex:1">
-<button class="btn btnp" onclick="addCategory()"><i class="ti ti-plus"></i> যোগ</button>
-</div>
-<div id="catList"><div class="lt">লোড হচ্ছে...</div></div>
-</div>
-</div>
-</div>
-
-<!-- STOCK -->
-<div class="pg" id="pg-stk">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div style="font-size:13px;color:var(--tm)">স্বয়ংক্রিয় স্টক হিসাব</div><div style="display:flex;gap:8px"><button class="btn btns" onclick="printPage()"><i class="ti ti-printer"></i> প্রিন্ট</button><button class="btn btns" onclick="exportCSV('stock')"><i class="ti ti-download"></i> CSV</button></div></div>
-<!-- Search & Filter -->
-<div style="display:flex;gap:8px;margin-bottom:16px">
-<input class="fc" id="stkSearch" placeholder="🔍 চারা খুঁজুন..." style="flex:1" oninput="filterStk()">
-<select class="fc" id="stkCat" style="width:160px" onchange="filterStk()"><option value="">সব ক্যাটাগরি</option></select>
-</div>
-<div class="card" style="margin-bottom:16px"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px"><div style="background:var(--g50);color:var(--g800);padding:6px 12px;border-radius:6px;font-weight:600">প্রারম্ভিক</div><span style="font-size:18px;color:var(--tm)">+</span><div style="background:var(--t50);color:var(--t600);padding:6px 12px;border-radius:6px;font-weight:600">উৎপাদন</div><span style="font-size:18px;color:var(--tm)">−</span><div style="background:var(--c50);color:var(--c600);padding:6px 12px;border-radius:6px;font-weight:600">বিক্রয়</div><span style="font-size:18px;color:var(--tm)">−</span><div style="background:var(--a50);color:var(--a400);padding:6px 12px;border-radius:6px;font-weight:600">ক্ষতি</div><span style="font-size:18px;color:var(--tm)">=</span><div style="background:var(--g400);color:#fff;padding:6px 14px;border-radius:6px;font-weight:700">পাওয়া স্টক</div></div></div>
-<div class="card" style="padding:0"><div class="tw"><table id="stkTbl"><thead><tr><th>চারা</th><th>মোট ইন</th><th>বিক্রয়</th><th>ক্ষতি/নষ্ট</th><th>বর্তমান স্টক</th><th>মূল্য (৳)</th><th>অবস্থা</th></tr></thead><tbody id="sTblB"><tr><td colspan="7" class="lt">লোড হচ্ছে...</td></tr></tbody></table></div></div>
-</div>
-
-<!-- DAMAGE -->
-<div class="pg" id="pg-dmg">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div style="font-size:13px;color:var(--tm)">ক্ষতিগ্রস্ত ও নষ্ট চারার রেকর্ড</div><button class="btn btnp" onclick="oM('mDmg')"><i class="ti ti-plus"></i> ক্ষতি রিপোর্ট</button></div>
-<!-- Summary Cards -->
-<div id="dmgStats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px">
-<div class="sc"><div class="si" style="background:var(--r50)"><i class="ti ti-plant-off" style="color:var(--r400);font-size:18px"></i></div><div class="sl">সর্বমোট ক্ষতি</div><div class="sv" id="dmgTotal">০</div><div class="ss2">টি চারা/কলম</div></div>
-<div class="sc"><div class="si" style="background:var(--g50)"><i class="ti ti-plant" style="color:var(--g600);font-size:18px"></i></div><div class="sl">মোট উৎপাদন</div><div class="sv" id="dmgProd">০</div><div class="ss2">টি চারা/কলম</div></div>
-<div class="sc"><div class="si" style="background:var(--a50)"><i class="ti ti-percentage" style="color:var(--a400);font-size:18px"></i></div><div class="sl">ক্ষতির হার</div><div class="sv" id="dmgRate">০%</div><div class="ss2">উৎপাদনের তুলনায়</div></div>
-</div>
-<div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>তারিখ</th><th>চারা</th><th>ব্যাচ</th><th>পরিমাণ</th><th>কারণ</th><th>মন্তব্য</th><th>রিপোর্টকারী</th><th>কার্যক্রম</th></tr></thead><tbody id="dTbl"><tr><td colspan="8" class="lt">লোড হচ্ছে...</td></tr></tbody></table></div></div>
-</div>
-
-<!-- SALES -->
-<div class="pg" id="pg-sale">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px">
-<div id="salSum" style="font-size:13px;color:var(--tm)">লোড হচ্ছে...</div>
-<div style="display:flex;gap:8px"><input class="fc" type="date" style="width:160px" id="salDate" onchange="lSale()"><button class="btn btns" onclick="printPage()"><i class="ti ti-printer"></i></button><button class="btn btns" onclick="exportCSV('sale')"><i class="ti ti-download"></i></button><button class="btn btns btnp" onclick="oM('mSale')"><i class="ti ti-plus"></i> নতুন বিক্রয়</button></div>
-</div>
-<div class="sg" style="grid-template-columns:repeat(4,1fr)">
-<div class="sc"><div class="sl">আজকের বিক্রয়</div><div class="sv" id="s1">৳০</div></div>
-<div class="sc"><div class="sl">এই মাসে</div><div class="sv" id="s2">৳০</div></div>
-<div class="sc"><div class="sl">মোট চালান</div><div class="sv" id="s3">০</div></div>
-<div class="sc"><div class="sl">বকেয়া</div><div class="sv" id="s4">৳০</div></div>
-</div>
-<div class="card" style="padding:0"><div class="tw"><table id="salTbl"><thead><tr><th>চালান #</th><th>গ্রাহক</th><th>তারিখ</th><th>মোট (৳)</th><th>পরিশোধ</th><th>অবস্থা</th><th>কার্যক্রম</th></tr></thead><tbody id="salB"><tr><td colspan="7" class="lt">লোড হচ্ছে...</td></tr></tbody></table></div></div>
-</div>
-
-<!-- CUSTOMERS -->
-<div class="pg" id="pg-cust">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:8px">
-<input class="fc" style="width:240px" placeholder="🔍 গ্রাহক খুঁজুন..." id="cSearch" oninput="lCust()">
-<button class="btn btnp" onclick="oM('mCust')"><i class="ti ti-plus"></i> নতুন গ্রাহক</button>
-</div>
-<div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>নাম</th><th>ফোন</th><th>ঠিকানা</th><th>মোট অর্ডার</th><th>মোট ব্যয়</th><th>কার্যক্রম</th></tr></thead><tbody id="cTbl"><tr><td colspan="6" class="lt">লোড হচ্ছে...</td></tr></tbody></table></div></div>
-</div>
-
-<!-- OTHER INCOME -->
-<div class="pg" id="pg-income">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px"><div style="font-size:13px;color:var(--tm)">কৃষি পণ্য বিক্রয়, ডরমিটরি ভাড়া ও অন্যান্য আয়</div><button class="btn btnp" onclick="oM('mIncome');document.getElementById('incDate').valueAsDate=new Date()"><i class="ti ti-plus"></i> আয় যোগ করুন</button></div>
-<div class="sg" style="margin-bottom:20px"><div class="sc"><div class="si" style="background:var(--g50)"><i class="ti ti-leaf" style="color:var(--g600);font-size:18px"></i></div><div class="sl">কৃষি পণ্য</div><div class="sv" id="incAgri">৳০</div><div class="ss2">সর্বমোট</div></div><div class="sc"><div class="si" style="background:var(--b50)"><i class="ti ti-building" style="color:var(--b600);font-size:18px"></i></div><div class="sl">ডরমিটরি ভাড়া</div><div class="sv" id="incDorm">৳০</div><div class="ss2">সর্বমোট</div></div><div class="sc"><div class="si" style="background:var(--a50)"><i class="ti ti-cash" style="color:var(--a400);font-size:18px"></i></div><div class="sl">অন্যান্য</div><div class="sv" id="incOther">৳০</div><div class="ss2">সর্বমোট</div></div><div class="sc"><div class="si" style="background:var(--t50)"><i class="ti ti-coin" style="color:var(--t600);font-size:18px"></i></div><div class="sl">মোট অন্যান্য আয়</div><div class="sv" id="incTotal">৳০</div><div class="ss2">সর্বমোট</div></div></div>
-<div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>তারিখ</th><th>ধরন</th><th>বিভাগ</th><th>পরিমাণ</th><th>বিবরণ</th><th>কার্যক্রম</th></tr></thead><tbody id="incTbl"><tr><td colspan="6" class="lt">লোড হচ্ছে...</td></tr></tbody></table></div></div>
-</div>
-
-<!-- REPORTS -->
-<div class="pg" id="pg-rep">
-<div style="font-size:13px;color:var(--tm);margin-bottom:20px">রিপোর্ট তৈরি করুন ও এক্সপোর্ট করুন</div>
-
-<!-- Target vs Achievement -->
-<div class="card" style="margin-bottom:20px" id="targetSection">
-<div class="cdt">🎯 লক্ষ্যমাত্রা বনাম অর্জন
-<span style="float:right;display:flex;gap:8px;align-items:center">
-<select class="fc" id="targetFY" style="width:130px;padding:4px 8px;font-size:12px" onchange="lTargetAchievement()"></select>
-<button class="btn btns btnp" id="addTargetBtn" style="display:none" onclick="openTargetModal()"><i class="ti ti-plus"></i> লক্ষ্যমাত্রা যোগ</button>
-</span>
-</div>
-<div id="targetResults"><div class="lt">লোড হচ্ছে...</div></div>
-</div>
-
-<!-- Target Add/Edit Modal -->
-<div class="mo" id="mTarget"><div class="md" style="max-width:480px">
-<div class="mh"><h3 id="mTargetTitle">লক্ষ্যমাত্রা যোগ করুন</h3><button class="mx" onclick="cM('mTarget')"><i class="ti ti-x"></i></button></div>
-<input type="hidden" id="tgEditId">
-<div class="fr">
-<div class="fg"><label>ধরন *</label>
-<select class="fc" id="tgType"><option value="production">উৎপাদন</option><option value="sales">বিক্রয়</option></select></div>
-<div class="fg"><label>সময়কাল *</label>
-<select class="fc" id="tgPeriod" onchange="toggleTargetPeriod()">
-<option value="annual">🎯 অর্থবছর মোট</option>
-<option value="monthly">📅 নির্দিষ্ট মাস</option>
-</select></div>
-</div>
-<div class="fr">
-<div class="fg"><label>অর্থবছর *</label>
-<select class="fc" id="tgFY"></select></div>
-<div class="fg" id="tgMonthBox" style="display:none"><label>মাস *</label>
-<select class="fc" id="tgMonth">
-<option value="7">জুলাই</option><option value="8">আগস্ট</option><option value="9">সেপ্টেম্বর</option>
-<option value="10">অক্টোবর</option><option value="11">নভেম্বর</option><option value="12">ডিসেম্বর</option>
-<option value="1">জানুয়ারি</option><option value="2">ফেব্রুয়ারি</option><option value="3">মার্চ</option>
-<option value="4">এপ্রিল</option><option value="5">মে</option><option value="6">জুন</option>
-</select></div>
-</div>
-<div class="fr">
-<div class="fg"><label>পরিমাণ (টি)</label><input class="fc" type="number" id="tgQty" placeholder="০"></div>
-<div class="fg"><label>আয় লক্ষ্যমাত্রা (৳)</label><input class="fc" type="number" id="tgAmt" placeholder="০"></div>
-</div>
-<div class="fg"><label>মন্তব্য</label><input class="fc" id="tgNotes" placeholder="ঐচ্ছিক"></div>
-<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
-<button class="btn" onclick="cM('mTarget')">বাতিল</button>
-<button class="btn btnp" onclick="saveTarget()"><i class="ti ti-check"></i> সংরক্ষণ</button>
-</div>
-</div></div>
-
-<!-- Monthly Excel Report -->
-<div class="card" style="margin-bottom:20px">
-<div class="cdt">📅 মাসিক রিপোর্ট — Excel ডাউনলোড</div>
-<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-<select class="fc" style="width:120px" id="repYear">
-  <option>2026</option><option>2025</option><option>2024</option>
-</select>
-<button class="btn btnp" onclick="downloadMonthlyExcel()"><i class="ti ti-file-type-xls"></i> মাসিক বিক্রয় Excel</button>
-<button class="btn" onclick="downloadProductionExcel()"><i class="ti ti-file-type-xls"></i> মাসিক উৎপাদন Excel</button>
-<button class="btn" onclick="exportCSV('sale')"><i class="ti ti-download"></i> সব বিক্রয় CSV</button>
-<button class="btn" onclick="exportCSV('stock')"><i class="ti ti-download"></i> স্টক CSV</button>
-</div>
-</div>
-
-<!-- Best Selling Seedlings -->
-<div class="card" style="margin-bottom:20px">
-<div class="cdt">🏆 সর্বাধিক বিক্রিত চারা <span>Top 10</span></div>
-<div id="bestSellingList"><div class="lt">লোড হচ্ছে...</div></div>
-</div>
-
-<div class="rg">
-<div class="rc" onclick="oM('mRep1')"><div style="font-size:28px;margin-bottom:8px">📊</div><div style="font-weight:600;font-size:14px;margin-bottom:4px">দৈনিক উৎপাদন রিপোর্ট</div><div style="font-size:12px;color:var(--tm);margin-bottom:12px">চারা ও পদ্ধতি অনুযায়ী</div><div style="display:flex;gap:6px"><button class="btn btns" onclick="event.stopPropagation();printRep('prod')"><i class="ti ti-printer"></i></button><button class="btn btns" onclick="event.stopPropagation();exportCSV('prod')"><i class="ti ti-download"></i> CSV</button></div></div>
-<div class="rc"><div style="font-size:28px;margin-bottom:8px">💰</div><div style="font-weight:600;font-size:14px;margin-bottom:4px">বিক্রয় রিপোর্ট</div><div style="font-size:12px;color:var(--tm);margin-bottom:12px">আয় ও গ্রাহক বিশ্লেষণ</div><div style="display:flex;gap:6px"><button class="btn btns" onclick="printRep('sale')"><i class="ti ti-printer"></i></button><button class="btn btns" onclick="exportCSV('sale')"><i class="ti ti-download"></i> CSV</button></div></div>
-<div class="rc"><div style="font-size:28px;margin-bottom:8px">📦</div><div style="font-weight:600;font-size:14px;margin-bottom:4px">স্টক রিপোর্ট</div><div style="font-size:12px;color:var(--tm);margin-bottom:12px">বর্তমান মজুদ ও মূল্যায়ন</div><div style="display:flex;gap:6px"><button class="btn btns" onclick="printRep('stock')"><i class="ti ti-printer"></i></button><button class="btn btns" onclick="exportCSV('stock')"><i class="ti ti-download"></i> CSV</button></div></div>
-<div class="rc"><div style="font-size:28px;margin-bottom:8px">🌿</div><div style="font-weight:600;font-size:14px;margin-bottom:4px">সাফল্যের হার রিপোর্ট</div><div style="font-size:12px;color:var(--tm);margin-bottom:12px">পদ্ধতি ও ব্যাচ অনুযায়ী</div><div style="display:flex;gap:6px"><button class="btn btns" onclick="printRep('success')"><i class="ti ti-printer"></i></button></div></div>
-<div class="rc"><div style="font-size:28px;margin-bottom:8px">⚠️</div><div style="font-weight:600;font-size:14px;margin-bottom:4px">ক্ষতি / নষ্ট রিপোর্ট</div><div style="font-size:12px;color:var(--tm);margin-bottom:12px">ধরন ও কারণ অনুযায়ী</div><div style="display:flex;gap:6px"><button class="btn btns" onclick="printRep('dmg')"><i class="ti ti-printer"></i></button><button class="btn btns" onclick="exportCSV('dmg')"><i class="ti ti-download"></i> CSV</button></div></div>
-<div class="rc"><div style="font-size:28px;margin-bottom:8px">📈</div><div style="font-weight:600;font-size:14px;margin-bottom:4px">লাভ / ক্ষতি রিপোর্ট</div><div style="font-size:12px;color:var(--tm);margin-bottom:12px">আয় বনাম উৎপাদন খরচ</div><div style="display:flex;gap:6px"><button class="btn btns" onclick="oM('mPL')"><i class="ti ti-eye"></i> দেখুন</button></div></div>
-</div>
-</div>
-
-<!-- USERS -->
-<div class="pg" id="pg-usr">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div style="font-size:13px;color:var(--tm)">ব্যবহারকারী ও ভূমিকা</div><div style="display:flex;gap:8px"><button class="btn btns" onclick="oM('mPwdReq')"><i class="ti ti-key"></i> পাসওয়ার্ড পরিবর্তন</button><button class="btn btns btnp" onclick="oM('mUsr')"><i class="ti ti-user-plus"></i> নতুন ব্যবহারকারী</button></div></div>
-<div class="card" style="margin-bottom:16px" id="permMatrix"><div class="cdt">অনুমতি ম্যাট্রিক্স</div><div class="tw"><table><thead><tr><th>ভূমিকা</th><th style="text-align:center">তৈরি</th><th style="text-align:center">সম্পাদনা</th><th style="text-align:center">মুছুন</th><th style="text-align:center">দেখুন</th><th style="text-align:center">এক্সপোর্ট</th></tr></thead><tbody><tr><td><strong>Admin</strong></td><td style="text-align:center;color:var(--g600)">✓</td><td style="text-align:center;color:var(--g600)">✓</td><td style="text-align:center;color:var(--g600)">✓</td><td style="text-align:center;color:var(--g600)">✓</td><td style="text-align:center;color:var(--g600)">✓</td></tr><tr><td><strong>Manager</strong></td><td style="text-align:center;color:var(--g600)">✓</td><td style="text-align:center;color:var(--g600)">✓</td><td style="text-align:center;color:var(--c400)">✗</td><td style="text-align:center;color:var(--g600)">✓</td><td style="text-align:center;color:var(--g600)">✓</td></tr><tr><td><strong>Production Officer</strong></td><td style="text-align:center;color:var(--g600)">✓</td><td style="text-align:center;color:var(--g600)">✓</td><td style="text-align:center;color:var(--c400)">✗</td><td style="text-align:center;color:var(--g600)">✓</td><td style="text-align:center;color:var(--c400)">✗</td></tr><tr><td><strong>Sales Operator</strong></td><td style="text-align:center;color:var(--g600)">✓</td><td style="text-align:center;color:var(--c400)">✗</td><td style="text-align:center;color:var(--c400)">✗</td><td style="text-align:center;color:var(--g600)">✓</td><td style="text-align:center;color:var(--g600)">✓</td></tr><tr><td><strong>Viewer</strong></td><td style="text-align:center;color:var(--c400)">✗</td><td style="text-align:center;color:var(--c400)">✗</td><td style="text-align:center;color:var(--c400)">✗</td><td style="text-align:center;color:var(--g600)">✓</td><td style="text-align:center;color:var(--c400)">✗</td></tr></tbody></table></div></div>
-<div class="card" style="padding:0"><div class="tw"><table><thead><tr><th>ব্যবহারকারী</th><th>ইমেইল</th><th>ভূমিকা</th><th>অবস্থা</th><th>কার্যক্রম</th></tr></thead><tbody id="uTbl"><tr><td colspan="5" class="lt">লোড হচ্ছে...</td></tr></tbody></table></div></div>
-</div>
-
-</div><!-- end ct -->
-</main>
-</div><!-- end app -->
-
-<!-- MODALS -->
-<!-- SEEDLING MODAL -->
-<div class="mo" id="mSeed"><div class="md"><div class="mh"><h3 id="mSeedT">নতুন চারা</h3><button class="mx" onclick="cM('mSeed')"><i class="ti ti-x"></i></button></div><input type="hidden" id="sId"><div class="fr"><div class="fg"><label>নাম (বাংলা)*</label><input class="fc" id="sNB" placeholder="যেমন: আম"></div><div class="fg"><label>English Name</label><input class="fc" id="sNE" placeholder="Mango"></div></div><div class="fr"><div class="fg"><label>জাত</label><input class="fc" id="sV" placeholder="আম্রপালি"></div><div class="fg"><label>ক্যাটাগরি*</label><select class="fc" id="sCat"><option value="">লোড হচ্ছে...</option></select></div></div><div class="fr"><div class="fg"><label>বিক্রয় মূল্য (৳)*</label><input class="fc" type="number" id="sP" placeholder="0"></div><div class="fg"><label>উৎপাদন খরচ (৳)</label><input class="fc" type="number" id="sC" placeholder="0"></div></div><div class="fg"><label>বিবরণ</label><textarea class="fc" id="sD" rows="2" placeholder="সংক্ষিপ্ত বিবরণ..."></textarea></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="cM('mSeed')">বাতিল</button><button class="btn btnp" onclick="saveSeed()"><i class="ti ti-check"></i> সংরক্ষণ</button></div></div></div>
-
-<!-- PRODUCTION MODAL -->
-<div class="mo" id="mProd"><div class="md"><div class="mh"><h3>নতুন উৎপাদন ব্যাচ</h3><button class="mx" onclick="cM('mProd')"><i class="ti ti-x"></i></button></div><div class="fr"><div class="fg"><label>চারা*</label><select class="fc" id="pSd"></select></div><div class="fg"><label>পদ্ধতি*</label><select class="fc" id="pMt" onchange="togP()"><option value="seed">বীজ</option><option value="cutting">কাটিং</option><option value="layering">লেয়ারিং</option><option value="grafting">গ্রাফটিং / জোড়কলম</option><option value="budding">বাডিং</option><option value="tissue_culture">টিস্যু কালচার</option><option value="purchase">🛒 ক্রয়</option></select></div></div><div id="pSF"><div class="fr"><div class="fg"><label>বীজ উৎস</label><input class="fc" id="pSrc" placeholder="BFRI"></div><div class="fg"><label>বীজ পরিমাণ</label><input class="fc" type="number" id="pSQ"></div></div><div class="fr"><div class="fg"><label>বপন তারিখ*</label><input class="fc" type="date" id="pSw"></div><div class="fg"><label>উৎপাদিত*</label><input class="fc" type="number" id="pPQ"></div></div></div><div id="pAF" style="display:none"><div class="fr"><div class="fg"><label>মাদার প্ল্যান্ট</label><select class="fc" id="pMP"></select></div><div class="fg"><label>তারিখ*</label><input class="fc" type="date" id="pPD"></div></div><div class="fr"><div class="fg"><label>মোট পরিমাণ*</label><input class="fc" type="number" id="pAQ"></div><div class="fg"><label>সফল পরিমাণ*</label><input class="fc" type="number" id="pSu"></div></div></div>
-<!-- ক্রয় form -->
-<div id="pPF" style="display:none"><div class="fr"><div class="fg"><label>বিক্রেতা / উৎস*</label><input class="fc" id="pPSrc" placeholder="নার্সারির নাম বা বাজার"></div><div class="fg"><label>ক্রয় তারিখ*</label><input class="fc" type="date" id="pPDt"></div></div><div class="fr"><div class="fg"><label>পরিমাণ*</label><input class="fc" type="number" id="pPQty" placeholder="০"></div><div class="fg"><label>একক ক্রয় মূল্য (৳)</label><input class="fc" type="number" id="pPPrice" placeholder="০"></div></div></div><div class="fg"><label>মন্তব্য</label><input class="fc" id="pRm" placeholder="ঐচ্ছিক"></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="cM('mProd')">বাতিল</button><button class="btn btnp" onclick="saveProd()"><i class="ti ti-check"></i> ব্যাচ তৈরি</button></div></div></div>
-
-<!-- SALE MODAL -->
-<div class="mo" id="mSale"><div class="md"><div class="mh"><h3>নতুন বিক্রয় / চালান</h3><button class="mx" onclick="cM('mSale')"><i class="ti ti-x"></i></button></div><div style="background:var(--g50);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--g800)">চালান # স্বয়ংক্রিয় হবে &nbsp;|&nbsp; তারিখ: <strong id="saleDate"></strong></div><div class="fr"><div class="fg"><label>গ্রাহক নাম*</label><input class="fc" id="slC" placeholder="পূর্ণ নাম"></div><div class="fg"><label>ফোন</label><input class="fc" id="slPh" placeholder="01X-XXXXXXXX"></div></div><div class="fg"><label>ঠিকানা</label><input class="fc" id="slAd" placeholder="গ্রাহকের ঠিকানা"></div><div style="border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:14px">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-<div style="font-size:12px;font-weight:600">আইটেম সমূহ</div>
-<button class="btn btns btnp" type="button" onclick="addSaleItem()"><i class="ti ti-plus"></i> আইটেম যোগ</button>
-</div>
-<div id="saleItemsList"></div>
-</div><div class="fr"><div class="fg"><label>ছাড় (৳)</label><input class="fc" type="number" id="slDi" value="0"></div><div class="fg"><label>পরিশোধ পদ্ধতি</label><select class="fc" id="slPm"><option value="cash">নগদ</option><option value="bkash">বিকাশ</option><option value="bank">ব্যাংক</option><option value="cheque">চেক</option></select></div></div><div style="background:var(--gr50);border-radius:8px;padding:12px;margin-bottom:14px;font-size:13px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span>মোট</span><span id="slTotal">৳ ০</span></div><div style="display:flex;justify-content:space-between;margin-bottom:4px;color:var(--c400)"><span>ছাড়</span><span id="slTotalD">− ৳ ০</span></div><div style="display:flex;justify-content:space-between;font-weight:700;font-size:15px;border-top:1px solid var(--bd);padding-top:8px"><span>নিট মোট</span><span style="color:var(--g600)" id="slNet">৳ ০</span></div></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="cM('mSale')">বাতিল</button><button class="btn btnp" onclick="saveSale()"><i class="ti ti-check"></i> বিক্রয় সম্পন্ন</button></div></div></div>
-
-<!-- DAMAGE MODAL -->
-<div class="mo" id="mDmg"><div class="md"><div class="mh"><h3 id="mDmgT">ক্ষতি / নষ্ট রিপোর্ট</h3><button class="mx" onclick="cM('mDmg');document.getElementById('dDmgId').value=''"><i class="ti ti-x"></i></button></div><input type="hidden" id="dDmgId"><div class="fr"><div class="fg"><label>তারিখ*</label><input class="fc" type="date" id="dDt"></div><div class="fg"><label>চারা*</label><select class="fc" id="dSd"></select></div></div><div class="fr"><div class="fg"><label>ব্যাচ</label><select class="fc" id="dBt"><option value="">-- নির্বাচন করুন</option></select></div><div class="fg"><label>পরিমাণ*</label><input class="fc" type="number" id="dQt" placeholder="0"></div></div><div class="fg"><label>কারণ*</label><select class="fc" id="dRs"><option value="disease">রোগ</option><option value="drought">খরা</option><option value="flood">বন্যা</option><option value="pest">পোকামাকড়</option><option value="cold">ঠান্ডা</option><option value="other">অন্যান্য</option></select></div><div class="fg"><label>বিস্তারিত মন্তব্য</label><textarea class="fc" id="dRm" rows="2" placeholder="বিস্তারিত লিখুন..."></textarea></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="cM('mDmg');document.getElementById('dDmgId').value=''">বাতিল</button><button class="btn btnp" onclick="saveDmg()"><i class="ti ti-check"></i> সংরক্ষণ</button></div></div></div>
-
-<!-- INCOME MODAL -->
-<div class="mo" id="mIncome"><div class="md"><div class="mh"><h3 id="incModalTitle">অন্যান্য আয় যোগ</h3><button class="mx" onclick="cM('mIncome');document.getElementById('incId').value='';document.getElementById('incModalTitle').textContent='অন্যান্য আয় যোগ'"><i class="ti ti-x"></i></button></div>
-<input type="hidden" id="incId">
-<div class="fr"><div class="fg"><label>তারিখ*</label><input class="fc" type="date" id="incDate"></div><div class="fg"><label>আয়ের ধরন*</label><select class="fc" id="incType"><option value="agriculture">🌿 কৃষি পণ্য বিক্রয়</option><option value="dormitory">🏠 ডরমিটরি ভাড়া</option><option value="other">💰 অন্যান্য আয়</option></select></div></div>
-<div class="fg"><label>বিভাগ / বিবরণ</label><input class="fc" id="incCat" placeholder="যেমন: সবজি বিক্রয়, কক্ষ নং ৩, ইত্যাদি"></div>
-<div class="fr"><div class="fg"><label>পরিমাণ (৳)*</label><input class="fc" type="number" id="incAmt" placeholder="০"></div><div class="fg"><label>বিস্তারিত</label><input class="fc" id="incDesc" placeholder="ঐচ্ছিক"></div></div>
-<div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="cM('mIncome');document.getElementById('incId').value=''">বাতিল</button><button class="btn btnp" onclick="saveIncome()"><i class="ti ti-check"></i> সংরক্ষণ</button></div>
-</div></div>
-
-<!-- INCOME VIEW MODAL -->
-<div class="mo" id="mIncView"><div class="md" style="max-width:420px"><div class="mh"><h3>আয়ের বিবরণ</h3><button class="mx" onclick="cM('mIncView')"><i class="ti ti-x"></i></button></div>
-<div id="incViewContent"></div>
-</div></div>
-
-<!-- MOTHER PLANT MODAL -->
-<div class="mo" id="mMoth"><div class="md"><div class="mh"><h3>মাদার প্ল্যান্ট যোগ</h3><button class="mx" onclick="cM('mMoth')"><i class="ti ti-x"></i></button></div><div class="fr"><div class="fg"><label>জাত*</label><input class="fc" id="mV" placeholder="আম আম্রপালি"></div><div class="fg"><label>চারা</label><select class="fc" id="mSd"></select></div></div><div class="fr"><div class="fg"><label>বয়স (বছর)</label><input class="fc" type="number" id="mAg"></div><div class="fg"><label>অবস্থান*</label><input class="fc" id="mLo" placeholder="ব্লক-এ সারি ৩"></div></div><div class="fg"><label>স্বাস্থ্য অবস্থা</label><select class="fc" id="mH"><option value="excellent">চমৎকার</option><option value="good">ভালো</option><option value="weak">দুর্বল</option></select></div><div class="fg"><label>মন্তব্য</label><input class="fc" id="mNt" placeholder="ঐচ্ছিক"></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="cM('mMoth')">বাতিল</button><button class="btn btnp" onclick="saveMoth()"><i class="ti ti-check"></i> সংরক্ষণ</button></div></div></div>
-
-<!-- CUSTOMER MODAL -->
-<div class="mo" id="mCust"><div class="md"><div class="mh"><h3 id="mCustT">নতুন গ্রাহক</h3><button class="mx" onclick="cM('mCust')"><i class="ti ti-x"></i></button></div><input type="hidden" id="cId"><div class="fr"><div class="fg"><label>নাম*</label><input class="fc" id="cNm" placeholder="পূর্ণ নাম"></div><div class="fg"><label>ফোন</label><input class="fc" id="cPh" placeholder="01X-XXXXXXXX"></div></div><div class="fg"><label>ঠিকানা</label><input class="fc" id="cAd" placeholder="ঠিকানা"></div><div class="fg"><label>ইমেইল</label><input class="fc" id="cEm" type="email" placeholder="email@example.com"></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="cM('mCust')">বাতিল</button><button class="btn btnp" onclick="saveCust()"><i class="ti ti-check"></i> সংরক্ষণ</button></div></div></div>
-
-<!-- USER MODAL -->
-<div class="mo" id="mUsr"><div class="md"><div class="mh"><h3 id="mUsrT">নতুন ব্যবহারকারী</h3><button class="mx" onclick="cM('mUsr')"><i class="ti ti-x"></i></button></div><input type="hidden" id="uId"><div class="fr"><div class="fg"><label>নাম*</label><input class="fc" id="uNm" placeholder="পূর্ণ নাম"></div><div class="fg"><label>ইমেইল*</label><input class="fc" id="uEm" type="email" placeholder="user@horticulture.bd"></div></div><div class="fr"><div class="fg"><label>ভূমিকা*</label><select class="fc" id="uRl"><option value="production_officer">Production Officer</option><option value="sales_operator">Sales Operator</option><option value="viewer">Viewer</option><option value="manager">Manager</option><option value="admin">Admin</option></select></div><div class="fg"><label>পাসওয়ার্ড</label><div class="pw-wrap"><input class="fc" id="uPw" type="password" placeholder="নতুন পাসওয়ার্ড (পরিবর্তনের জন্য)"><button class="pw-eye" onclick="togglePwd('uPw',this)" type="button"><i class="ti ti-eye"></i></button></div></div></div><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="cM('mUsr')">বাতিল</button><button class="btn btnp" onclick="saveUsr()"><i class="ti ti-user-plus"></i> সংরক্ষণ</button></div></div></div>
-
-<!-- P&L MODAL -->
-<div class="mo" id="mPL"><div class="md"><div class="mh"><h3>লাভ / ক্ষতি রিপোর্ট</h3><button class="mx" onclick="cM('mPL')"><i class="ti ti-x"></i></button></div><div class="fr"><div class="fg"><label>শুরুর তারিখ</label><input class="fc" type="date" id="plFr"></div><div class="fg"><label>শেষ তারিখ</label><input class="fc" type="date" id="plTo"></div></div><button class="btn btnp" style="margin-bottom:16px" onclick="loadPL()"><i class="ti ti-calculator"></i> হিসাব করুন</button><div id="plRes" style="background:var(--gr50);border-radius:8px;padding:16px;display:none"><div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px"><span>মোট আয়</span><strong id="plRev" style="color:var(--g600)">৳০</strong></div><div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px"><span>মোট উৎপাদন খরচ</span><strong id="plCost" style="color:var(--c400)">৳০</strong></div><div style="display:flex;justify-content:space-between;border-top:1px solid var(--bd);padding-top:10px;margin-top:4px;font-size:15px;font-weight:700"><span>নিট লাভ</span><strong id="plNet">৳০</strong></div><div style="text-align:center;margin-top:8px;font-size:12px;color:var(--tm)">মার্জিন: <strong id="plMg">০%</strong></div></div></div></div>
-
-<!-- INVOICE VIEW MODAL -->
-<div class="mo" id="mInv"><div class="md" style="max-width:680px"><div class="mh"><h3>চালান / Invoice</h3><button class="mx" onclick="cM('mInv')"><i class="ti ti-x"></i></button></div><div id="invBody" style="border:1px solid var(--bd);border-radius:8px;padding:20px;background:#fff"></div><div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px"><button class="btn btns btnp" onclick="downloadInvoicePDF()"><i class="ti ti-download"></i> PDF ডাউনলোড</button><button class="btn btns" onclick="printInv()"><i class="ti ti-printer"></i> প্রিন্ট</button><button class="btn btns" onclick="cM('mInv')">বন্ধ</button></div></div></div>
-
-<!-- PROFILE MODAL -->
-<div class="mo" id="mProfile"><div class="md" style="max-width:480px">
-<div class="mh"><h3 id="mProfileTitle">আমার প্রোফাইল</h3><button class="mx" onclick="cM('mProfile')"><i class="ti ti-x"></i></button></div>
-
-<!-- Admin view — সরাসরি update -->
-<div id="profileAdmin">
-  <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:14px;background:var(--g50);border-radius:10px">
-    <div style="width:50px;height:50px;border-radius:50%;background:var(--g600);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;font-weight:700" id="profAvatar">MA</div>
-    <div><div style="font-weight:600;font-size:15px" id="profName">Admin</div><div style="font-size:12px;color:var(--tm)" id="profRole">admin</div></div>
-  </div>
-  <div class="fr">
-    <div class="fg"><label>নাম</label><input class="fc" id="prName" placeholder="আপনার নাম"></div>
-    <div class="fg"><label>ইমেইল</label><input class="fc" id="prEmail" type="email" placeholder="নতুন ইমেইল"></div>
-  </div>
-  <div style="border:1px solid var(--bd);border-radius:8px;padding:14px;margin-bottom:14px">
-    <div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--tm)">পাসওয়ার্ড পরিবর্তন</div>
-    <div class="fg"><label>বর্তমান পাসওয়ার্ড *</label><div class="pw-wrap"><input class="fc" type="password" id="prCurPwd" placeholder="বর্তমান পাসওয়ার্ড"><button class="pw-eye" onclick="togglePwd('prCurPwd',this)" type="button"><i class="ti ti-eye"></i></button></div></div>
-    <div class="fr">
-      <div class="fg"><label>নতুন পাসওয়ার্ড</label><div class="pw-wrap"><input class="fc" type="password" id="prNewPwd" placeholder="নতুন পাসওয়ার্ড (ঐচ্ছিক)"><button class="pw-eye" onclick="togglePwd('prNewPwd',this)" type="button"><i class="ti ti-eye"></i></button></div></div>
-      <div class="fg"><label>নিশ্চিত করুন</label><div class="pw-wrap"><input class="fc" type="password" id="prConPwd" placeholder="আবার লিখুন"><button class="pw-eye" onclick="togglePwd('prConPwd',this)" type="button"><i class="ti ti-eye"></i></button></div></div>
+    <!-- LOGIN -->
+    <div class="lp" id="lp">
+      <div class="lb">
+        <img
+          src="./images/favicon.jpg"
+          alt=""
+          style="
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 12px;
+          "
+        />
+        <h1>উদ্যানতত্ত্ববিদের কার্যালয়</h1>
+        <div class="su">Horticulture Center</div>
+        <div class="lc">আসামবস্তি, রাঙামাটি</div>
+        <!-- Step 1 -->
+        <div id="loginStep1">
+          <div class="lf">
+            <label>ইমেইল</label
+            ><input id="le" placeholder="আপনার ইমেইল লিখুন" />
+          </div>
+          <div class="lf">
+            <label>পাসওয়ার্ড</label>
+            <div class="pw-wrap">
+              <input
+                type="password"
+                id="lp2"
+                placeholder="পাসওয়ার্ড লিখুন"
+              /><button
+                class="pw-eye"
+                onclick="togglePwd('lp2', this)"
+                type="button"
+              >
+                <i class="ti ti-eye"></i>
+              </button>
+            </div>
+          </div>
+          <button class="lbtn" onclick="login()">লগইন করুন</button>
+        </div>
+        <!-- Step 2: OTP -->
+        <div id="loginStep2" style="display: none">
+          <div
+            style="
+              background: #eaf3de;
+              border-radius: 10px;
+              padding: 14px;
+              margin-bottom: 16px;
+              font-size: 13px;
+              color: #3b6d11;
+            "
+          >
+            <i class="ti ti-mail"></i> আপনার Email-এ
+            <strong>৬ সংখ্যার OTP</strong> পাঠানো হয়েছে।
+          </div>
+          <div class="lf">
+            <label>OTP Code</label
+            ><input
+              id="otpInput"
+              placeholder="_ _ _ _ _ _"
+              maxlength="6"
+              style="
+                text-align: center;
+                font-size: 28px;
+                letter-spacing: 10px;
+                font-weight: 700;
+              "
+            />
+          </div>
+          <div
+            style="font-size: 12px; color: #888; margin-bottom: 14px"
+            id="otpTimer"
+          >
+            ⏱ ৫ মিনিটের মধ্যে দিন
+          </div>
+          <button class="lbtn" onclick="verifyOtp()">✅ যাচাই করুন</button
+          ><button
+            style="
+              width: 100%;
+              padding: 10px;
+              background: none;
+              border: none;
+              color: #888;
+              cursor: pointer;
+              margin-top: 8px;
+              font-family: var(--fb);
+            "
+            onclick="backToLogin()"
+          >
+            ← ফিরে যান
+          </button>
+        </div>
+        <div class="le" id="lerr"></div>
+      </div>
     </div>
-  </div>
-  <div style="background:var(--a50);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--a400)">
-    <i class="ti ti-info-circle"></i> পরিবর্তন করলে পুনরায় Login করতে হবে।
-  </div>
-  <div style="display:flex;gap:8px;justify-content:flex-end">
-    <button class="btn" onclick="cM('mProfile')">বাতিল</button>
-    <button class="btn btnp" onclick="updateProfile()"><i class="ti ti-check"></i> আপডেট করুন</button>
-  </div>
-</div>
 
-<!-- Regular user view — Request পাঠান -->
-<div id="profileUser" style="display:none">
-  <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:14px;background:var(--g50);border-radius:10px">
-    <div style="width:50px;height:50px;border-radius:50%;background:var(--g600);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;font-weight:700" id="profAvatarU">SK</div>
-    <div><div style="font-weight:600;font-size:15px" id="profNameU">User</div><div style="font-size:12px;color:var(--tm)" id="profRoleU">Sales Operator</div></div>
-  </div>
-  <div style="background:var(--b50);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--b600)">
-    <i class="ti ti-shield-lock"></i> পাসওয়ার্ড পরিবর্তনে Admin-এর অনুমোদন প্রয়োজন।
-  </div>
-  <div class="fg"><label>নতুন পাসওয়ার্ড *</label><input class="fc" type="password" id="pwdNew" placeholder="কমপক্ষে ৬ অক্ষর"></div>
-  <div class="fg"><label>নিশ্চিত করুন *</label><input class="fc" type="password" id="pwdCon" placeholder="আবার লিখুন"></div>
-  <div id="reqStatus" style="display:none;padding:10px;border-radius:8px;margin-bottom:14px;font-size:12px"></div>
-  <div style="display:flex;gap:8px;justify-content:flex-end">
-    <button class="btn" onclick="cM('mProfile')">বাতিল</button>
-    <button class="btn btnp" onclick="reqPwdChange()"><i class="ti ti-send"></i> অনুরোধ পাঠান</button>
-  </div>
-</div>
+    <!-- APP -->
+    <div class="app" id="app">
+      <aside class="sb" id="sb">
+        <div class="sbl">
+          <h1>🌿 উদ্যানতত্ত্ববিদের কার্যালয়</h1>
+          <p>Asambasti, Rangamati</p>
+        </div>
+        <div style="overflow-y: auto; flex: 1; padding-bottom: 10px">
+          <div class="ss">প্রধান / Main</div>
+          <div class="ni active" onclick="go('dash', this)">
+            <i class="ti ti-layout-dashboard"></i> ড্যাশবোর্ড
+          </div>
+          <div class="ss">উৎপাদন / Production</div>
+          <div class="ni" onclick="go('seed', this)">
+            <i class="ti ti-plant"></i> চারা তালিকা
+          </div>
+          <div class="ni" onclick="go('prod', this)">
+            <i class="ti ti-flask"></i> উৎপাদন রেজিস্টার
+          </div>
+          <div class="ni" onclick="go('moth', this)">
+            <i class="ti ti-tree"></i> মাদার প্ল্যান্ট
+          </div>
+          <div class="ni" onclick="go('batch', this)">
+            <i class="ti ti-package"></i> ব্যাচ ম্যানেজমেন্ট
+          </div>
+          <div class="ss">মজুদ / Inventory</div>
+          <div class="ni" onclick="go('stk', this)">
+            <i class="ti ti-stack-2"></i> স্টক রেজিস্টার
+          </div>
+          <div class="ni" onclick="go('dmg', this)">
+            <i class="ti ti-alert-triangle"></i> ক্ষতি / নষ্ট
+          </div>
+          <div class="ss">বিক্রয় / Sales</div>
+          <div class="ni" onclick="go('sale', this)">
+            <i class="ti ti-receipt"></i> বিক্রয় ও চালান
+          </div>
+          <div class="ni" onclick="go('income', this)">
+            <i class="ti ti-building-bank"></i> অন্যান্য আয়
+          </div>
+          <div class="ni" onclick="go('cust', this)">
+            <i class="ti ti-users"></i> গ্রাহক তালিকা
+          </div>
+          <div class="ss">রিপোর্ট / Reports</div>
+          <div class="ni" onclick="go('rep', this)">
+            <i class="ti ti-chart-bar"></i> রিপোর্ট ও বিশ্লেষণ
+          </div>
+          <div class="ss">সিস্টেম</div>
+          <div class="ni" onclick="go('usr', this)">
+            <i class="ti ti-shield-check"></i> ব্যবহারকারী
+          </div>
+          <div class="ni" onclick="go('bin', this)">
+            <i class="ti ti-trash"></i> Recycle Bin
+          </div>
+          <div class="ni" onclick="go('cfg', this)">
+            <i class="ti ti-settings"></i> সেটিংস
+          </div>
+        </div>
+        <div class="sbu">
+          <div class="av0" id="uav">MA</div>
+          <div>
+            <div
+              style="font-size: 12px; color: #fff; font-weight: 500"
+              id="unn"
+            >
+              Admin
+            </div>
+            <div
+              style="font-size: 10px; color: var(--st); opacity: 0.7"
+              id="url"
+            >
+              admin
+            </div>
+          </div>
+          <button class="lob" onclick="logout()" title="লগআউট">
+            <i class="ti ti-logout"></i>
+          </button>
+        </div>
+      </aside>
 
-</div></div>
+      <main class="mn">
+        <div class="tb">
+          <button class="mob" onclick="tSB()">
+            <i class="ti ti-menu-2"></i>
+          </button>
+          <div class="tbt" id="pt">ড্যাশবোর্ড</div>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <button
+              class="btn btns"
+              onclick="oM('mPwdReq')"
+              title="পাসওয়ার্ড পরিবর্তন"
+            >
+              <i class="ti ti-key"></i>
+            </button>
+            <button class="btn btns" onclick="oM('mProd')">
+              <i class="ti ti-plus"></i> উৎপাদন
+            </button>
+            <button class="btn btns btnp" onclick="oM('mSale')">
+              <i class="ti ti-shopping-cart"></i> বিক্রয়
+            </button>
+            <div
+              class="av"
+              id="tav"
+              onclick="openProfile()"
+              style="cursor: pointer"
+              title="প্রোফাইল"
+            >
+              MA
+            </div>
+          </div>
+        </div>
 
-<!-- পাসওয়ার্ড পরিবর্তন অনুরোধ Modal (🔑 বাটনের জন্য) -->
-<!-- CUSTOM CONFIRM MODAL -->
-<div class="mo" id="mConfirm"><div class="md" style="max-width:400px;text-align:center">
-<div style="padding:20px 10px"><div id="confirmMsg" style="font-size:14px;line-height:1.8;color:var(--tp)"></div></div>
-<div style="display:flex;gap:10px;justify-content:center;padding-bottom:16px">
-<button class="btn" onclick="confirmNo()" style="min-width:100px">বাতিল</button>
-<button class="btn btnr" onclick="confirmYes()" style="min-width:100px"><i class="ti ti-check"></i> হ্যাঁ, মুছুন</button>
-</div>
-</div></div>
+        <div class="ct">
+          <!-- DASHBOARD -->
+          <div class="pg active" id="pg-dash">
+            <!-- শুধু Admin দেখবে — Pending password requests -->
+            <div
+              id="adminNotif"
+              style="display: none; margin-bottom: 16px"
+            ></div>
+            <div class="sg" id="dSt"><div class="lt">লোড হচ্ছে...</div></div>
 
-<!-- RECYCLE BIN PAGE -->
-<div class="pg" id="pg-bin">
-<div id="recycleBinList"><div class="lt">লোড হচ্ছে...</div></div>
-</div>
+            <!-- Row 1: অর্থবছর + মাসিক উৎপাদন + বিক্রয় ক্যাটাগরি -->
+            <div class="fy-grid">
+              <div class="card">
+                <div class="cdt">
+                  🎯 অর্থবছর লক্ষ্যমাত্রা বনাম অর্জন
+                  <span style="float: right"
+                    ><select
+                      class="fc"
+                      id="fySelect"
+                      style="width: 130px; padding: 4px 8px; font-size: 12px"
+                      onchange="lFiscalAchievement()"
+                    ></select
+                  ></span>
+                </div>
+                <div id="fyResult"><div class="lt">লোড হচ্ছে...</div></div>
+              </div>
+              <div class="card">
+                <div class="cdt">মাসিক উৎপাদন <span>বীজ ও অঙ্গজ</span></div>
+                <div class="bc" id="dChart"></div>
+                <div style="display: flex; gap: 12px; margin-top: 8px">
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      font-size: 11px;
+                      color: var(--tm);
+                    "
+                  >
+                    <div
+                      style="
+                        width: 9px;
+                        height: 9px;
+                        border-radius: 2px;
+                        background: var(--g400);
+                      "
+                    ></div>
+                    বীজ
+                  </div>
+                  <div
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 4px;
+                      font-size: 11px;
+                      color: var(--tm);
+                    "
+                  >
+                    <div
+                      style="
+                        width: 9px;
+                        height: 9px;
+                        border-radius: 2px;
+                        background: var(--t400);
+                      "
+                    ></div>
+                    অঙ্গজ
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="cdt">বিক্রয় - ক্যাটাগরি অনুযায়ী</div>
+                <div style="display: flex; align-items: center; gap: 20px">
+                  <svg id="catSvg" width="100" height="100" viewBox="0 0 36 36">
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="15.9"
+                      fill="none"
+                      stroke="var(--gr100,#ddd)"
+                      stroke-width="3.8"
+                    />
+                    <text
+                      x="18"
+                      y="21"
+                      text-anchor="middle"
+                      font-size="4"
+                      fill="var(--tm)"
+                      font-family="Noto Sans Bengali"
+                    >
+                      বিক্রয়
+                    </text>
+                  </svg>
+                  <div class="dl" id="catLegend">
+                    <div style="font-size: 12px; color: var(--tm)">
+                      বিক্রয় ডেটা নেই
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-<div class="mo" id="mPwdReq"><div class="md" style="max-width:420px">
-<div class="mh"><h3>পাসওয়ার্ড পরিবর্তনের অনুরোধ</h3><button class="mx" onclick="cM('mPwdReq')"><i class="ti ti-x"></i></button></div>
-<div style="background:var(--b50);border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;color:var(--b600)"><i class="ti ti-info-circle"></i> আপনার নতুন পাসওয়ার্ড Admin অনুমোদন করলে কার্যকর হবে।</div>
-<div class="fg"><label>বর্তমান পাসওয়ার্ড*</label><input class="fc" type="password" id="pwdCur" placeholder="বর্তমান পাসওয়ার্ড"></div>
-<div class="fg"><label>নতুন পাসওয়ার্ড*</label><input class="fc" type="password" id="pwdNew" placeholder="কমপক্ষে ৬ অক্ষর"></div>
-<div class="fg"><label>নতুন পাসওয়ার্ড নিশ্চিত করুন*</label><input class="fc" type="password" id="pwdCon" placeholder="আবার লিখুন"></div>
-<div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="cM('mPwdReq')">বাতিল</button><button class="btn btnp" onclick="reqPwdChange()"><i class="ti ti-send"></i> অনুরোধ পাঠান</button></div>
-</div></div>
-<div class="mo" id="mDel"><div class="md" style="max-width:400px"><div class="mh"><h3>নিশ্চিত করুন</h3><button class="mx" onclick="cM('mDel')"><i class="ti ti-x"></i></button></div><p style="font-size:13px;margin-bottom:20px" id="delMsg">এটি মুছে ফেলতে চান?</p><div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="cM('mDel')">বাতিল</button><button class="btn btnr" id="delBtn">মুছুন</button></div></div></div>
+            <!-- Row 2: কম স্টক + উৎপাদন সাফল্য + Coming Soon -->
+            <div class="fy-grid">
+              <div class="card">
+                <div class="cdt">
+                  ⚠ কম স্টক সতর্কতা <span id="dLowC"></span>
+                </div>
+                <div id="dLow"><div class="lt">লোড হচ্ছে...</div></div>
+              </div>
+              <div class="card">
+                <div class="cdt">উৎপাদন সাফল্যের হার</div>
+                <div id="dRate"><div class="lt">লোড হচ্ছে...</div></div>
+              </div>
+              <div
+                class="card"
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  align-items: center;
+                  justify-content: center;
+                  min-height: 150px;
+                "
+              >
+                <div style="font-size: 36px; margin-bottom: 10px">🚀</div>
+                <div
+                  style="
+                    font-weight: 600;
+                    font-size: 14px;
+                    color: var(--tp);
+                    margin-bottom: 6px;
+                  "
+                >
+                  নতুন ফিচার আসছে
+                </div>
+                <div
+                  style="font-size: 12px; color: var(--tm); text-align: center"
+                >
+                  New Feature Coming Soon
+                </div>
+              </div>
+            </div>
 
-<div style="text-align:center;padding:16px 20px;font-size:12px;color:var(--tm);border-top:1px solid var(--bd);margin-top:20px;background:var(--bg)">
-© ২০২৬ | <strong>Mahfuj Ahmed Sarker</strong> | ৩৮তম BCS | Horticulturist | Horticulture Center, Asambasti, Rangamati
-</div>
-<script src="app.js"></script>
-</body>
+            <!-- Row 3: সাম্প্রতিক কার্যক্রম — Full Width -->
+            <div class="card">
+              <div class="cdt">
+                সাম্প্রতিক কার্যক্রম <span>সর্বশেষ ৫টি</span>
+              </div>
+              <div class="tw">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>সময়</th>
+                      <th>কার্যক্রম</th>
+                      <th>মডিউল</th>
+                      <th>ব্যবহারকারী</th>
+                      <th>অবস্থা</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dAct">
+                    <tr>
+                      <td colspan="5" class="lt">লোড হচ্ছে...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEEDLINGS -->
+          <div class="pg" id="pg-seed">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 8px;
+              "
+            >
+              <div style="display: flex; gap: 8px">
+                <input
+                  class="fc"
+                  style="width: 240px"
+                  placeholder="🔍 চারা খুঁজুন..."
+                  id="sSearch"
+                  oninput="lSeed()"
+                /><select
+                  class="fc"
+                  style="width: 150px"
+                  id="sCatF"
+                  onchange="lSeed()"
+                >
+                  <option value="">সব ক্যাটাগরি</option>
+                </select>
+              </div>
+              <button class="btn btnp" onclick="openSeedModal()">
+                <i class="ti ti-plus"></i> নতুন চারা
+              </button>
+            </div>
+            <div class="card" style="padding: 0">
+              <div class="tw">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>নাম / জাত</th>
+                      <th>ক্যাটাগরি</th>
+                      <th>মূল্য</th>
+                      <th>স্টক</th>
+                      <th>অবস্থা</th>
+                      <th>কার্যক্রম</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sTbl">
+                    <tr>
+                      <td colspan="7" class="lt">লোড হচ্ছে...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div
+                style="
+                  padding: 10px 14px;
+                  border-top: 1px solid var(--bd);
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <span style="font-size: 12px; color: var(--tm)" id="sPg"></span>
+                <div style="display: flex; gap: 4px" id="sPgBtns"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PRODUCTION -->
+          <div class="pg" id="pg-prod">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+              "
+            >
+              <div style="font-size: 13px; color: var(--tm)">
+                সকল উৎপাদন ব্যাচ
+              </div>
+              <button class="btn btnp" onclick="oM('mProd')">
+                <i class="ti ti-plus"></i> নতুন উৎপাদন
+              </button>
+            </div>
+            <div class="sg" style="grid-template-columns: repeat(4, 1fr)">
+              <div class="sc">
+                <div class="sl">মোট ব্যাচ</div>
+                <div class="sv" id="pTot">-</div>
+              </div>
+              <div class="sc">
+                <div class="sl">সক্রিয়</div>
+                <div class="sv" id="pAct">-</div>
+              </div>
+              <div class="sc">
+                <div class="sl">বিক্রি শেষ</div>
+                <div class="sv" id="pSold">-</div>
+              </div>
+              <div class="sc">
+                <div class="sl">গড় সাফল্য</div>
+                <div class="sv" id="pAvg">-</div>
+              </div>
+            </div>
+            <div class="tabs">
+              <button
+                class="tab active"
+                onclick="swTab3(this, 'pSeedF', ['pAsexF', 'pPurchF'])"
+              >
+                🌱 বীজ উৎপাদন</button
+              ><button
+                class="tab"
+                onclick="swTab3(this, 'pAsexF', ['pSeedF', 'pPurchF'])"
+              >
+                🌿 অঙ্গজ বংশবিস্তার</button
+              ><button
+                class="tab"
+                onclick="swTab3(this, 'pPurchF', ['pSeedF', 'pAsexF'])"
+              >
+                🛒 ক্রয়
+              </button>
+            </div>
+            <div id="pSeedF">
+              <div class="card" style="padding: 0">
+                <div class="tw">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ব্যাচ ID</th>
+                        <th>চারা</th>
+                        <th>বীজ পরিমাণ</th>
+                        <th>বপন তারিখ</th>
+                        <th>উৎপাদিত</th>
+                        <th>ব্যর্থ</th>
+                        <th>অঙ্কু.%</th>
+                        <th>অবস্থা</th>
+                        <th>কার্যক্রম</th>
+                      </tr>
+                    </thead>
+                    <tbody id="pSTbl">
+                      <tr>
+                        <td colspan="9" class="lt">লোড হচ্ছে...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div id="pAsexF" style="display: none">
+              <div class="card" style="padding: 0">
+                <div class="tw">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ব্যাচ ID</th>
+                        <th>চারা</th>
+                        <th>পদ্ধতি</th>
+                        <th>মাদার</th>
+                        <th>তারিখ</th>
+                        <th>সফল</th>
+                        <th>ব্যর্থ</th>
+                        <th>সাফল্য%</th>
+                        <th>অবস্থা</th>
+                        <th>কার্যক্রম</th>
+                      </tr>
+                    </thead>
+                    <tbody id="pATbl">
+                      <tr>
+                        <td colspan="10" class="lt">লোড হচ্ছে...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+            <div id="pPurchF" style="display: none">
+              <div class="card" style="padding: 0">
+                <div class="tw">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>ব্যাচ ID</th>
+                        <th>চারা</th>
+                        <th>বিক্রেতা / উৎস</th>
+                        <th>তারিখ</th>
+                        <th>পরিমাণ</th>
+                        <th>ব্যর্থ</th>
+                        <th>অবস্থা</th>
+                        <th>কার্যক্রম</th>
+                      </tr>
+                    </thead>
+                    <tbody id="pPTbl">
+                      <tr>
+                        <td colspan="8" class="lt">লোড হচ্ছে...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MOTHER -->
+          <div class="pg" id="pg-moth">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+              "
+            >
+              <div style="font-size: 13px; color: var(--tm)">
+                অঙ্গজ বংশবিস্তারের মাদার প্ল্যান্ট
+              </div>
+              <button class="btn btnp" onclick="oM('mMoth')">
+                <i class="ti ti-plus"></i> যোগ করুন
+              </button>
+            </div>
+            <div class="card" style="padding: 0">
+              <div class="tw">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>জাত</th>
+                      <th>বয়স</th>
+                      <th>অবস্থান</th>
+                      <th>স্বাস্থ্য</th>
+                      <th>অবস্থা</th>
+                      <th>কার্যক্রম</th>
+                    </tr>
+                  </thead>
+                  <tbody id="mTbl">
+                    <tr>
+                      <td colspan="7" class="lt">লোড হচ্ছে...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- BATCH MANAGEMENT -->
+          <div class="pg" id="pg-batch">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 8px;
+              "
+            >
+              <div style="display: flex; gap: 8px">
+                <input
+                  class="fc"
+                  style="width: 200px"
+                  placeholder="🔍 ব্যাচ ID খুঁজুন..."
+                  id="btSearch"
+                  oninput="lBatch()"
+                /><select
+                  class="fc"
+                  style="width: 140px"
+                  id="btStatus"
+                  onchange="lBatch()"
+                >
+                  <option value="">সব অবস্থা</option>
+                  <option value="active">সক্রিয়</option>
+                  <option value="partial">আংশিক</option>
+                  <option value="sold_out">বিক্রি শেষ</option>
+                </select>
+              </div>
+              <div style="display: flex; gap: 8px">
+                <button class="btn btns" onclick="exportCSV('prod')">
+                  <i class="ti ti-download"></i> CSV</button
+                ><button class="btn btns btnp" onclick="oM('mProd')">
+                  <i class="ti ti-plus"></i> নতুন ব্যাচ
+                </button>
+              </div>
+            </div>
+            <div class="sg" style="grid-template-columns: repeat(4, 1fr)">
+              <div class="sc">
+                <div class="sl">মোট ব্যাচ</div>
+                <div class="sv" id="bTot">-</div>
+              </div>
+              <div class="sc">
+                <div class="sl">সক্রিয়</div>
+                <div class="sv" id="bAct">-</div>
+              </div>
+              <div class="sc">
+                <div class="sl">বিক্রি শেষ</div>
+                <div class="sv" id="bSld">-</div>
+              </div>
+              <div class="sc">
+                <div class="sl">গড় সাফল্য</div>
+                <div class="sv" id="bAvg">-</div>
+              </div>
+            </div>
+            <div class="card" style="padding: 0">
+              <div class="tw">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ব্যাচ ID</th>
+                      <th>চারা</th>
+                      <th>পদ্ধতি</th>
+                      <th>তারিখ</th>
+                      <th>উৎপাদিত</th>
+                      <th>পাওয়া যাচ্ছে</th>
+                      <th>বিক্রিত</th>
+                      <th>নষ্ট</th>
+                      <th>সাফল্য %</th>
+                      <th>অবস্থা</th>
+                      <th>কার্যক্রম</th>
+                    </tr>
+                  </thead>
+                  <tbody id="bTbl">
+                    <tr>
+                      <td colspan="11" class="lt">লোড হচ্ছে...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- SETTINGS -->
+          <div class="pg" id="pg-cfg">
+            <!-- Theme Settings -->
+            <div class="card" style="max-width: 600px; margin-top: 20px">
+              <div class="cdt">🎨 থিম ও ডিজাইন</div>
+
+              <!-- Color Theme -->
+              <div style="margin-bottom: 20px">
+                <label
+                  style="
+                    font-size: 13px;
+                    font-weight: 600;
+                    display: block;
+                    margin-bottom: 10px;
+                  "
+                  >রং / Color Theme</label
+                >
+                <div style="display: flex; gap: 10px; flex-wrap: wrap">
+                  <button
+                    onclick="setTheme('green')"
+                    id="theme-green"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      padding: 10px 16px;
+                      border-radius: 10px;
+                      border: 2px solid transparent;
+                      cursor: pointer;
+                      background: #eaf3de;
+                      color: #3b6d11;
+                      font-family: var(--fb);
+                      font-size: 13px;
+                      font-weight: 600;
+                    "
+                  >
+                    <div
+                      style="
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: #3b6d11;
+                      "
+                    ></div>
+                    🌿 সবুজ
+                  </button>
+                  <button
+                    onclick="setTheme('blue')"
+                    id="theme-blue"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      padding: 10px 16px;
+                      border-radius: 10px;
+                      border: 2px solid transparent;
+                      cursor: pointer;
+                      background: #ebf5fb;
+                      color: #1a5276;
+                      font-family: var(--fb);
+                      font-size: 13px;
+                      font-weight: 600;
+                    "
+                  >
+                    <div
+                      style="
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: #1a5276;
+                      "
+                    ></div>
+                    🌊 নীল
+                  </button>
+                  <button
+                    onclick="setTheme('purple')"
+                    id="theme-purple"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      padding: 10px 16px;
+                      border-radius: 10px;
+                      border: 2px solid transparent;
+                      cursor: pointer;
+                      background: #f4ecf7;
+                      color: #6c3483;
+                      font-family: var(--fb);
+                      font-size: 13px;
+                      font-weight: 600;
+                    "
+                  >
+                    <div
+                      style="
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: #6c3483;
+                      "
+                    ></div>
+                    🌸 বেগুনি
+                  </button>
+                  <button
+                    onclick="setTheme('orange')"
+                    id="theme-orange"
+                    style="
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      padding: 10px 16px;
+                      border-radius: 10px;
+                      border: 2px solid transparent;
+                      cursor: pointer;
+                      background: #fef5e7;
+                      color: #ca6f1e;
+                      font-family: var(--fb);
+                      font-size: 13px;
+                      font-weight: 600;
+                    "
+                  >
+                    <div
+                      style="
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: #ca6f1e;
+                      "
+                    ></div>
+                    🍂 কমলা
+                  </button>
+                </div>
+              </div>
+
+              <!-- Dark Mode -->
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  padding: 14px;
+                  background: var(--gr50);
+                  border-radius: 10px;
+                  border: 1px solid var(--bd);
+                "
+              >
+                <div>
+                  <div style="font-size: 13px; font-weight: 600">
+                    ⚫ Dark Mode
+                  </div>
+                  <div
+                    style="font-size: 11px; color: var(--tm); margin-top: 2px"
+                  >
+                    রাতে ব্যবহারের জন্য
+                  </div>
+                </div>
+                <label
+                  style="
+                    position: relative;
+                    display: inline-block;
+                    width: 50px;
+                    height: 26px;
+                    cursor: pointer;
+                  "
+                >
+                  <input
+                    type="checkbox"
+                    id="darkToggle"
+                    onchange="toggleDark()"
+                    style="opacity: 0; width: 0; height: 0"
+                  />
+                  <span
+                    style="
+                      position: absolute;
+                      top: 0;
+                      left: 0;
+                      right: 0;
+                      bottom: 0;
+                      background: #ccc;
+                      border-radius: 26px;
+                      transition: 0.3s;
+                    "
+                    id="darkSlider"
+                  ></span>
+                  <span
+                    style="
+                      position: absolute;
+                      top: 3px;
+                      left: 3px;
+                      width: 20px;
+                      height: 20px;
+                      background: white;
+                      border-radius: 50%;
+                      transition: 0.3s;
+                    "
+                    id="darkKnob"
+                  ></span>
+                </label>
+              </div>
+            </div>
+
+            <!-- System Settings -->
+            <div id="cfgAdminOnly">
+              <div class="card" style="max-width: 600px">
+                <div class="cdt">সিস্টেম সেটিংস / System Settings</div>
+                <div class="fg">
+                  <label>নার্সারির নাম (বাংলা)</label
+                  ><input
+                    class="fc"
+                    id="cfgNB"
+                    value="উদ্যানতত্ত্ববিদের কার্যালয়, আসামবস্তি, রাঙামাটি"
+                  />
+                </div>
+                <div class="fg">
+                  <label>Nursery Name (English)</label
+                  ><input
+                    class="fc"
+                    id="cfgNE"
+                    value="Horticulture Center, Asambasti, Rangamati"
+                  />
+                </div>
+                <div class="fr">
+                  <div class="fg">
+                    <label>কম স্টক সীমা</label
+                    ><input class="fc" type="number" id="cfgLS" value="20" />
+                  </div>
+                  <div class="fg">
+                    <label>মুদ্রা / Currency</label
+                    ><select class="fc" id="cfgCur">
+                      <option value="BDT">BDT (৳)</option>
+                      <option value="USD">USD ($)</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="fg">
+                  <label>ভাষা / Language</label
+                  ><select class="fc" id="cfgLng">
+                    <option value="bn">বাংলা</option>
+                    <option value="en">English</option>
+                    <option value="both">বাংলা + English</option>
+                  </select>
+                </div>
+                <div
+                  style="
+                    border: 1px solid var(--bd);
+                    border-radius: 8px;
+                    padding: 14px;
+                    margin-bottom: 16px;
+                    background: var(--gr50);
+                  "
+                >
+                  <div
+                    style="
+                      font-size: 12px;
+                      font-weight: 600;
+                      margin-bottom: 8px;
+                    "
+                  >
+                    API সংযোগ তথ্য
+                  </div>
+                  <div style="font-size: 12px; color: var(--tm)">
+                    সার্ভার URL:
+                    <strong
+                      >https://horticulturecenterasambasti.vercel.app</strong
+                    >
+                  </div>
+                  <div
+                    style="font-size: 12px; color: var(--tm); margin-top: 4px"
+                  >
+                    Supabase Project ID: <strong>pquadzybbxuaqrfchfjg</strong>
+                  </div>
+                </div>
+                <div style="display: flex; gap: 8px">
+                  <button class="btn btnp" onclick="saveSettings()">
+                    <i class="ti ti-check"></i> সেটিংস সংরক্ষণ
+                  </button>
+                  <button class="btn" onclick="testConn()">
+                    <i class="ti ti-plug"></i> সংযোগ পরীক্ষা
+                  </button>
+                </div>
+              </div>
+
+              <!-- Category Management -->
+              <div class="card" style="max-width: 600px; margin-top: 20px">
+                <div class="cdt">📂 ক্যাটাগরি ম্যানেজমেন্ট</div>
+                <div style="display: flex; gap: 8px; margin-bottom: 16px">
+                  <input
+                    class="fc"
+                    id="newCatBn"
+                    placeholder="বাংলা নাম* (যেমন: মসলা)"
+                    style="flex: 1"
+                  />
+                  <input
+                    class="fc"
+                    id="newCatEn"
+                    placeholder="English Name (optional)"
+                    style="flex: 1"
+                  />
+                  <button class="btn btnp" onclick="addCategory()">
+                    <i class="ti ti-plus"></i> যোগ
+                  </button>
+                </div>
+                <div id="catList"><div class="lt">লোড হচ্ছে...</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STOCK -->
+          <div class="pg" id="pg-stk">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+              "
+            >
+              <div style="font-size: 13px; color: var(--tm)">
+                স্বয়ংক্রিয় স্টক হিসাব
+              </div>
+              <div style="display: flex; gap: 8px">
+                <button class="btn btns" onclick="printPage()">
+                  <i class="ti ti-printer"></i> প্রিন্ট</button
+                ><button class="btn btns" onclick="exportCSV('stock')">
+                  <i class="ti ti-download"></i> CSV
+                </button>
+              </div>
+            </div>
+            <!-- Search & Filter -->
+            <div style="display: flex; gap: 8px; margin-bottom: 16px">
+              <input
+                class="fc"
+                id="stkSearch"
+                placeholder="🔍 চারা খুঁজুন..."
+                style="flex: 1"
+                oninput="filterStk()"
+              />
+              <select
+                class="fc"
+                id="stkCat"
+                style="width: 160px"
+                onchange="filterStk()"
+              >
+                <option value="">সব ক্যাটাগরি</option>
+              </select>
+            </div>
+            <div class="card" style="margin-bottom: 16px">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  flex-wrap: wrap;
+                  font-size: 13px;
+                "
+              >
+                <div
+                  style="
+                    background: var(--g50);
+                    color: var(--g800);
+                    padding: 6px 12px;
+                    border-radius: 6px;
+                    font-weight: 600;
+                  "
+                >
+                  প্রারম্ভিক
+                </div>
+                <span style="font-size: 18px; color: var(--tm)">+</span>
+                <div
+                  style="
+                    background: var(--t50);
+                    color: var(--t600);
+                    padding: 6px 12px;
+                    border-radius: 6px;
+                    font-weight: 600;
+                  "
+                >
+                  উৎপাদন
+                </div>
+                <span style="font-size: 18px; color: var(--tm)">−</span>
+                <div
+                  style="
+                    background: var(--c50);
+                    color: var(--c600);
+                    padding: 6px 12px;
+                    border-radius: 6px;
+                    font-weight: 600;
+                  "
+                >
+                  বিক্রয়
+                </div>
+                <span style="font-size: 18px; color: var(--tm)">−</span>
+                <div
+                  style="
+                    background: var(--a50);
+                    color: var(--a400);
+                    padding: 6px 12px;
+                    border-radius: 6px;
+                    font-weight: 600;
+                  "
+                >
+                  ক্ষতি
+                </div>
+                <span style="font-size: 18px; color: var(--tm)">=</span>
+                <div
+                  style="
+                    background: var(--g400);
+                    color: #fff;
+                    padding: 6px 14px;
+                    border-radius: 6px;
+                    font-weight: 700;
+                  "
+                >
+                  পাওয়া স্টক
+                </div>
+              </div>
+            </div>
+            <div class="card" style="padding: 0">
+              <div class="tw">
+                <table id="stkTbl">
+                  <thead>
+                    <tr>
+                      <th>চারা</th>
+                      <th>মোট ইন</th>
+                      <th>বিক্রয়</th>
+                      <th>ক্ষতি/নষ্ট</th>
+                      <th>বর্তমান স্টক</th>
+                      <th>মূল্য (৳)</th>
+                      <th>অবস্থা</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sTblB">
+                    <tr>
+                      <td colspan="7" class="lt">লোড হচ্ছে...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- DAMAGE -->
+          <div class="pg" id="pg-dmg">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+              "
+            >
+              <div style="font-size: 13px; color: var(--tm)">
+                ক্ষতিগ্রস্ত ও নষ্ট চারার রেকর্ড
+              </div>
+              <button class="btn btnp" onclick="oM('mDmg')">
+                <i class="ti ti-plus"></i> ক্ষতি রিপোর্ট
+              </button>
+            </div>
+            <!-- Summary Cards -->
+            <div
+              id="dmgStats"
+              style="
+                display: grid;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 14px;
+                margin-bottom: 20px;
+              "
+            >
+              <div class="sc">
+                <div class="si" style="background: var(--r50)">
+                  <i
+                    class="ti ti-plant-off"
+                    style="color: var(--r400); font-size: 18px"
+                  ></i>
+                </div>
+                <div class="sl">সর্বমোট ক্ষতি</div>
+                <div class="sv" id="dmgTotal">০</div>
+                <div class="ss2">টি চারা/কলম</div>
+              </div>
+              <div class="sc">
+                <div class="si" style="background: var(--g50)">
+                  <i
+                    class="ti ti-plant"
+                    style="color: var(--g600); font-size: 18px"
+                  ></i>
+                </div>
+                <div class="sl">মোট উৎপাদন</div>
+                <div class="sv" id="dmgProd">০</div>
+                <div class="ss2">টি চারা/কলম</div>
+              </div>
+              <div class="sc">
+                <div class="si" style="background: var(--a50)">
+                  <i
+                    class="ti ti-percentage"
+                    style="color: var(--a400); font-size: 18px"
+                  ></i>
+                </div>
+                <div class="sl">ক্ষতির হার</div>
+                <div class="sv" id="dmgRate">০%</div>
+                <div class="ss2">উৎপাদনের তুলনায়</div>
+              </div>
+            </div>
+            <div class="card" style="padding: 0">
+              <div class="tw">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>তারিখ</th>
+                      <th>চারা</th>
+                      <th>ব্যাচ</th>
+                      <th>পরিমাণ</th>
+                      <th>কারণ</th>
+                      <th>মন্তব্য</th>
+                      <th>রিপোর্টকারী</th>
+                      <th>কার্যক্রম</th>
+                    </tr>
+                  </thead>
+                  <tbody id="dTbl">
+                    <tr>
+                      <td colspan="8" class="lt">লোড হচ্ছে...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- SALES -->
+          <div class="pg" id="pg-sale">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 8px;
+              "
+            >
+              <div id="salSum" style="font-size: 13px; color: var(--tm)">
+                লোড হচ্ছে...
+              </div>
+              <div style="display: flex; gap: 8px">
+                <input
+                  class="fc"
+                  type="date"
+                  style="width: 160px"
+                  id="salDate"
+                  onchange="lSale()"
+                /><button class="btn btns" onclick="printPage()">
+                  <i class="ti ti-printer"></i></button
+                ><button class="btn btns" onclick="exportCSV('sale')">
+                  <i class="ti ti-download"></i></button
+                ><button class="btn btns btnp" onclick="oM('mSale')">
+                  <i class="ti ti-plus"></i> নতুন বিক্রয়
+                </button>
+              </div>
+            </div>
+            <div class="sg" style="grid-template-columns: repeat(4, 1fr)">
+              <div class="sc">
+                <div class="sl">আজকের বিক্রয়</div>
+                <div class="sv" id="s1">৳০</div>
+              </div>
+              <div class="sc">
+                <div class="sl">এই মাসে</div>
+                <div class="sv" id="s2">৳০</div>
+              </div>
+              <div class="sc">
+                <div class="sl">মোট চালান</div>
+                <div class="sv" id="s3">০</div>
+              </div>
+              <div class="sc">
+                <div class="sl">বকেয়া</div>
+                <div class="sv" id="s4">৳০</div>
+              </div>
+            </div>
+            <div class="card" style="padding: 0">
+              <div class="tw">
+                <table id="salTbl">
+                  <thead>
+                    <tr>
+                      <th>চালান #</th>
+                      <th>গ্রাহক</th>
+                      <th>তারিখ</th>
+                      <th>মোট (৳)</th>
+                      <th>পরিশোধ</th>
+                      <th>অবস্থা</th>
+                      <th>কার্যক্রম</th>
+                    </tr>
+                  </thead>
+                  <tbody id="salB">
+                    <tr>
+                      <td colspan="7" class="lt">লোড হচ্ছে...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- CUSTOMERS -->
+          <div class="pg" id="pg-cust">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 8px;
+              "
+            >
+              <input
+                class="fc"
+                style="width: 240px"
+                placeholder="🔍 গ্রাহক খুঁজুন..."
+                id="cSearch"
+                oninput="lCust()"
+              />
+              <button class="btn btnp" onclick="oM('mCust')">
+                <i class="ti ti-plus"></i> নতুন গ্রাহক
+              </button>
+            </div>
+            <div class="card" style="padding: 0">
+              <div class="tw">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>নাম</th>
+                      <th>ফোন</th>
+                      <th>ঠিকানা</th>
+                      <th>মোট অর্ডার</th>
+                      <th>মোট ব্যয়</th>
+                      <th>কার্যক্রম</th>
+                    </tr>
+                  </thead>
+                  <tbody id="cTbl">
+                    <tr>
+                      <td colspan="6" class="lt">লোড হচ্ছে...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- OTHER INCOME -->
+          <div class="pg" id="pg-income">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+                flex-wrap: wrap;
+                gap: 8px;
+              "
+            >
+              <div style="font-size: 13px; color: var(--tm)">
+                কৃষি পণ্য বিক্রয়, ডরমিটরি ভাড়া ও অন্যান্য আয়
+              </div>
+              <button
+                class="btn btnp"
+                onclick="
+                  oM('mIncome');
+                  document.getElementById('incDate').valueAsDate = new Date();
+                "
+              >
+                <i class="ti ti-plus"></i> আয় যোগ করুন
+              </button>
+            </div>
+            <div class="sg" style="margin-bottom: 20px">
+              <div class="sc">
+                <div class="si" style="background: var(--g50)">
+                  <i
+                    class="ti ti-leaf"
+                    style="color: var(--g600); font-size: 18px"
+                  ></i>
+                </div>
+                <div class="sl">কৃষি পণ্য</div>
+                <div class="sv" id="incAgri">৳০</div>
+                <div class="ss2">সর্বমোট</div>
+              </div>
+              <div class="sc">
+                <div class="si" style="background: var(--b50)">
+                  <i
+                    class="ti ti-building"
+                    style="color: var(--b600); font-size: 18px"
+                  ></i>
+                </div>
+                <div class="sl">ডরমিটরি ভাড়া</div>
+                <div class="sv" id="incDorm">৳০</div>
+                <div class="ss2">সর্বমোট</div>
+              </div>
+              <div class="sc">
+                <div class="si" style="background: var(--a50)">
+                  <i
+                    class="ti ti-cash"
+                    style="color: var(--a400); font-size: 18px"
+                  ></i>
+                </div>
+                <div class="sl">অন্যান্য</div>
+                <div class="sv" id="incOther">৳০</div>
+                <div class="ss2">সর্বমোট</div>
+              </div>
+              <div class="sc">
+                <div class="si" style="background: var(--t50)">
+                  <i
+                    class="ti ti-coin"
+                    style="color: var(--t600); font-size: 18px"
+                  ></i>
+                </div>
+                <div class="sl">মোট অন্যান্য আয়</div>
+                <div class="sv" id="incTotal">৳০</div>
+                <div class="ss2">সর্বমোট</div>
+              </div>
+            </div>
+            <div class="card" style="padding: 0">
+              <div class="tw">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>তারিখ</th>
+                      <th>ধরন</th>
+                      <th>বিভাগ</th>
+                      <th>পরিমাণ</th>
+                      <th>বিবরণ</th>
+                      <th>কার্যক্রম</th>
+                    </tr>
+                  </thead>
+                  <tbody id="incTbl">
+                    <tr>
+                      <td colspan="6" class="lt">লোড হচ্ছে...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- REPORTS -->
+          <div class="pg" id="pg-rep">
+            <div style="font-size: 13px; color: var(--tm); margin-bottom: 20px">
+              রিপোর্ট তৈরি করুন ও এক্সপোর্ট করুন
+            </div>
+
+            <!-- Target vs Achievement -->
+            <div class="card" style="margin-bottom: 20px" id="targetSection">
+              <div class="cdt">
+                🎯 লক্ষ্যমাত্রা বনাম অর্জন
+                <span
+                  style="
+                    float: right;
+                    display: flex;
+                    gap: 8px;
+                    align-items: center;
+                  "
+                >
+                  <select
+                    class="fc"
+                    id="targetFY"
+                    style="width: 130px; padding: 4px 8px; font-size: 12px"
+                    onchange="lTargetAchievement()"
+                  ></select>
+                  <button
+                    class="btn btns btnp"
+                    id="addTargetBtn"
+                    style="display: none"
+                    onclick="openTargetModal()"
+                  >
+                    <i class="ti ti-plus"></i> লক্ষ্যমাত্রা যোগ
+                  </button>
+                </span>
+              </div>
+              <div id="targetResults"><div class="lt">লোড হচ্ছে...</div></div>
+            </div>
+
+            <!-- Target Add/Edit Modal -->
+            <div class="mo" id="mTarget">
+              <div class="md" style="max-width: 480px">
+                <div class="mh">
+                  <h3 id="mTargetTitle">লক্ষ্যমাত্রা যোগ করুন</h3>
+                  <button class="mx" onclick="cM('mTarget')">
+                    <i class="ti ti-x"></i>
+                  </button>
+                </div>
+                <input type="hidden" id="tgEditId" />
+                <div class="fr">
+                  <div class="fg">
+                    <label>ধরন *</label>
+                    <select class="fc" id="tgType">
+                      <option value="production">উৎপাদন</option>
+                      <option value="sales">বিক্রয়</option>
+                    </select>
+                  </div>
+                  <div class="fg">
+                    <label>সময়কাল *</label>
+                    <select
+                      class="fc"
+                      id="tgPeriod"
+                      onchange="toggleTargetPeriod()"
+                    >
+                      <option value="annual">🎯 অর্থবছর মোট</option>
+                      <option value="monthly">📅 নির্দিষ্ট মাস</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="fr">
+                  <div class="fg">
+                    <label>অর্থবছর *</label>
+                    <select class="fc" id="tgFY"></select>
+                  </div>
+                  <div class="fg" id="tgMonthBox" style="display: none">
+                    <label>মাস *</label>
+                    <select class="fc" id="tgMonth">
+                      <option value="7">জুলাই</option>
+                      <option value="8">আগস্ট</option>
+                      <option value="9">সেপ্টেম্বর</option>
+                      <option value="10">অক্টোবর</option>
+                      <option value="11">নভেম্বর</option>
+                      <option value="12">ডিসেম্বর</option>
+                      <option value="1">জানুয়ারি</option>
+                      <option value="2">ফেব্রুয়ারি</option>
+                      <option value="3">মার্চ</option>
+                      <option value="4">এপ্রিল</option>
+                      <option value="5">মে</option>
+                      <option value="6">জুন</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="fr">
+                  <div class="fg">
+                    <label>পরিমাণ (টি)</label
+                    ><input
+                      class="fc"
+                      type="number"
+                      id="tgQty"
+                      placeholder="০"
+                    />
+                  </div>
+                  <div class="fg">
+                    <label>আয় লক্ষ্যমাত্রা (৳)</label
+                    ><input
+                      class="fc"
+                      type="number"
+                      id="tgAmt"
+                      placeholder="০"
+                    />
+                  </div>
+                </div>
+                <div class="fg">
+                  <label>মন্তব্য</label
+                  ><input class="fc" id="tgNotes" placeholder="ঐচ্ছিক" />
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    gap: 8px;
+                    justify-content: flex-end;
+                    margin-top: 8px;
+                  "
+                >
+                  <button class="btn" onclick="cM('mTarget')">বাতিল</button>
+                  <button class="btn btnp" onclick="saveTarget()">
+                    <i class="ti ti-check"></i> সংরক্ষণ
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Monthly Excel Report -->
+            <div class="card" style="margin-bottom: 20px">
+              <div class="cdt">📅 মাসিক রিপোর্ট — Excel ডাউনলোড</div>
+              <div
+                style="
+                  display: flex;
+                  gap: 10px;
+                  align-items: center;
+                  flex-wrap: wrap;
+                "
+              >
+                <select class="fc" style="width: 120px" id="repYear">
+                  <option>2026</option>
+                  <option>2025</option>
+                  <option>2024</option>
+                </select>
+                <button class="btn btnp" onclick="downloadMonthlyExcel()">
+                  <i class="ti ti-file-type-xls"></i> মাসিক বিক্রয় Excel
+                </button>
+                <button class="btn" onclick="downloadProductionExcel()">
+                  <i class="ti ti-file-type-xls"></i> মাসিক উৎপাদন Excel
+                </button>
+                <button class="btn" onclick="exportCSV('sale')">
+                  <i class="ti ti-download"></i> সব বিক্রয় CSV
+                </button>
+                <button class="btn" onclick="exportCSV('stock')">
+                  <i class="ti ti-download"></i> স্টক CSV
+                </button>
+              </div>
+            </div>
+
+            <!-- Best Selling Seedlings -->
+            <div class="card" style="margin-bottom: 20px">
+              <div class="cdt">
+                🏆 সর্বাধিক বিক্রিত চারা <span>Top 10</span>
+              </div>
+              <div id="bestSellingList"><div class="lt">লোড হচ্ছে...</div></div>
+            </div>
+
+            <div class="rg">
+              <div class="rc" onclick="oM('mRep1')">
+                <div style="font-size: 28px; margin-bottom: 8px">📊</div>
+                <div
+                  style="font-weight: 600; font-size: 14px; margin-bottom: 4px"
+                >
+                  দৈনিক উৎপাদন রিপোর্ট
+                </div>
+                <div
+                  style="font-size: 12px; color: var(--tm); margin-bottom: 12px"
+                >
+                  চারা ও পদ্ধতি অনুযায়ী
+                </div>
+                <div style="display: flex; gap: 6px">
+                  <button
+                    class="btn btns"
+                    onclick="
+                      event.stopPropagation();
+                      printRep('prod');
+                    "
+                  >
+                    <i class="ti ti-printer"></i></button
+                  ><button
+                    class="btn btns"
+                    onclick="
+                      event.stopPropagation();
+                      exportCSV('prod');
+                    "
+                  >
+                    <i class="ti ti-download"></i> CSV
+                  </button>
+                </div>
+              </div>
+              <div class="rc">
+                <div style="font-size: 28px; margin-bottom: 8px">💰</div>
+                <div
+                  style="font-weight: 600; font-size: 14px; margin-bottom: 4px"
+                >
+                  বিক্রয় রিপোর্ট
+                </div>
+                <div
+                  style="font-size: 12px; color: var(--tm); margin-bottom: 12px"
+                >
+                  আয় ও গ্রাহক বিশ্লেষণ
+                </div>
+                <div style="display: flex; gap: 6px">
+                  <button class="btn btns" onclick="printRep('sale')">
+                    <i class="ti ti-printer"></i></button
+                  ><button class="btn btns" onclick="exportCSV('sale')">
+                    <i class="ti ti-download"></i> CSV
+                  </button>
+                </div>
+              </div>
+              <div class="rc">
+                <div style="font-size: 28px; margin-bottom: 8px">📦</div>
+                <div
+                  style="font-weight: 600; font-size: 14px; margin-bottom: 4px"
+                >
+                  স্টক রিপোর্ট
+                </div>
+                <div
+                  style="font-size: 12px; color: var(--tm); margin-bottom: 12px"
+                >
+                  বর্তমান মজুদ ও মূল্যায়ন
+                </div>
+                <div style="display: flex; gap: 6px">
+                  <button class="btn btns" onclick="printRep('stock')">
+                    <i class="ti ti-printer"></i></button
+                  ><button class="btn btns" onclick="exportCSV('stock')">
+                    <i class="ti ti-download"></i> CSV
+                  </button>
+                </div>
+              </div>
+              <div class="rc">
+                <div style="font-size: 28px; margin-bottom: 8px">🌿</div>
+                <div
+                  style="font-weight: 600; font-size: 14px; margin-bottom: 4px"
+                >
+                  সাফল্যের হার রিপোর্ট
+                </div>
+                <div
+                  style="font-size: 12px; color: var(--tm); margin-bottom: 12px"
+                >
+                  পদ্ধতি ও ব্যাচ অনুযায়ী
+                </div>
+                <div style="display: flex; gap: 6px">
+                  <button class="btn btns" onclick="printRep('success')">
+                    <i class="ti ti-printer"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="rc">
+                <div style="font-size: 28px; margin-bottom: 8px">⚠️</div>
+                <div
+                  style="font-weight: 600; font-size: 14px; margin-bottom: 4px"
+                >
+                  ক্ষতি / নষ্ট রিপোর্ট
+                </div>
+                <div
+                  style="font-size: 12px; color: var(--tm); margin-bottom: 12px"
+                >
+                  ধরন ও কারণ অনুযায়ী
+                </div>
+                <div style="display: flex; gap: 6px">
+                  <button class="btn btns" onclick="printRep('dmg')">
+                    <i class="ti ti-printer"></i></button
+                  ><button class="btn btns" onclick="exportCSV('dmg')">
+                    <i class="ti ti-download"></i> CSV
+                  </button>
+                </div>
+              </div>
+              <div class="rc">
+                <div style="font-size: 28px; margin-bottom: 8px">📈</div>
+                <div
+                  style="font-weight: 600; font-size: 14px; margin-bottom: 4px"
+                >
+                  লাভ / ক্ষতি রিপোর্ট
+                </div>
+                <div
+                  style="font-size: 12px; color: var(--tm); margin-bottom: 12px"
+                >
+                  আয় বনাম উৎপাদন খরচ
+                </div>
+                <div style="display: flex; gap: 6px">
+                  <button class="btn btns" onclick="oM('mPL')">
+                    <i class="ti ti-eye"></i> দেখুন
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- USERS -->
+          <div class="pg" id="pg-usr">
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 16px;
+              "
+            >
+              <div style="font-size: 13px; color: var(--tm)">
+                ব্যবহারকারী ও ভূমিকা
+              </div>
+              <div style="display: flex; gap: 8px">
+                <button class="btn btns" onclick="oM('mPwdReq')">
+                  <i class="ti ti-key"></i> পাসওয়ার্ড পরিবর্তন</button
+                ><button class="btn btns btnp" onclick="oM('mUsr')">
+                  <i class="ti ti-user-plus"></i> নতুন ব্যবহারকারী
+                </button>
+              </div>
+            </div>
+            <div class="card" style="margin-bottom: 16px" id="permMatrix">
+              <div class="cdt">অনুমতি ম্যাট্রিক্স</div>
+              <div class="tw">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ভূমিকা</th>
+                      <th style="text-align: center">তৈরি</th>
+                      <th style="text-align: center">সম্পাদনা</th>
+                      <th style="text-align: center">মুছুন</th>
+                      <th style="text-align: center">দেখুন</th>
+                      <th style="text-align: center">এক্সপোর্ট</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Admin</strong></td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Manager</strong></td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                      <td style="text-align: center; color: var(--c400)">✗</td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Production Officer</strong></td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                      <td style="text-align: center; color: var(--c400)">✗</td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                      <td style="text-align: center; color: var(--c400)">✗</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Sales Operator</strong></td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                      <td style="text-align: center; color: var(--c400)">✗</td>
+                      <td style="text-align: center; color: var(--c400)">✗</td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Viewer</strong></td>
+                      <td style="text-align: center; color: var(--c400)">✗</td>
+                      <td style="text-align: center; color: var(--c400)">✗</td>
+                      <td style="text-align: center; color: var(--c400)">✗</td>
+                      <td style="text-align: center; color: var(--g600)">✓</td>
+                      <td style="text-align: center; color: var(--c400)">✗</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card" style="padding: 0">
+              <div class="tw">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ব্যবহারকারী</th>
+                      <th>ইমেইল</th>
+                      <th>ভূমিকা</th>
+                      <th>অবস্থা</th>
+                      <th>কার্যক্রম</th>
+                    </tr>
+                  </thead>
+                  <tbody id="uTbl">
+                    <tr>
+                      <td colspan="5" class="lt">লোড হচ্ছে...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- end ct -->
+      </main>
+    </div>
+    <!-- end app -->
+
+    <!-- MODALS -->
+    <!-- SEEDLING MODAL -->
+    <div class="mo" id="mSeed">
+      <div class="md">
+        <div class="mh">
+          <h3 id="mSeedT">নতুন চারা</h3>
+          <button class="mx" onclick="cM('mSeed')">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <input type="hidden" id="sId" />
+        <div class="fr">
+          <div class="fg">
+            <label>নাম (বাংলা)*</label
+            ><input class="fc" id="sNB" placeholder="যেমন: আম" />
+          </div>
+          <div class="fg">
+            <label>English Name</label
+            ><input class="fc" id="sNE" placeholder="Mango" />
+          </div>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label>জাত</label
+            ><input class="fc" id="sV" placeholder="আম্রপালি" />
+          </div>
+          <div class="fg">
+            <label>ক্যাটাগরি*</label
+            ><select class="fc" id="sCat">
+              <option value="">লোড হচ্ছে...</option>
+            </select>
+          </div>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label>বিক্রয় মূল্য (৳)*</label
+            ><input class="fc" type="number" id="sP" placeholder="0" />
+          </div>
+          <div class="fg">
+            <label>উৎপাদন খরচ (৳)</label
+            ><input class="fc" type="number" id="sC" placeholder="0" />
+          </div>
+        </div>
+        <div class="fg">
+          <label>বিবরণ</label
+          ><textarea
+            class="fc"
+            id="sD"
+            rows="2"
+            placeholder="সংক্ষিপ্ত বিবরণ..."
+          ></textarea>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <button class="btn" onclick="cM('mSeed')">বাতিল</button
+          ><button class="btn btnp" onclick="saveSeed()">
+            <i class="ti ti-check"></i> সংরক্ষণ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTION MODAL -->
+    <div class="mo" id="mProd">
+      <div class="md">
+        <div class="mh">
+          <h3>নতুন উৎপাদন ব্যাচ</h3>
+          <button class="mx" onclick="cM('mProd')">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label>চারা*</label
+            ><select class="fc" id="pSd"></select>
+          </div>
+          <div class="fg">
+            <label>পদ্ধতি*</label
+            ><select class="fc" id="pMt" onchange="togP()">
+              <option value="seed">বীজ</option>
+              <option value="cutting">কাটিং</option>
+              <option value="layering">লেয়ারিং</option>
+              <option value="grafting">গ্রাফটিং / জোড়কলম</option>
+              <option value="budding">বাডিং</option>
+              <option value="tissue_culture">টিস্যু কালচার</option>
+              <option value="purchase">🛒 ক্রয়</option>
+            </select>
+          </div>
+        </div>
+        <div id="pSF">
+          <div class="fr">
+            <div class="fg">
+              <label>বীজ উৎস</label
+              ><input class="fc" id="pSrc" placeholder="BFRI" />
+            </div>
+            <div class="fg">
+              <label>বীজ পরিমাণ</label
+              ><input class="fc" type="number" id="pSQ" />
+            </div>
+          </div>
+          <div class="fr">
+            <div class="fg">
+              <label>বপন তারিখ*</label><input class="fc" type="date" id="pSw" />
+            </div>
+            <div class="fg">
+              <label>উৎপাদিত*</label><input class="fc" type="number" id="pPQ" />
+            </div>
+          </div>
+        </div>
+        <div id="pAF" style="display: none">
+          <div class="fr">
+            <div class="fg">
+              <label>মাদার প্ল্যান্ট</label
+              ><select class="fc" id="pMP"></select>
+            </div>
+            <div class="fg">
+              <label>তারিখ*</label><input class="fc" type="date" id="pPD" />
+            </div>
+          </div>
+          <div class="fr">
+            <div class="fg">
+              <label>মোট পরিমাণ*</label
+              ><input class="fc" type="number" id="pAQ" />
+            </div>
+            <div class="fg">
+              <label>সফল পরিমাণ*</label
+              ><input class="fc" type="number" id="pSu" />
+            </div>
+          </div>
+        </div>
+        <!-- ক্রয় form -->
+        <div id="pPF" style="display: none">
+          <div class="fr">
+            <div class="fg">
+              <label>বিক্রেতা / উৎস*</label
+              ><input
+                class="fc"
+                id="pPSrc"
+                placeholder="নার্সারির নাম বা বাজার"
+              />
+            </div>
+            <div class="fg">
+              <label>ক্রয় তারিখ*</label
+              ><input class="fc" type="date" id="pPDt" />
+            </div>
+          </div>
+          <div class="fr">
+            <div class="fg">
+              <label>পরিমাণ*</label
+              ><input class="fc" type="number" id="pPQty" placeholder="০" />
+            </div>
+            <div class="fg">
+              <label>একক ক্রয় মূল্য (৳)</label
+              ><input class="fc" type="number" id="pPPrice" placeholder="০" />
+            </div>
+          </div>
+        </div>
+        <div class="fg">
+          <label>মন্তব্য</label
+          ><input class="fc" id="pRm" placeholder="ঐচ্ছিক" />
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <button class="btn" onclick="cM('mProd')">বাতিল</button
+          ><button class="btn btnp" onclick="saveProd()">
+            <i class="ti ti-check"></i> ব্যাচ তৈরি
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SALE MODAL -->
+    <div class="mo" id="mSale">
+      <div class="md">
+        <div class="mh">
+          <h3>নতুন বিক্রয় / চালান</h3>
+          <button class="mx" onclick="cM('mSale')">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <div
+          style="
+            background: var(--g50);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            font-size: 12px;
+            color: var(--g800);
+          "
+        >
+          চালান # স্বয়ংক্রিয় হবে &nbsp;|&nbsp; তারিখ:
+          <strong id="saleDate"></strong>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label>গ্রাহক নাম*</label
+            ><input class="fc" id="slC" placeholder="পূর্ণ নাম" />
+          </div>
+          <div class="fg">
+            <label>ফোন</label
+            ><input class="fc" id="slPh" placeholder="01X-XXXXXXXX" />
+          </div>
+        </div>
+        <div class="fg">
+          <label>ঠিকানা</label
+          ><input class="fc" id="slAd" placeholder="গ্রাহকের ঠিকানা" />
+        </div>
+        <div
+          style="
+            border: 1px solid var(--bd);
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 14px;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 10px;
+            "
+          >
+            <div style="font-size: 12px; font-weight: 600">আইটেম সমূহ</div>
+            <button class="btn btns btnp" type="button" onclick="addSaleItem()">
+              <i class="ti ti-plus"></i> আইটেম যোগ
+            </button>
+          </div>
+          <div id="saleItemsList"></div>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label>ছাড় (৳)</label
+            ><input class="fc" type="number" id="slDi" value="0" />
+          </div>
+          <div class="fg">
+            <label>পরিশোধ পদ্ধতি</label
+            ><select class="fc" id="slPm">
+              <option value="cash">নগদ</option>
+              <option value="bkash">বিকাশ</option>
+              <option value="bank">ব্যাংক</option>
+              <option value="cheque">চেক</option>
+            </select>
+          </div>
+        </div>
+        <div
+          style="
+            background: var(--gr50);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 14px;
+            font-size: 13px;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 4px;
+            "
+          >
+            <span>মোট</span><span id="slTotal">৳ ০</span>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 4px;
+              color: var(--c400);
+            "
+          >
+            <span>ছাড়</span><span id="slTotalD">− ৳ ০</span>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              font-weight: 700;
+              font-size: 15px;
+              border-top: 1px solid var(--bd);
+              padding-top: 8px;
+            "
+          >
+            <span>নিট মোট</span
+            ><span style="color: var(--g600)" id="slNet">৳ ০</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <button class="btn" onclick="cM('mSale')">বাতিল</button
+          ><button class="btn btnp" onclick="saveSale()">
+            <i class="ti ti-check"></i> বিক্রয় সম্পন্ন
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAMAGE MODAL -->
+    <div class="mo" id="mDmg">
+      <div class="md">
+        <div class="mh">
+          <h3 id="mDmgT">ক্ষতি / নষ্ট রিপোর্ট</h3>
+          <button
+            class="mx"
+            onclick="
+              cM('mDmg');
+              document.getElementById('dDmgId').value = '';
+            "
+          >
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <input type="hidden" id="dDmgId" />
+        <div class="fr">
+          <div class="fg">
+            <label>তারিখ*</label><input class="fc" type="date" id="dDt" />
+          </div>
+          <div class="fg">
+            <label>চারা*</label
+            ><select class="fc" id="dSd"></select>
+          </div>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label>ব্যাচ</label
+            ><select class="fc" id="dBt">
+              <option value="">-- নির্বাচন করুন</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>পরিমাণ*</label
+            ><input class="fc" type="number" id="dQt" placeholder="0" />
+          </div>
+        </div>
+        <div class="fg">
+          <label>কারণ*</label
+          ><select class="fc" id="dRs">
+            <option value="disease">রোগ</option>
+            <option value="drought">খরা</option>
+            <option value="flood">বন্যা</option>
+            <option value="pest">পোকামাকড়</option>
+            <option value="cold">ঠান্ডা</option>
+            <option value="other">অন্যান্য</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>বিস্তারিত মন্তব্য</label
+          ><textarea
+            class="fc"
+            id="dRm"
+            rows="2"
+            placeholder="বিস্তারিত লিখুন..."
+          ></textarea>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <button
+            class="btn"
+            onclick="
+              cM('mDmg');
+              document.getElementById('dDmgId').value = '';
+            "
+          >
+            বাতিল</button
+          ><button class="btn btnp" onclick="saveDmg()">
+            <i class="ti ti-check"></i> সংরক্ষণ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INCOME MODAL -->
+    <div class="mo" id="mIncome">
+      <div class="md">
+        <div class="mh">
+          <h3 id="incModalTitle">অন্যান্য আয় যোগ</h3>
+          <button
+            class="mx"
+            onclick="
+              cM('mIncome');
+              document.getElementById('incId').value = '';
+              document.getElementById('incModalTitle').textContent =
+                'অন্যান্য আয় যোগ';
+            "
+          >
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <input type="hidden" id="incId" />
+        <div class="fr">
+          <div class="fg">
+            <label>তারিখ*</label><input class="fc" type="date" id="incDate" />
+          </div>
+          <div class="fg">
+            <label>আয়ের ধরন*</label
+            ><select class="fc" id="incType">
+              <option value="agriculture">🌿 কৃষি পণ্য বিক্রয়</option>
+              <option value="dormitory">🏠 ডরমিটরি ভাড়া</option>
+              <option value="other">💰 অন্যান্য আয়</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg">
+          <label>বিভাগ / বিবরণ</label
+          ><input
+            class="fc"
+            id="incCat"
+            placeholder="যেমন: সবজি বিক্রয়, কক্ষ নং ৩, ইত্যাদি"
+          />
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label>পরিমাণ (৳)*</label
+            ><input class="fc" type="number" id="incAmt" placeholder="০" />
+          </div>
+          <div class="fg">
+            <label>বিস্তারিত</label
+            ><input class="fc" id="incDesc" placeholder="ঐচ্ছিক" />
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <button
+            class="btn"
+            onclick="
+              cM('mIncome');
+              document.getElementById('incId').value = '';
+            "
+          >
+            বাতিল</button
+          ><button class="btn btnp" onclick="saveIncome()">
+            <i class="ti ti-check"></i> সংরক্ষণ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- INCOME VIEW MODAL -->
+    <div class="mo" id="mIncView">
+      <div class="md" style="max-width: 420px">
+        <div class="mh">
+          <h3>আয়ের বিবরণ</h3>
+          <button class="mx" onclick="cM('mIncView')">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <div id="incViewContent"></div>
+      </div>
+    </div>
+
+    <!-- MOTHER PLANT MODAL -->
+    <div class="mo" id="mMoth">
+      <div class="md">
+        <div class="mh">
+          <h3>মাদার প্ল্যান্ট যোগ</h3>
+          <button class="mx" onclick="cM('mMoth')">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label>জাত*</label
+            ><input class="fc" id="mV" placeholder="আম আম্রপালি" />
+          </div>
+          <div class="fg">
+            <label>চারা</label
+            ><select class="fc" id="mSd"></select>
+          </div>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label>বয়স (বছর)</label><input class="fc" type="number" id="mAg" />
+          </div>
+          <div class="fg">
+            <label>অবস্থান*</label
+            ><input class="fc" id="mLo" placeholder="ব্লক-এ সারি ৩" />
+          </div>
+        </div>
+        <div class="fg">
+          <label>স্বাস্থ্য অবস্থা</label
+          ><select class="fc" id="mH">
+            <option value="excellent">চমৎকার</option>
+            <option value="good">ভালো</option>
+            <option value="weak">দুর্বল</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>মন্তব্য</label
+          ><input class="fc" id="mNt" placeholder="ঐচ্ছিক" />
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <button class="btn" onclick="cM('mMoth')">বাতিল</button
+          ><button class="btn btnp" onclick="saveMoth()">
+            <i class="ti ti-check"></i> সংরক্ষণ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOMER MODAL -->
+    <div class="mo" id="mCust">
+      <div class="md">
+        <div class="mh">
+          <h3 id="mCustT">নতুন গ্রাহক</h3>
+          <button class="mx" onclick="cM('mCust')">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <input type="hidden" id="cId" />
+        <div class="fr">
+          <div class="fg">
+            <label>নাম*</label
+            ><input class="fc" id="cNm" placeholder="পূর্ণ নাম" />
+          </div>
+          <div class="fg">
+            <label>ফোন</label
+            ><input class="fc" id="cPh" placeholder="01X-XXXXXXXX" />
+          </div>
+        </div>
+        <div class="fg">
+          <label>ঠিকানা</label
+          ><input class="fc" id="cAd" placeholder="ঠিকানা" />
+        </div>
+        <div class="fg">
+          <label>ইমেইল</label
+          ><input
+            class="fc"
+            id="cEm"
+            type="email"
+            placeholder="email@example.com"
+          />
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <button class="btn" onclick="cM('mCust')">বাতিল</button
+          ><button class="btn btnp" onclick="saveCust()">
+            <i class="ti ti-check"></i> সংরক্ষণ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- USER MODAL -->
+    <div class="mo" id="mUsr">
+      <div class="md">
+        <div class="mh">
+          <h3 id="mUsrT">নতুন ব্যবহারকারী</h3>
+          <button class="mx" onclick="cM('mUsr')">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <input type="hidden" id="uId" />
+        <div class="fr">
+          <div class="fg">
+            <label>নাম*</label
+            ><input class="fc" id="uNm" placeholder="পূর্ণ নাম" />
+          </div>
+          <div class="fg">
+            <label>ইমেইল*</label
+            ><input
+              class="fc"
+              id="uEm"
+              type="email"
+              placeholder="user@horticulture.bd"
+            />
+          </div>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label>ভূমিকা*</label
+            ><select class="fc" id="uRl">
+              <option value="production_officer">Production Officer</option>
+              <option value="sales_operator">Sales Operator</option>
+              <option value="viewer">Viewer</option>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>পাসওয়ার্ড</label>
+            <div class="pw-wrap">
+              <input
+                class="fc"
+                id="uPw"
+                type="password"
+                placeholder="নতুন পাসওয়ার্ড (পরিবর্তনের জন্য)"
+              /><button
+                class="pw-eye"
+                onclick="togglePwd('uPw', this)"
+                type="button"
+              >
+                <i class="ti ti-eye"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <button class="btn" onclick="cM('mUsr')">বাতিল</button
+          ><button class="btn btnp" onclick="saveUsr()">
+            <i class="ti ti-user-plus"></i> সংরক্ষণ
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- P&L MODAL -->
+    <div class="mo" id="mPL">
+      <div class="md">
+        <div class="mh">
+          <h3>লাভ / ক্ষতি রিপোর্ট</h3>
+          <button class="mx" onclick="cM('mPL')">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <div class="fr">
+          <div class="fg">
+            <label>শুরুর তারিখ</label><input class="fc" type="date" id="plFr" />
+          </div>
+          <div class="fg">
+            <label>শেষ তারিখ</label><input class="fc" type="date" id="plTo" />
+          </div>
+        </div>
+        <button class="btn btnp" style="margin-bottom: 16px" onclick="loadPL()">
+          <i class="ti ti-calculator"></i> হিসাব করুন
+        </button>
+        <div
+          id="plRes"
+          style="
+            background: var(--gr50);
+            border-radius: 8px;
+            padding: 16px;
+            display: none;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 8px;
+              font-size: 13px;
+            "
+          >
+            <span>মোট আয়</span
+            ><strong id="plRev" style="color: var(--g600)">৳০</strong>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 8px;
+              font-size: 13px;
+            "
+          >
+            <span>মোট উৎপাদন খরচ</span
+            ><strong id="plCost" style="color: var(--c400)">৳০</strong>
+          </div>
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              border-top: 1px solid var(--bd);
+              padding-top: 10px;
+              margin-top: 4px;
+              font-size: 15px;
+              font-weight: 700;
+            "
+          >
+            <span>নিট লাভ</span><strong id="plNet">৳০</strong>
+          </div>
+          <div
+            style="
+              text-align: center;
+              margin-top: 8px;
+              font-size: 12px;
+              color: var(--tm);
+            "
+          >
+            মার্জিন: <strong id="plMg">০%</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVOICE VIEW MODAL -->
+    <div class="mo" id="mInv">
+      <div class="md" style="max-width: 680px">
+        <div class="mh">
+          <h3>চালান / Invoice</h3>
+          <button class="mx" onclick="cM('mInv')">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <div
+          id="invBody"
+          style="
+            border: 1px solid var(--bd);
+            border-radius: 8px;
+            padding: 20px;
+            background: #fff;
+          "
+        ></div>
+        <div
+          style="
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 16px;
+          "
+        >
+          <button class="btn btns btnp" onclick="downloadInvoicePDF()">
+            <i class="ti ti-download"></i> PDF ডাউনলোড</button
+          ><button class="btn btns" onclick="printInv()">
+            <i class="ti ti-printer"></i> প্রিন্ট</button
+          ><button class="btn btns" onclick="cM('mInv')">বন্ধ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE MODAL -->
+    <div class="mo" id="mProfile">
+      <div class="md" style="max-width: 480px">
+        <div class="mh">
+          <h3 id="mProfileTitle">আমার প্রোফাইল</h3>
+          <button class="mx" onclick="cM('mProfile')">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+
+        <!-- Admin view — সরাসরি update -->
+        <div id="profileAdmin">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 14px;
+              margin-bottom: 20px;
+              padding: 14px;
+              background: var(--g50);
+              border-radius: 10px;
+            "
+          >
+            <div
+              style="
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background: var(--g600);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+                color: #fff;
+                font-weight: 700;
+              "
+              id="profAvatar"
+            >
+              MA
+            </div>
+            <div>
+              <div style="font-weight: 600; font-size: 15px" id="profName">
+                Admin
+              </div>
+              <div style="font-size: 12px; color: var(--tm)" id="profRole">
+                admin
+              </div>
+            </div>
+          </div>
+          <div class="fr">
+            <div class="fg">
+              <label>নাম</label
+              ><input class="fc" id="prName" placeholder="আপনার নাম" />
+            </div>
+            <div class="fg">
+              <label>ইমেইল</label
+              ><input
+                class="fc"
+                id="prEmail"
+                type="email"
+                placeholder="নতুন ইমেইল"
+              />
+            </div>
+          </div>
+          <div
+            style="
+              border: 1px solid var(--bd);
+              border-radius: 8px;
+              padding: 14px;
+              margin-bottom: 14px;
+            "
+          >
+            <div
+              style="
+                font-size: 12px;
+                font-weight: 600;
+                margin-bottom: 10px;
+                color: var(--tm);
+              "
+            >
+              পাসওয়ার্ড পরিবর্তন
+            </div>
+            <div class="fg">
+              <label>বর্তমান পাসওয়ার্ড *</label>
+              <div class="pw-wrap">
+                <input
+                  class="fc"
+                  type="password"
+                  id="prCurPwd"
+                  placeholder="বর্তমান পাসওয়ার্ড"
+                /><button
+                  class="pw-eye"
+                  onclick="togglePwd('prCurPwd', this)"
+                  type="button"
+                >
+                  <i class="ti ti-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="fr">
+              <div class="fg">
+                <label>নতুন পাসওয়ার্ড</label>
+                <div class="pw-wrap">
+                  <input
+                    class="fc"
+                    type="password"
+                    id="prNewPwd"
+                    placeholder="নতুন পাসওয়ার্ড (ঐচ্ছিক)"
+                  /><button
+                    class="pw-eye"
+                    onclick="togglePwd('prNewPwd', this)"
+                    type="button"
+                  >
+                    <i class="ti ti-eye"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="fg">
+                <label>নিশ্চিত করুন</label>
+                <div class="pw-wrap">
+                  <input
+                    class="fc"
+                    type="password"
+                    id="prConPwd"
+                    placeholder="আবার লিখুন"
+                  /><button
+                    class="pw-eye"
+                    onclick="togglePwd('prConPwd', this)"
+                    type="button"
+                  >
+                    <i class="ti ti-eye"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            style="
+              background: var(--a50);
+              border-radius: 8px;
+              padding: 10px 14px;
+              margin-bottom: 14px;
+              font-size: 12px;
+              color: var(--a400);
+            "
+          >
+            <i class="ti ti-info-circle"></i> পরিবর্তন করলে পুনরায় Login করতে
+            হবে।
+          </div>
+          <div style="display: flex; gap: 8px; justify-content: flex-end">
+            <button class="btn" onclick="cM('mProfile')">বাতিল</button>
+            <button class="btn btnp" onclick="updateProfile()">
+              <i class="ti ti-check"></i> আপডেট করুন
+            </button>
+          </div>
+        </div>
+
+        <!-- Regular user view — Request পাঠান -->
+        <div id="profileUser" style="display: none">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 14px;
+              margin-bottom: 20px;
+              padding: 14px;
+              background: var(--g50);
+              border-radius: 10px;
+            "
+          >
+            <div
+              style="
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background: var(--g600);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+                color: #fff;
+                font-weight: 700;
+              "
+              id="profAvatarU"
+            >
+              SK
+            </div>
+            <div>
+              <div style="font-weight: 600; font-size: 15px" id="profNameU">
+                User
+              </div>
+              <div style="font-size: 12px; color: var(--tm)" id="profRoleU">
+                Sales Operator
+              </div>
+            </div>
+          </div>
+          <div
+            style="
+              background: var(--b50);
+              border-radius: 8px;
+              padding: 12px 14px;
+              margin-bottom: 16px;
+              font-size: 13px;
+              color: var(--b600);
+            "
+          >
+            <i class="ti ti-shield-lock"></i> পাসওয়ার্ড পরিবর্তনে Admin-এর
+            অনুমোদন প্রয়োজন।
+          </div>
+          <div class="fg">
+            <label>নতুন পাসওয়ার্ড *</label
+            ><input
+              class="fc"
+              type="password"
+              id="pwdNew"
+              placeholder="কমপক্ষে ৬ অক্ষর"
+            />
+          </div>
+          <div class="fg">
+            <label>নিশ্চিত করুন *</label
+            ><input
+              class="fc"
+              type="password"
+              id="pwdCon"
+              placeholder="আবার লিখুন"
+            />
+          </div>
+          <div
+            id="reqStatus"
+            style="
+              display: none;
+              padding: 10px;
+              border-radius: 8px;
+              margin-bottom: 14px;
+              font-size: 12px;
+            "
+          ></div>
+          <div style="display: flex; gap: 8px; justify-content: flex-end">
+            <button class="btn" onclick="cM('mProfile')">বাতিল</button>
+            <button class="btn btnp" onclick="reqPwdChange()">
+              <i class="ti ti-send"></i> অনুরোধ পাঠান
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- পাসওয়ার্ড পরিবর্তন অনুরোধ Modal (🔑 বাটনের জন্য) -->
+    <!-- CUSTOM CONFIRM MODAL -->
+    <div class="mo" id="mConfirm">
+      <div class="md" style="max-width: 400px; text-align: center">
+        <div style="padding: 20px 10px">
+          <div
+            id="confirmMsg"
+            style="font-size: 14px; line-height: 1.8; color: var(--tp)"
+          ></div>
+        </div>
+        <div
+          style="
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            padding-bottom: 16px;
+          "
+        >
+          <button class="btn" onclick="confirmNo()" style="min-width: 100px">
+            বাতিল
+          </button>
+          <button
+            class="btn btnr"
+            onclick="confirmYes()"
+            style="min-width: 100px"
+          >
+            <i class="ti ti-check"></i> হ্যাঁ, মুছুন
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RECYCLE BIN PAGE -->
+    <div class="pg" id="pg-bin">
+      <div id="recycleBinList"><div class="lt">লোড হচ্ছে...</div></div>
+    </div>
+
+    <div class="mo" id="mPwdReq">
+      <div class="md" style="max-width: 420px">
+        <div class="mh">
+          <h3>পাসওয়ার্ড পরিবর্তনের অনুরোধ</h3>
+          <button class="mx" onclick="cM('mPwdReq')">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <div
+          style="
+            background: var(--b50);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            color: var(--b600);
+          "
+        >
+          <i class="ti ti-info-circle"></i> আপনার নতুন পাসওয়ার্ড Admin অনুমোদন
+          করলে কার্যকর হবে।
+        </div>
+        <div class="fg">
+          <label>বর্তমান পাসওয়ার্ড*</label
+          ><input
+            class="fc"
+            type="password"
+            id="pwdCur"
+            placeholder="বর্তমান পাসওয়ার্ড"
+          />
+        </div>
+        <div class="fg">
+          <label>নতুন পাসওয়ার্ড*</label
+          ><input
+            class="fc"
+            type="password"
+            id="pwdNew"
+            placeholder="কমপক্ষে ৬ অক্ষর"
+          />
+        </div>
+        <div class="fg">
+          <label>নতুন পাসওয়ার্ড নিশ্চিত করুন*</label
+          ><input
+            class="fc"
+            type="password"
+            id="pwdCon"
+            placeholder="আবার লিখুন"
+          />
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <button class="btn" onclick="cM('mPwdReq')">বাতিল</button
+          ><button class="btn btnp" onclick="reqPwdChange()">
+            <i class="ti ti-send"></i> অনুরোধ পাঠান
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="mo" id="mDel">
+      <div class="md" style="max-width: 400px">
+        <div class="mh">
+          <h3>নিশ্চিত করুন</h3>
+          <button class="mx" onclick="cM('mDel')">
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <p style="font-size: 13px; margin-bottom: 20px" id="delMsg">
+          এটি মুছে ফেলতে চান?
+        </p>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <button class="btn" onclick="cM('mDel')">বাতিল</button
+          ><button class="btn btnr" id="delBtn">মুছুন</button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      style="
+        text-align: center;
+        padding: 16px 20px;
+        font-size: 12px;
+        color: var(--tm);
+        border-top: 1px solid var(--bd);
+        margin-top: 20px;
+        background: var(--bg);
+      "
+    >
+      © ২০২৬ | <strong>Mahfuj Ahmed Sarker</strong> | ৩৮তম BCS | Horticulturist
+      | Horticulture Center, Asambasti, Rangamati
+    </div>
+    <script src="app.js"></script>
+  </body>
 </html>
