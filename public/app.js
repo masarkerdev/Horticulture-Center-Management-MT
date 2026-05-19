@@ -23,7 +23,7 @@ function genFYOptions() {
 // Page load-এ FY dropdown generate করুন
 genFYOptions();
 
-const API = "";
+const API = "/api";
 let TK = sessionStorage.getItem("hc_tk") || "";
 let ME = JSON.parse(sessionStorage.getItem("hc_me") || "{}");
 let sPage = 1,
