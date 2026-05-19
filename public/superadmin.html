@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Super Admin — Horticulture Management</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh}
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-box{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:40px;width:100%;max-width:400px}
+.login-box h1{font-size:22px;color:#f1f5f9;margin-bottom:4px}
+.login-box p{color:#64748b;font-size:13px;margin-bottom:28px}
+.badge{display:inline-block;background:#7c3aed;color:#fff;font-size:11px;padding:3px 10px;border-radius:20px;margin-bottom:16px}
+label{display:block;font-size:12px;color:#94a3b8;margin-bottom:6px}
+input{width:100%;padding:10px 14px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;font-size:14px;margin-bottom:16px;outline:none}
+input:focus{border-color:#7c3aed}
+.btn{width:100%;padding:12px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600}
+.btn:hover{background:#6d28d9}
+.err{color:#f87171;font-size:13px;margin-top:8px;text-align:center}
+
+/* App */
+.app{display:none;min-height:100vh}
+.topbar{background:#1e293b;border-bottom:1px solid #334155;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between}
+.topbar h1{font-size:16px;color:#f1f5f9;display:flex;align-items:center;gap:8px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.sa-name{font-size:13px;color:#94a3b8}
+.logout-btn{background:#334155;color:#e2e8f0;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px}
+.logout-btn:hover{background:#475569}
+.content{max-width:1100px;margin:0 auto;padding:28px 20px}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.page-header h2{font-size:20px;color:#f1f5f9}
+.add-btn{background:#7c3aed;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:6px}
+.add-btn:hover{background:#6d28d9}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px}
+.stat{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px}
+.stat-label{font-size:12px;color:#64748b;margin-bottom:6px}
+.stat-value{font-size:28px;font-weight:700;color:#f1f5f9}
+.stat-value.green{color:#4ade80}
+.stat-value.red{color:#f87171}
+
+/* Cards */
+.centers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+.center-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;transition:.2s}
+.center-card:hover{border-color:#7c3aed}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.center-name{font-size:16px;font-weight:600;color:#f1f5f9;margin-bottom:4px}
+.center-en{font-size:13px;color:#94a3b8}
+.status-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600}
+.status-active{background:#064e3b;color:#4ade80}
+.status-inactive{background:#450a0a;color:#f87171}
+.center-info{font-size:13px;color:#64748b;margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.card-actions{display:flex;gap:8px}
+.action-btn{flex:1;padding:8px;border:1px solid #334155;background:transparent;color:#94a3b8;border-radius:6px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;gap:4px;transition:.2s}
+.action-btn:hover{border-color:#7c3aed;color:#c4b5fd}
+.action-btn.danger:hover{border-color:#f87171;color:#f87171}
+.action-btn.toggle-on{border-color:#16a34a;color:#4ade80}
+.action-btn.toggle-off{border-color:#dc2626;color:#f87171}
+
+/* Modal */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal.open{display:flex}
+.modal-box{background:#1e293b;border:1px solid #334155;border-radius:16px;padding:28px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.modal-header h3{font-size:16px;color:#f1f5f9}
+.close-btn{background:none;border:none;color:#64748b;cursor:pointer;font-size:18px}
+.close-btn:hover{color:#f1f5f9}
+.form-group{margin-bottom:14px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+.btn-cancel{padding:10px 20px;background:#334155;color:#e2e8f0;border:none;border-radius:8px;cursor:pointer}
+.btn-save{padding:10px 20px;background:#7c3aed;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600}
+.toast-sa{position:fixed;bottom:20px;right:20px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;padding:12px 20px;border-radius:10px;font-size:14px;z-index:200;display:none}
+.toast-sa.show{display:block}
+.empty{text-align:center;padding:60px 20px;color:#64748b}
+.empty i{font-size:48px;margin-bottom:16px;display:block}
+.db-url-hint{font-size:11px;color:#64748b;margin-top:4px}
+textarea{width:100%;padding:10px 14px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;font-size:12px;margin-bottom:0;outline:none;resize:vertical;min-height:70px;font-family:monospace}
+textarea:focus{border-color:#7c3aed}
+select{width:100%;padding:10px 14px;background:#0f172a;border:1px solid #334155;border-radius:8px;color:#f1f5f9;font-size:14px;margin-bottom:0;outline:none}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="badge">🛡 Super Admin</div>
+    <h1>Horticulture Management</h1>
+    <p>সব center পরিচালনা করুন</p>
+    <label>ইমেইল</label>
+    <input type="email" id="saEmail" placeholder="superadmin@horticulture.bd"/>
+    <label>পাসওয়ার্ড</label>
+    <input type="password" id="saPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')saLogin()"/>
+    <button class="btn" onclick="saLogin()">লগইন করুন</button>
+    <div class="err" id="saErr"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="saApp">
+  <div class="topbar">
+    <h1><i class="ti ti-shield-check" style="color:#7c3aed"></i> Super Admin Panel</h1>
+    <div class="topbar-right">
+      <span class="sa-name" id="saName"></span>
+      <button class="logout-btn" onclick="saLogout()"><i class="ti ti-logout"></i> লগআউট</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-label">মোট Center</div>
+        <div class="stat-value" id="statTotal">-</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">সক্রিয়</div>
+        <div class="stat-value green" id="statActive">-</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">বন্ধ</div>
+        <div class="stat-value red" id="statInactive">-</div>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="page-header">
+      <h2>🌿 সব Horticulture Center</h2>
+      <button class="add-btn" onclick="openAddModal()">
+        <i class="ti ti-plus"></i> নতুন Center যোগ
+      </button>
+    </div>
+
+    <!-- Centers Grid -->
+    <div class="centers-grid" id="centersGrid">
+      <div class="empty"><i class="ti ti-loader"></i>লোড হচ্ছে...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal" id="centerModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modalTitle">নতুন Center যোগ করুন</h3>
+      <button class="close-btn" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <input type="hidden" id="editId"/>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Slug (URL name)*</label>
+        <input id="fSlug" placeholder="dhaka (ছোট হাতে, space নেই)"/>
+      </div>
+      <div class="form-group">
+        <label>মুদ্রা</label>
+        <select id="fCurrency">
+          <option value="BDT">BDT (৳)</option>
+          <option value="USD">USD ($)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>নাম (বাংলা)*</label>
+      <input id="fNameBn" placeholder="উদ্যানতত্ত্ববিদের কার্যালয়"/>
+    </div>
+    <div class="form-group">
+      <label>Name (English)*</label>
+      <input id="fNameEn" placeholder="Horticulture Center, Dhaka"/>
+    </div>
+    <div class="form-group">
+      <label>অবস্থান</label>
+      <input id="fLocation" placeholder="ঢাকা"/>
+    </div>
+    <div class="form-group">
+      <label>Database URL (Supabase Pooler)*</label>
+      <textarea id="fDbUrl" placeholder="postgresql://postgres.xxxx:PASSWORD@aws-x-xx.pooler.supabase.com:6543/postgres?pgbouncer=true"></textarea>
+      <div class="db-url-hint">⚠ Supabase → Settings → Database → Connection Pooling → Transaction mode URL</div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModal()">বাতিল</button>
+      <button class="btn-save" onclick="saveCenter()"><i class="ti ti-check"></i> সংরক্ষণ</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-sa" id="toastSa"></div>
+
+<script>
+const API = '/api/superadmin';
+let token = localStorage.getItem('sa_token');
+let centers = [];
+
+// AUTO LOGIN CHECK
+if (token) showApp();
+
+async function saLogin() {
+  const email = document.getElementById('saEmail').value.trim();
+  const pass  = document.getElementById('saPass').value;
+  document.getElementById('saErr').textContent = '';
+  try {
+    const res  = await fetch(API + '/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({email, password: pass})
+    });
+    const data = await res.json();
+    if (!data.success) return document.getElementById('saErr').textContent = data.message;
+    token = data.token;
+    localStorage.setItem('sa_token', token);
+    localStorage.setItem('sa_name', data.name);
+    showApp();
+  } catch(e) {
+    document.getElementById('saErr').textContent = 'সংযোগ ব্যর্থ হয়েছে।';
+  }
+}
+
+function showApp() {
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('saApp').style.display = 'block';
+  document.getElementById('saName').textContent = localStorage.getItem('sa_name') || 'Admin';
+  loadCenters();
+}
+
+function saLogout() {
+  localStorage.removeItem('sa_token');
+  localStorage.removeItem('sa_name');
+  location.reload();
+}
+
+async function loadCenters() {
+  try {
+    const res  = await fetch(API + '/tenants', {headers:{'Authorization':'Bearer '+token}});
+    const data = await res.json();
+    if (!data.success) return;
+    centers = data.data;
+    renderCenters();
+  } catch(e) {}
+}
+
+function renderCenters() {
+  const active   = centers.filter(c=>c.active).length;
+  const inactive = centers.length - active;
+  document.getElementById('statTotal').textContent    = centers.length;
+  document.getElementById('statActive').textContent   = active;
+  document.getElementById('statInactive').textContent = inactive;
+
+  const grid = document.getElementById('centersGrid');
+  if (!centers.length) {
+    grid.innerHTML = '<div class="empty"><i class="ti ti-building-off"></i>কোনো center নেই।</div>';
+    return;
+  }
+  grid.innerHTML = centers.map(c => `
+    <div class="center-card">
+      <div class="card-header">
+        <div>
+          <div class="center-name">${c.name_bn}</div>
+          <div class="center-en">${c.name_en}</div>
+        </div>
+        <span class="status-badge ${c.active?'status-active':'status-inactive'}">
+          ${c.active?'✓ সক্রিয়':'✗ বন্ধ'}
+        </span>
+      </div>
+      <div class="center-info"><i class="ti ti-map-pin"></i>${c.location||'—'}</div>
+      <div class="center-info" style="font-family:monospace;font-size:11px;word-break:break-all;color:#475569">
+        <i class="ti ti-link"></i> /${c.slug}
+      </div>
+      <div class="card-actions">
+        <button class="action-btn" onclick="openEditModal(${c.id})">
+          <i class="ti ti-edit"></i> সম্পাদনা
+        </button>
+        <button class="action-btn ${c.active?'toggle-off':'toggle-on'}" onclick="toggleCenter(${c.id})">
+          <i class="ti ti-power"></i> ${c.active?'বন্ধ করুন':'চালু করুন'}
+        </button>
+        <button class="action-btn danger" onclick="deleteCenter(${c.id}, '${c.name_en}')">
+          <i class="ti ti-trash"></i>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openAddModal() {
+  document.getElementById('editId').value = '';
+  document.getElementById('modalTitle').textContent = 'নতুন Center যোগ করুন';
+  document.getElementById('fSlug').value      = '';
+  document.getElementById('fNameBn').value    = '';
+  document.getElementById('fNameEn').value    = '';
+  document.getElementById('fLocation').value  = '';
+  document.getElementById('fDbUrl').value     = '';
+  document.getElementById('fCurrency').value  = 'BDT';
+  document.getElementById('fSlug').disabled   = false;
+  document.getElementById('centerModal').classList.add('open');
+}
+
+function openEditModal(id) {
+  const c = centers.find(x=>x.id===id);
+  if (!c) return;
+  document.getElementById('editId').value     = c.id;
+  document.getElementById('modalTitle').textContent = 'Center সম্পাদনা';
+  document.getElementById('fSlug').value      = c.slug;
+  document.getElementById('fSlug').disabled   = true;
+  document.getElementById('fNameBn').value    = c.name_bn;
+  document.getElementById('fNameEn').value    = c.name_en;
+  document.getElementById('fLocation').value  = c.location||'';
+  document.getElementById('fDbUrl').value     = '';
+  document.getElementById('fCurrency').value  = c.currency||'BDT';
+  document.getElementById('centerModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('centerModal').classList.remove('open');
+}
+
+async function saveCenter() {
+  const id       = document.getElementById('editId').value;
+  const slug     = document.getElementById('fSlug').value.trim().toLowerCase();
+  const name_bn  = document.getElementById('fNameBn').value.trim();
+  const name_en  = document.getElementById('fNameEn').value.trim();
+  const location = document.getElementById('fLocation').value.trim();
+  const db_url   = document.getElementById('fDbUrl').value.trim();
+  const currency = document.getElementById('fCurrency').value;
+
+  if (!name_bn || !name_en) return showToast('নাম দিন।');
+  if (!id && (!slug || !db_url)) return showToast('Slug ও Database URL দিন।');
+
+  try {
+    let res;
+    if (id) {
+      const body = {name_bn, name_en, location, currency, active: true};
+      if (db_url) body.db_url = db_url;
+      else {
+        const cur = centers.find(c=>c.id==id);
+        body.db_url = cur?.db_url || '';
+      }
+      res = await fetch(`${API}/tenants/${id}`, {
+        method: 'PUT',
+        headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body: JSON.stringify(body)
+      });
+    } else {
+      res = await fetch(`${API}/tenants`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+        body: JSON.stringify({slug, name_bn, name_en, location, db_url, currency})
+      });
+    }
+    const data = await res.json();
+    if (!data.success) return showToast(data.message || data.error);
+    showToast(data.message);
+    closeModal();
+    loadCenters();
+  } catch(e) {
+    showToast('সমস্যা হয়েছে।');
+  }
+}
+
+async function toggleCenter(id) {
+  try {
+    const res  = await fetch(`${API}/tenants/${id}/toggle`, {
+      method: 'POST',
+      headers: {'Authorization':'Bearer '+token}
+    });
+    const data = await res.json();
+    showToast(data.message);
+    loadCenters();
+  } catch(e) {}
+}
+
+async function deleteCenter(id, name) {
+  if (!confirm(`"${name}" মুছে ফেলবেন?`)) return;
+  try {
+    const res  = await fetch(`${API}/tenants/${id}`, {
+      method: 'DELETE',
+      headers: {'Authorization':'Bearer '+token}
+    });
+    const data = await res.json();
+    showToast(data.message);
+    loadCenters();
+  } catch(e) {}
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toastSa');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
