@@ -1361,1107 +1361,831 @@
     <div class="toast" id="toast"></div>
 
     <script>
-      const API = "/api/superadmin";
-      let token = localStorage.getItem("sa_token");
-      let centers = [];
-      let allStats = [];
-      let currentDetailSlug = "";
-      let currentDetailData = null;
-      let currentDTab = "dSales";
+                  const API = "/api/superadmin";
+                  let token = localStorage.getItem("sa_token");
+                  let centers = [];
+                  let allStats = [];
+                  let currentDetailSlug = "";
+                  let currentDetailData = null;
+                  let currentDTab = "dSales";
 
-      const COLORS = [
-        "#7c3aed",
-        "#0ea5e9",
-        "#10b981",
-        "#f59e0b",
-        "#ef4444",
-        "#8b5cf6",
-        "#06b6d4",
-        "#ec4899",
-      ];
+                  const COLORS = [
+                    "#7c3aed",
+                    "#0ea5e9",
+                    "#10b981",
+                    "#f59e0b",
+                    "#ef4444",
+                    "#8b5cf6",
+                    "#06b6d4",
+                    "#ec4899",
+                  ];
 
-      if (token) showApp();
+                  if (token) showApp();
 
-      // ════ AUTH ════
-      async function saLogin() {
-        const email = document.getElementById("saEmail").value.trim();
-        const pass = document.getElementById("saPass").value;
-        document.getElementById("saErr").textContent = "";
-        try {
-          const r = await fetch(API + "/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password: pass }),
-          });
-          const d = await r.json();
-          if (!d.success)
-            return (document.getElementById("saErr").textContent = d.message);
-          token = d.token;
-          localStorage.setItem("sa_token", token);
-          localStorage.setItem("sa_name", d.name);
-          showApp();
-        } catch {
-          document.getElementById("saErr").textContent = "সংযোগ ব্যর্থ হয়েছে।";
-        }
-      }
-      function showApp() {
-        document.getElementById("loginWrap").style.display = "none";
-        document.getElementById("saApp").style.display = "block";
-        document.getElementById("saName").textContent =
-          localStorage.getItem("sa_name") || "Admin";
-        loadCenters();
-        loadAllStats();
-      }
-      function saLogout() {
-        localStorage.clear();
-        location.reload();
-      }
+                  // ════ AUTH ════
+                  async function saLogin() {
+                    const email = document.getElementById("saEmail").value.trim();
+                    const pass = document.getElementById("saPass").value;
+                    document.getElementById("saErr").textContent = "";
+                    try {
+                      const r = await fetch(API + "/login", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email, password: pass }),
+                      });
+                      const d = await r.json();
+                      if (!d.success)
+                        return (document.getElementById("saErr").textContent = d.message);
+                      token = d.token;
+                      localStorage.setItem("sa_token", token);
+                      localStorage.setItem("sa_name", d.name);
+                      showApp();
+                    } catch {
+                      document.getElementById("saErr").textContent = "সংযোগ ব্যর্থ হয়েছে।";
+                    }
+                  }
+                  function showApp() {
+                    document.getElementById("loginWrap").style.display = "none";
+                    document.getElementById("saApp").style.display = "block";
 
-      // ════ TABS ════
-      function switchTab(tab, btn) {
-        document
-          .querySelectorAll(".tab")
-          .forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        ["overview", "centers", "compare"].forEach(
-          (t) =>
-            (document.getElementById("tab-" + t).style.display =
-              t === tab ? "block" : "none"),
-        );
-      }
+                    // Token থেকে role ও assigned centers বের করো
+                    const payload = JSON.parse(atob(token.split(".")[1]));
+                    const role = payload.role || "director";
+                    const assigned = payload.assignedCenters || [];
 
-      // ════ DATA LOADING ════
-      async function loadCenters() {
-        try {
-          const r = await fetch(API + "/tenants", {
-            headers: { Authorization: "Bearer " + token },
-          });
-          const d = await r.json();
-          if (d.success) {
-            centers = d.data;
-            renderCentersList();
-          }
-        } catch {}
-      }
+                    localStorage.setItem("sa_name", payload.name);
+                    localStorage.setItem("sa_role", role);
+                    localStorage.setItem("sa_assigned", JSON.stringify(assigned));
 
-      async function loadAllStats() {
-        try {
-          const r = await fetch(API + "/stats-all", {
-            headers: { Authorization: "Bearer " + token },
-          });
-          const d = await r.json();
-          if (d.success) {
-            allStats = d.data;
-            renderCombinedKPI();
-            renderOverviewGrid();
-            renderCompare();
-          }
-        } catch {}
-      }
+                    document.getElementById("saName").textContent = payload.name;
 
-      // ════ COMBINED KPI ════
-      function renderCombinedKPI() {
-        const ok = allStats.filter((c) => c.status === "ok");
-        const totalRev = ok.reduce((s, c) => s + c.total_revenue, 0);
-        const todayRev = ok.reduce((s, c) => s + c.today_revenue, 0);
-        const totalProd = ok.reduce((s, c) => s + c.total_produced, 0);
-        const totalStock = ok.reduce((s, c) => s + c.total_stock, 0);
-        const stockVal = ok.reduce((s, c) => s + c.stock_value, 0);
-        const invoices = ok.reduce((s, c) => s + c.total_invoices, 0);
-        document.getElementById("combinedKPI").innerHTML = `
-    <div class="kpi green"><div class="kpi-label"><i class="ti ti-coin"></i> মোট বিক্রয়</div>
-      <div class="kpi-value">৳${fmt(totalRev)}</div><div class="kpi-sub">${invoices} টি চালান</div></div>
-    <div class="kpi blue"><div class="kpi-label"><i class="ti ti-calendar"></i> আজকের বিক্রয়</div>
-      <div class="kpi-value">৳${fmt(todayRev)}</div><div class="kpi-sub">সব center মিলে</div></div>
-    <div class="kpi purple"><div class="kpi-label"><i class="ti ti-plant"></i> মোট উৎপাদন</div>
-      <div class="kpi-value">${fmtN(totalProd)}</div><div class="kpi-sub">চারা / কলম</div></div>
-    <div class="kpi amber"><div class="kpi-label"><i class="ti ti-stack-2"></i> মোট স্টক</div>
-      <div class="kpi-value">${fmtN(totalStock)}</div><div class="kpi-sub">মূল্য ৳${fmt(stockVal)}</div></div>
-    <div class="kpi teal"><div class="kpi-label"><i class="ti ti-building"></i> সক্রিয় Center</div>
-      <div class="kpi-value">${ok.length}</div><div class="kpi-sub">মোট ${allStats.length} টি</div></div>`;
-      }
+                    // Role badge দেখাও
+                    const roleLabels = {
+                      director: "🌿 পরিচালক",
+                      deputy_director: "📋 উপপরিচালক",
+                      horticulturist: "🌱 উদ্যানতত্ত্ববিদ",
+                      nursery_supervisor: "🪴 নার্সারী তত্ত্বাবধায়ক",
+                    };
+                    document.getElementById("saName").textContent =
+                      payload.name + " — " + (roleLabels[role] || role);
 
-      // ════ OVERVIEW GRID ════
-      function renderOverviewGrid() {
-        const g = document.getElementById("overviewGrid");
-        if (!allStats.length) {
-          g.innerHTML =
-            '<div class="empty"><i class="ti ti-building-off"></i>Data নেই।</div>';
-          return;
-        }
-        g.innerHTML = allStats
-          .map((c) => {
-            if (c.status === "error")
-              return `<div class="c-card" style="border-color:var(--red)">
-      <div class="c-card-top"><div><div class="c-name">${c.name_en}</div></div>
-      <span class="badge err">⚠ Error</span></div>
-      <div style="font-size:12px;color:var(--red)">${c.error}</div></div>`;
-            return `<div class="c-card" onclick="viewDetail('${c.slug}')">
-      <div class="c-card-top"><div><div class="c-name">${c.name_bn}</div><div class="c-en">${c.name_en}</div></div>
-      <span class="badge on">✓ সক্রিয়</span></div>
-      <div class="c-loc"><i class="ti ti-map-pin"></i>${c.location || "—"}</div>
-      <div class="mini-kpi">
-        <div class="mk"><div class="mk-v" style="color:var(--green)">৳${fmtK(c.total_revenue)}</div><div class="mk-l">বিক্রয়</div></div>
-        <div class="mk"><div class="mk-v" style="color:var(--purple)">${fmtK(c.total_produced)}</div><div class="mk-l">উৎপাদন</div></div>
-        <div class="mk"><div class="mk-v" style="color:var(--amber)">${fmtK(c.total_stock)}</div><div class="mk-l">স্টক</div></div>
-      </div>
-      <div class="c-today"><i class="ti ti-sun"></i>আজ: ৳${fmt(c.today_revenue)} বিক্রয়</div>
-      <div class="c-actions">
-        <button class="act-btn" onclick="event.stopPropagation();viewDetail('${c.slug}')"><i class="ti ti-eye"></i> বিস্তারিত</button>
-        <button class="act-btn" onclick="event.stopPropagation();openEditModal(${centers.find((x) => x.slug === "${c.slug}")?.id || 0})"><i class="ti ti-edit"></i> সম্পাদনা</button>
-      </div></div>`;
-          })
-          .join("");
-      }
+                    loadCenters();
+                    loadAllStats();
+                  }
+                  function saLogout() {
+                    localStorage.clear();
+                    location.reload();
+                  }
 
-      // ════ CENTER LIST ════
-      function renderCentersList() {
-        const g = document.getElementById("centersGrid");
-        if (!centers.length) {
-          g.innerHTML =
-            '<div class="empty"><i class="ti ti-building-off"></i>কোনো center নেই।</div>';
-          return;
-        }
-        g.innerHTML = centers
-          .map(
-            (c) => `
-    <div class="c-card">
-      <div class="c-card-top"><div><div class="c-name">${c.name_bn}</div><div class="c-en">${c.name_en}</div></div>
-      <span class="badge ${c.active ? "on" : "off"}">${c.active ? "✓ সক্রিয়" : "✗ বন্ধ"}</span></div>
-      <div class="c-loc"><i class="ti ti-map-pin"></i>${c.location || "—"}</div>
-      <div style="font-family:monospace;font-size:11px;color:var(--sub);margin-bottom:14px">/${c.slug}</div>
-      <div class="c-actions">
-        <button class="act-btn" onclick="viewDetail('${c.slug}')"><i class="ti ti-eye"></i> দেখুন</button>
-        <button class="act-btn" onclick="openEditModal(${c.id})"><i class="ti ti-edit"></i> সম্পাদনা</button>
-        <button class="act-btn ${c.active ? "" : "toggle-on"}" onclick="toggleCenter(${c.id})"
-          style="${c.active ? "border-color:#dc2626;color:var(--red)" : "border-color:#16a34a;color:var(--green)"}">
-          <i class="ti ti-power"></i>${c.active ? "বন্ধ" : "চালু"}
-        </button>
-        <button class="act-btn del" onclick="deleteCenter(${c.id},'${c.name_en}')"><i class="ti ti-trash"></i></button>
-      </div></div>`,
-          )
-          .join("");
-      }
+                  // ════ TABS ════
+                  function switchTab(tab, btn) {
+                    document
+                      .querySelectorAll(".tab")
+                      .forEach((b) => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    ["overview", "centers", "compare"].forEach(
+                      (t) =>
+                        (document.getElementById("tab-" + t).style.display =
+                          t === tab ? "block" : "none"),
+                    );
+                  }
 
-      // ════ VIEW DETAIL ════
-      async function viewDetail(slug) {
-        currentDetailSlug = slug;
-        document.getElementById("centersListWrap").style.display = "none";
-        document.getElementById("detailWrap").style.display = "block";
-        switchTab("centers", document.querySelectorAll(".tab")[1]);
-        document.getElementById("detailContent").innerHTML =
-          '<div class="loading-center"><div class="spinner"></div></div>';
-        document.getElementById("detailName").textContent = "লোড হচ্ছে...";
-        document.getElementById("detailSub").textContent = "";
-        await fetchDetailData(slug);
-      }
-      async function reloadDetail() {
-        await fetchDetailData(currentDetailSlug);
-      }
+                  // ════ DATA LOADING ════
+                  async function loadCenters() {
+                    try {
+                      const r = await fetch(API + "/tenants", {
+                        headers: { Authorization: "Bearer " + token },
+                      });
+                      const d = await r.json();
+                      if (d.success) {
+                        centers = d.data;
+                        renderCentersList();
+                      }
+                    } catch {}
+                  }
 
-      async function fetchDetailData(slug) {
-        try {
-          const r = await fetch(`${API}/center/${slug}`, {
-            headers: { Authorization: "Bearer " + token },
-          });
-          const d = await r.json();
-          if (!d.success) throw new Error(d.error);
-          currentDetailData = d;
-          document.getElementById("detailName").textContent = d.center.name_bn;
-          document.getElementById("detailSub").textContent =
-            d.center.name_en + " • " + (d.center.location || "");
-          renderDetailTab(currentDTab);
-        } catch (e) {
-          document.getElementById("detailContent").innerHTML =
-            `<div class="empty" style="color:var(--red)"><i class="ti ti-alert-circle"></i>Error: ${e.message}</div>`;
-        }
-      }
+                  async function loadAllStats() {
+                    try {
+                      const r = await fetch(API + "/stats-all", {
+                        headers: { Authorization: "Bearer " + token },
+                      });
+                      const d = await r.json();
+                      if (d.success) {
+                        allStats = d.data;
+                        renderCombinedKPI();
+                        renderOverviewGrid();
+                        renderCompare();
+                      }
+                    } catch {}
+                  }
 
-      function closeDetail() {
-        document.getElementById("detailWrap").style.display = "none";
-        document.getElementById("centersListWrap").style.display = "block";
-      }
+                  // ════ COMBINED KPI ════
+                  function renderCombinedKPI() {
+                    const ok = allStats.filter((c) => c.status === "ok");
+                    const totalRev = ok.reduce((s, c) => s + c.total_revenue, 0);
+                    const todayRev = ok.reduce((s, c) => s + c.today_revenue, 0);
+                    const totalProd = ok.reduce((s, c) => s + c.total_produced, 0);
+                    const totalStock = ok.reduce((s, c) => s + c.total_stock, 0);
+                    const stockVal = ok.reduce((s, c) => s + c.stock_value, 0);
+                    const invoices = ok.reduce((s, c) => s + c.total_invoices, 0);
+                    document.getElementById("combinedKPI").innerHTML = `
+                <div class="kpi green"><div class="kpi-label"><i class="ti ti-coin"></i> মোট বিক্রয়</div>
+                  <div class="kpi-value">৳${fmt(totalRev)}</div><div class="kpi-sub">${invoices} টি চালান</div></div>
+                <div class="kpi blue"><div class="kpi-label"><i class="ti ti-calendar"></i> আজকের বিক্রয়</div>
+                  <div class="kpi-value">৳${fmt(todayRev)}</div><div class="kpi-sub">সব center মিলে</div></div>
+                <div class="kpi purple"><div class="kpi-label"><i class="ti ti-plant"></i> মোট উৎপাদন</div>
+                  <div class="kpi-value">${fmtN(totalProd)}</div><div class="kpi-sub">চারা / কলম</div></div>
+                <div class="kpi amber"><div class="kpi-label"><i class="ti ti-stack-2"></i> মোট স্টক</div>
+                  <div class="kpi-value">${fmtN(totalStock)}</div><div class="kpi-sub">মূল্য ৳${fmt(stockVal)}</div></div>
+                <div class="kpi teal"><div class="kpi-label"><i class="ti ti-building"></i> সক্রিয় Center</div>
+                  <div class="kpi-value">${ok.length}</div><div class="kpi-sub">মোট ${allStats.length} টি</div></div>`;
+                  }
 
-      function showDTab(tab, btn) {
-        currentDTab = tab;
-        document
-          .querySelectorAll(".dtab")
-          .forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        if (currentDetailData) renderDetailTab(tab);
-      }
-
-      function renderDetailTab(tab) {
-        const d = currentDetailData;
-        if (!d) return;
-        const el = document.getElementById("detailContent");
-
-        if (tab === "dSales") {
-          const s = d.sales;
-          const maxRev = Math.max(
-            ...s.monthly.map((m) => parseFloat(m.revenue)),
-            1,
-          );
-          el.innerHTML = `
-      <!-- Sales KPI -->
-      <div class="kpi-grid" style="margin-bottom:16px">
-        <div class="kpi green"><div class="kpi-label"><i class="ti ti-coin"></i> মোট রাজস্ব</div>
-          <div class="kpi-value">৳${fmt(s.summary.total_revenue)}</div>
-          <div class="kpi-sub">${s.summary.total_invoices} টি চালান</div></div>
-        <div class="kpi blue"><div class="kpi-label"><i class="ti ti-sun"></i> আজকের বিক্রয়</div>
-          <div class="kpi-value">৳${fmt(s.today.today_revenue)}</div>
-          <div class="kpi-sub">${s.today.today_invoices} টি চালান আজ</div></div>
-        <div class="kpi amber"><div class="kpi-label"><i class="ti ti-check"></i> পরিশোধিত</div>
-          <div class="kpi-value">৳${fmt(s.summary.paid_amount)}</div>
-          <div class="kpi-sub">মোট ছাড়: ৳${fmt(s.summary.total_discount)}</div></div>
-        <div class="kpi red"><div class="kpi-label"><i class="ti ti-clock"></i> বকেয়া</div>
-          <div class="kpi-value">৳${fmt(s.summary.due_amount)}</div>
-          <div class="kpi-sub">অপরিশোধিত</div></div>
-      </div>
-      <!-- Monthly Chart -->
-      <div class="card">
-        <div class="card-head">📅 মাসিক বিক্রয় (গত ৬ মাস) <span>${s.monthly.length} মাসের data</span></div>
-        <div class="card-body">
-          ${
-            s.monthly.length
-              ? s.monthly
-                  .map(
-                    (m, i) => `
-            <div class="bar-row">
-              <div class="bar-label">${m.label}</div>
-              <div class="bar-track">
-                <div class="bar-fill" style="width:${((parseFloat(m.revenue) / maxRev) * 100).toFixed(0)}%;background:${COLORS[i % COLORS.length]}">
-                  ${m.invoices} চালান
-                </div>
-              </div>
-              <div class="bar-end">৳${fmtK(m.revenue)}</div>
-            </div>`,
-                  )
-                  .join("")
-              : '<div class="empty" style="padding:20px"><i class="ti ti-chart-off"></i>Data নেই</div>'
-          }
-        </div>
-      </div>
-      <!-- Top Products -->
-      <div class="card">
-        <div class="card-head">🏆 সর্বাধিক বিক্রিত চারা <span>Top 8</span></div>
-        <div class="tw">
-          <table><thead><tr><th>চারা</th><th>জাত</th><th>বিক্রিত</th><th>রাজস্ব</th><th>অর্ডার</th><th>স্টক</th></tr></thead>
-          <tbody>${
-            d.top_seedlings
-              .map(
-                (s) => `<tr>
-            <td>${s.name_bn}</td><td style="color:var(--muted)">${s.variety || "—"}</td>
-            <td style="color:var(--purple);font-weight:600">${fmtN(s.total_sold)}</td>
-            <td style="color:var(--green);font-weight:600">৳${fmt(s.revenue)}</td>
-            <td>${s.orders}</td>
-            <td style="color:${parseInt(s.current_stock) < 20 ? "var(--red)" : "var(--text)"}">${fmtN(s.current_stock)}</td>
-            </tr>`,
-              )
-              .join("") ||
-            '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">কোনো বিক্রয় নেই</td></tr>'
-          }
-          </tbody></table>
-        </div>
-      </div>
-      <!-- Recent Sales -->
-      <div class="card">
-        <div class="card-head">🧾 সাম্প্রতিক বিক্রয় <span>সর্বশেষ ৮টি</span></div>
-        <div class="tw">
-          <table><thead><tr><th>চালান #</th><th>গ্রাহক</th><th>ফোন</th><th>তারিখ</th><th>পরিমাণ</th><th>পদ্ধতি</th><th>অবস্থা</th><th>বিক্রেতা</th></tr></thead>
-          <tbody>${
-            s.recent
-              .map(
-                (r) => `<tr>
-            <td style="font-family:monospace">${r.invoice_no}</td>
-            <td>${r.customer_name || "—"}</td><td style="color:var(--muted)">${r.customer_phone || "—"}</td>
-            <td>${r.sale_date?.toString().slice(0, 10) || "—"}</td>
-            <td style="color:var(--green);font-weight:600">৳${fmt(r.total_amount)}</td>
-            <td>${r.payment_method || "—"}</td>
-            <td><span class="pill ${r.payment_status === "paid" ? "paid" : "due"}">${r.payment_status === "paid" ? "পরিশোধিত" : "বকেয়া"}</span></td>
-            <td style="color:var(--muted)">${r.created_by || "—"}</td>
-            </tr>`,
-              )
-              .join("") ||
-            '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">কোনো বিক্রয় নেই</td></tr>'
-          }
-          </tbody></table>
-        </div>
-      </div>`;
-        } else if (tab === "dProd") {
-          const p = d.production;
-          const maxProd = Math.max(
-            ...p.by_type.map((t) => parseInt(t.total_qty)),
-            1,
-          );
-          el.innerHTML = `
-      <div class="kpi-grid" style="margin-bottom:16px">
-        <div class="kpi purple"><div class="kpi-label"><i class="ti ti-plant"></i> মোট উৎপাদিত</div>
-          <div class="kpi-value">${fmtN(p.summary.total_produced)}</div>
-          <div class="kpi-sub">${p.summary.total_batches} টি ব্যাচ</div></div>
-        <div class="kpi green"><div class="kpi-label"><i class="ti ti-check"></i> সফল</div>
-          <div class="kpi-value">${fmtN(p.summary.total_success)}</div>
-          <div class="kpi-sub">গড় সাফল্য ${parseFloat(p.summary.avg_success).toFixed(1)}%</div></div>
-        <div class="kpi red"><div class="kpi-label"><i class="ti ti-x"></i> ব্যর্থ</div>
-          <div class="kpi-value">${fmtN(p.summary.total_failed)}</div></div>
-        <div class="kpi amber"><div class="kpi-label"><i class="ti ti-package"></i> পাওয়া যাচ্ছে</div>
-          <div class="kpi-value">${fmtN(p.summary.total_available)}</div>
-          <div class="kpi-sub">${p.summary.active_batches} সক্রিয় ব্যাচ</div></div>
-      </div>
-      <div class="card">
-        <div class="card-head">🌱 পদ্ধতি অনুযায়ী উৎপাদন</div>
-        <div class="card-body">
-          ${
-            p.by_type
-              .map(
-                (t, i) => `
-            <div class="bar-row">
-              <div class="bar-label">${typeLabel(t.production_type)}</div>
-              <div class="bar-track">
-                <div class="bar-fill" style="width:${((parseInt(t.total_qty) / maxProd) * 100).toFixed(0)}%;background:${COLORS[i % COLORS.length]}">
-                  ${t.batches} ব্যাচ
-                </div>
-              </div>
-              <div class="bar-end">${fmtN(t.total_qty)} টি</div>
-            </div>`,
-              )
-              .join("") || '<div class="empty">Data নেই</div>'
-          }
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-head">📦 সাম্প্রতিক ব্যাচ <span>সর্বশেষ ৬টি</span></div>
-        <div class="tw">
-          <table><thead><tr><th>ব্যাচ ID</th><th>চারা</th><th>পদ্ধতি</th><th>উৎপাদিত</th><th>পাওয়া যাচ্ছে</th><th>অবস্থা</th><th>তারিখ</th></tr></thead>
-          <tbody>${
-            p.recent
-              .map(
-                (r) => `<tr>
-            <td style="font-family:monospace">${r.batch_code}</td>
-            <td>${r.seedling || "—"}</td>
-            <td>${typeLabel(r.production_type)}</td>
-            <td style="color:var(--purple);font-weight:600">${fmtN(r.produced_quantity)}</td>
-            <td style="color:var(--green)">${fmtN(r.available_quantity)}</td>
-            <td><span class="pill ${r.status === "active" ? "active" : "sold"}">${r.status === "active" ? "সক্রিয়" : "বিক্রি শেষ"}</span></td>
-            <td style="color:var(--muted)">${r.created_at?.toString().slice(0, 10) || "—"}</td>
-            </tr>`,
-              )
-              .join("") ||
-            '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">কোনো ব্যাচ নেই</td></tr>'
-          }
-          </tbody></table>
-        </div>
-      </div>`;
-        } else if (tab === "dStock") {
-          const st = d.stock;
-          el.innerHTML = `
-      <div class="kpi-grid" style="margin-bottom:16px">
-        <div class="kpi amber"><div class="kpi-label"><i class="ti ti-stack-2"></i> মোট স্টক</div>
-          <div class="kpi-value">${fmtN(st.summary.total_stock)}</div>
-          <div class="kpi-sub">${st.summary.total_species} প্রজাতি</div></div>
-        <div class="kpi green"><div class="kpi-label"><i class="ti ti-currency-taka"></i> স্টক মূল্য</div>
-          <div class="kpi-value">৳${fmt(st.summary.stock_value)}</div></div>
-        <div class="kpi red"><div class="kpi-label"><i class="ti ti-alert-triangle"></i> কম স্টক</div>
-          <div class="kpi-value">${st.summary.low_stock_count}</div>
-          <div class="kpi-sub">সতর্কতা প্রয়োজন</div></div>
-      </div>
-      ${
-        st.low_stock.length
-          ? `
-      <div class="card">
-        <div class="card-head" style="color:var(--red)">⚠ কম স্টক সতর্কতা <span>${st.low_stock.length} টি</span></div>
-        <div class="card-body">
-          ${st.low_stock
-            .map(
-              (s) => `
-            <div class="low-item">
-              <div><div class="low-name">${s.name_bn}</div>
-              <div class="low-cat">${s.category || "—"} • কোড: ${s.seedling_code}</div></div>
-              <div style="text-align:right">
-                <div class="low-stock">${s.current_stock} টি</div>
-                <div class="low-min">সর্বনিম্ন: ${s.min_stock_alert}</div>
-              </div>
-            </div>`,
-            )
-            .join("")}
-        </div>
-      </div>`
-          : ""
-      }
-      <div class="card">
-        <div class="card-head">📂 ক্যাটাগরি অনুযায়ী স্টক</div>
-        <div class="tw">
-          <table><thead><tr><th>ক্যাটাগরি</th><th>প্রজাতি</th><th>মোট স্টক</th></tr></thead>
-          <tbody>${
-            st.categories
-              .map(
-                (c) => `<tr>
-            <td>${c.name_bn}</td>
-            <td>${c.seedling_count}</td>
-            <td style="color:var(--amber);font-weight:600">${fmtN(c.total_stock)}</td>
-            </tr>`,
-              )
-              .join("") ||
-            '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">কোনো data নেই</td></tr>'
-          }
-          </tbody></table>
-        </div>
-      </div>`;
-        } else if (tab === "dUsers") {
-          el.innerHTML = `
-      <div class="kpi-grid" style="margin-bottom:16px">
-        <div class="kpi blue"><div class="kpi-label"><i class="ti ti-users"></i> মোট ব্যবহারকারী</div>
-          <div class="kpi-value">${d.users.length}</div></div>
-        <div class="kpi green"><div class="kpi-label"><i class="ti ti-user-check"></i> সক্রিয়</div>
-          <div class="kpi-value">${d.users.filter((u) => u.is_active).length}</div></div>
-        <div class="kpi red"><div class="kpi-label"><i class="ti ti-user-off"></i> নিষ্ক্রিয়</div>
-          <div class="kpi-value">${d.users.filter((u) => !u.is_active).length}</div></div>
-      </div>
-      <div class="card">
-        <div class="card-head">👥 ব্যবহারকারী তালিকা</div>
-        <div class="card-body">
-          <div class="user-list">
-            ${
-              d.users
-                .map(
-                  (u) => `
-              <div class="user-item">
-                <div class="user-av" style="background:${roleColor(u.role)}">${u.name.charAt(0).toUpperCase()}</div>
-                <div>
-                  <div class="user-name">${u.name}</div>
-                  <div class="user-email">${u.email}</div>
-                  <div style="margin-top:4px;display:flex;gap:4px">
-                    <span class="pill ${roleClass(u.role)}">${roleLabel(u.role)}</span>
-                    <span class="pill ${u.is_active ? "on" : "off"}">${u.is_active ? "সক্রিয়" : "বন্ধ"}</span>
-                  </div>
-                </div>
-              </div>`,
-                )
-                .join("") || '<div class="empty">কোনো ব্যবহারকারী নেই</div>'
+                  // ════ OVERVIEW GRID ════
+                  function renderOverviewGrid() {
+            const role     = localStorage.getItem('sa_role') || 'director';
+            const assigned = JSON.parse(localStorage.getItem('sa_assigned') || '[]');
+            let stats = allStats;
+            if (role !== 'director') {
+                stats = allStats.filter(c => assigned.includes(c.slug));
             }
-          </div>
-        </div>
-      </div>`;
-        } else if (tab === "dFinance") {
-          const oi = d.other_income;
-          el.innerHTML = `
-      <div class="kpi-grid" style="margin-bottom:16px">
-        <div class="kpi green"><div class="kpi-label"><i class="ti ti-coin"></i> বিক্রয় রাজস্ব</div>
-          <div class="kpi-value">৳${fmt(d.sales.summary.total_revenue)}</div></div>
-        <div class="kpi teal"><div class="kpi-label"><i class="ti ti-building-bank"></i> অন্যান্য আয়</div>
-          <div class="kpi-value">৳${fmt(oi.total)}</div></div>
-        <div class="kpi purple"><div class="kpi-label"><i class="ti ti-calculator"></i> মোট আয়</div>
-          <div class="kpi-value">৳${fmt(parseFloat(d.sales.summary.total_revenue) + oi.total)}</div></div>
-        <div class="kpi amber"><div class="kpi-label"><i class="ti ti-tag"></i> ছাড়</div>
-          <div class="kpi-value">৳${fmt(d.sales.summary.total_discount)}</div></div>
-      </div>
-      <div class="card">
-        <div class="card-head">🏦 অন্যান্য আয়ের বিভাগ</div>
-        <div class="tw">
-          <table><thead><tr><th>ধরন</th><th>মোট পরিমাণ</th><th>এন্ট্রি সংখ্যা</th></tr></thead>
-          <tbody>${
-            oi.breakdown
-              .map(
-                (o) => `<tr>
-            <td>${incomeLabel(o.income_type)}</td>
-            <td style="color:var(--teal);font-weight:600">৳${fmt(o.total)}</td>
-            <td>${o.count} টি</td>
-            </tr>`,
-              )
-              .join("") ||
-            '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">কোনো অন্যান্য আয় নেই</td></tr>'
+            // বাকি code-এ allStats → stats করো
+
+                  // ════ CENTER LIST ════
+                  function renderCentersList() {
+                const role     = localStorage.getItem('sa_role') || 'director';
+                const assigned = JSON.parse(localStorage.getItem('sa_assigned') || '[]');
+
+                // Director সব দেখবে, বাকিরা শুধু assigned
+                let filtered = centers;
+                if (role !== 'director') {
+                    filtered = centers.filter(c => assigned.includes(c.slug));
+                }
+
+                const g = document.getElementById('centersGrid');
+                if (!filtered.length) {
+                    g.innerHTML = '<div class="empty"><i class="ti ti-building-off"></i>কোনো center assign করা নেই।</div>';
+                    return;
+                }
+                // বাকি code একই থাকবে — centers → filtered করো
+
+                  // ════ VIEW DETAIL ════
+                  async function viewDetail(slug) {
+                    currentDetailSlug = slug;
+                    document.getElementById("centersListWrap").style.display = "none";
+                    document.getElementById("detailWrap").style.display = "block";
+                    switchTab("centers", document.querySelectorAll(".tab")[1]);
+                    document.getElementById("detailContent").innerHTML =
+                      '<div class="loading-center"><div class="spinner"></div></div>';
+                    document.getElementById("detailName").textContent = "লোড হচ্ছে...";
+                    document.getElementById("detailSub").textContent = "";
+                    await fetchDetailData(slug);
+                  }
+                  async function reloadDetail() {
+                    await fetchDetailData(currentDetailSlug);
+                  }
+
+                  async function fetchDetailData(slug) {
+                    try {
+                      const r = await fetch(`${API}/center/${slug}`, {
+                        headers: { Authorization: "Bearer " + token },
+                      });
+                      const d = await r.json();
+                      if (!d.success) throw new Error(d.error);
+                      currentDetailData = d;
+                      document.getElementById("detailName").textContent = d.center.name_bn;
+                      document.getElementById("detailSub").textContent =
+                        d.center.name_en + " • " + (d.center.location || "");
+                      renderDetailTab(currentDTab);
+                    } catch (e) {
+                      document.getElementById("detailContent").innerHTML =
+                        `<div class="empty" style="color:var(--red)"><i class="ti ti-alert-circle"></i>Error: ${e.message}</div>`;
+                    }
+                  }
+
+                  function closeDetail() {
+                    document.getElementById("detailWrap").style.display = "none";
+                    document.getElementById("centersListWrap").style.display = "block";
+                  }
+
+                  function showDTab(tab, btn) {
+                    currentDTab = tab;
+                    document
+                      .querySelectorAll(".dtab")
+                      .forEach((b) => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    if (currentDetailData) renderDetailTab(tab);
+                  }
+
+                  function renderDetailTab(tab) {
+                    const d = currentDetailData;
+                    if (!d) return;
+                    const el = document.getElementById("detailContent");
+
+                    if (tab === "dSales") {
+                      const s = d.sales;
+                      const maxRev = Math.max(
+                        ...s.monthly.map((m) => parseFloat(m.revenue)),
+                        1,
+                      );
+                      el.innerHTML = `
+                  <!-- Sales KPI -->
+                  <div class="kpi-grid" style="margin-bottom:16px">
+                    <div class="kpi green"><div class="kpi-label"><i class="ti ti-coin"></i> মোট রাজস্ব</div>
+                      <div class="kpi-value">৳${fmt(s.summary.total_revenue)}</div>
+                      <div class="kpi-sub">${s.summary.total_invoices} টি চালান</div></div>
+                    <div class="kpi blue"><div class="kpi-label"><i class="ti ti-sun"></i> আজকের বিক্রয়</div>
+                      <div class="kpi-value">৳${fmt(s.today.today_revenue)}</div>
+                      <div class="kpi-sub">${s.today.today_invoices} টি চালান আজ</div></div>
+                    <div class="kpi amber"><div class="kpi-label"><i class="ti ti-check"></i> পরিশোধিত</div>
+                      <div class="kpi-value">৳${fmt(s.summary.paid_amount)}</div>
+                      <div class="kpi-sub">মোট ছাড়: ৳${fmt(s.summary.total_discount)}</div></div>
+                    <div class="kpi red"><div class="kpi-label"><i class="ti ti-clock"></i> বকেয়া</div>
+                      <div class="kpi-value">৳${fmt(s.summary.due_amount)}</div>
+                      <div class="kpi-sub">অপরিশোধিত</div></div>
+                  </div>
+                  <!-- Monthly Chart -->
+                  <div class="card">
+                    <div class="card-head">📅 মাসিক বিক্রয় (গত ৬ মাস) <span>${s.monthly.length} মাসের data</span></div>
+                    <div class="card-body">
+                      ${
+                        s.monthly.length
+                          ? s.monthly
+                              .map(
+                                (m, i) => `
+                        <div class="bar-row">
+                          <div class="bar-label">${m.label}</div>
+                          <div class="bar-track">
+                            <div class="bar-fill" style="width:${((parseFloat(m.revenue) / maxRev) * 100).toFixed(0)}%;background:${COLORS[i % COLORS.length]}">
+                              ${m.invoices} চালান
+                            </div>
+                          </div>
+                          <div class="bar-end">৳${fmtK(m.revenue)}</div>
+                        </div>`,
+                              )
+                              .join("")
+                          : '<div class="empty" style="padding:20px"><i class="ti ti-chart-off"></i>Data নেই</div>'
+                      }
+                    </div>
+                  </div>
+                  <!-- Top Products -->
+                  <div class="card">
+                    <div class="card-head">🏆 সর্বাধিক বিক্রিত চারা <span>Top 8</span></div>
+                    <div class="tw">
+                      <table><thead><tr><th>চারা</th><th>জাত</th><th>বিক্রিত</th><th>রাজস্ব</th><th>অর্ডার</th><th>স্টক</th></tr></thead>
+                      <tbody>${
+                        d.top_seedlings
+                          .map(
+                            (s) => `<tr>
+                        <td>${s.name_bn}</td><td style="color:var(--muted)">${s.variety || "—"}</td>
+                        <td style="color:var(--purple);font-weight:600">${fmtN(s.total_sold)}</td>
+                        <td style="color:var(--green);font-weight:600">৳${fmt(s.revenue)}</td>
+                        <td>${s.orders}</td>
+                        <td style="color:${parseInt(s.current_stock) < 20 ? "var(--red)" : "var(--text)"}">${fmtN(s.current_stock)}</td>
+                        </tr>`,
+                          )
+                          .join("") ||
+                        '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:20px">কোনো বিক্রয় নেই</td></tr>'
+                      }
+                      </tbody></table>
+                    </div>
+                  </div>
+                  <!-- Recent Sales -->
+                  <div class="card">
+                    <div class="card-head">🧾 সাম্প্রতিক বিক্রয় <span>সর্বশেষ ৮টি</span></div>
+                    <div class="tw">
+                      <table><thead><tr><th>চালান #</th><th>গ্রাহক</th><th>ফোন</th><th>তারিখ</th><th>পরিমাণ</th><th>পদ্ধতি</th><th>অবস্থা</th><th>বিক্রেতা</th></tr></thead>
+                      <tbody>${
+                        s.recent
+                          .map(
+                            (r) => `<tr>
+                        <td style="font-family:monospace">${r.invoice_no}</td>
+                        <td>${r.customer_name || "—"}</td><td style="color:var(--muted)">${r.customer_phone || "—"}</td>
+                        <td>${r.sale_date?.toString().slice(0, 10) || "—"}</td>
+                        <td style="color:var(--green);font-weight:600">৳${fmt(r.total_amount)}</td>
+                        <td>${r.payment_method || "—"}</td>
+                        <td><span class="pill ${r.payment_status === "paid" ? "paid" : "due"}">${r.payment_status === "paid" ? "পরিশোধিত" : "বকেয়া"}</span></td>
+                        <td style="color:var(--muted)">${r.created_by || "—"}</td>
+                        </tr>`,
+                          )
+                          .join("") ||
+                        '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:20px">কোনো বিক্রয় নেই</td></tr>'
+                      }
+                      </tbody></table>
+                    </div>
+                  </div>`;
+                    } else if (tab === "dProd") {
+                      const p = d.production;
+                      const maxProd = Math.max(
+                        ...p.by_type.map((t) => parseInt(t.total_qty)),
+                        1,
+                      );
+                      el.innerHTML = `
+                  <div class="kpi-grid" style="margin-bottom:16px">
+                    <div class="kpi purple"><div class="kpi-label"><i class="ti ti-plant"></i> মোট উৎপাদিত</div>
+                      <div class="kpi-value">${fmtN(p.summary.total_produced)}</div>
+                      <div class="kpi-sub">${p.summary.total_batches} টি ব্যাচ</div></div>
+                    <div class="kpi green"><div class="kpi-label"><i class="ti ti-check"></i> সফল</div>
+                      <div class="kpi-value">${fmtN(p.summary.total_success)}</div>
+                      <div class="kpi-sub">গড় সাফল্য ${parseFloat(p.summary.avg_success).toFixed(1)}%</div></div>
+                    <div class="kpi red"><div class="kpi-label"><i class="ti ti-x"></i> ব্যর্থ</div>
+                      <div class="kpi-value">${fmtN(p.summary.total_failed)}</div></div>
+                    <div class="kpi amber"><div class="kpi-label"><i class="ti ti-package"></i> পাওয়া যাচ্ছে</div>
+                      <div class="kpi-value">${fmtN(p.summary.total_available)}</div>
+                      <div class="kpi-sub">${p.summary.active_batches} সক্রিয় ব্যাচ</div></div>
+                  </div>
+                  <div class="card">
+                    <div class="card-head">🌱 পদ্ধতি অনুযায়ী উৎপাদন</div>
+                    <div class="card-body">
+                      ${
+                        p.by_type
+                          .map(
+                            (t, i) => `
+                        <div class="bar-row">
+                          <div class="bar-label">${typeLabel(t.production_type)}</div>
+                          <div class="bar-track">
+                            <div class="bar-fill" style="width:${((parseInt(t.total_qty) / maxProd) * 100).toFixed(0)}%;background:${COLORS[i % COLORS.length]}">
+                              ${t.batches} ব্যাচ
+                            </div>
+                          </div>
+                          <div class="bar-end">${fmtN(t.total_qty)} টি</div>
+                        </div>`,
+                          )
+                          .join("") || '<div class="empty">Data নেই</div>'
+                      }
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-head">📦 সাম্প্রতিক ব্যাচ <span>সর্বশেষ ৬টি</span></div>
+                    <div class="tw">
+                      <table><thead><tr><th>ব্যাচ ID</th><th>চারা</th><th>পদ্ধতি</th><th>উৎপাদিত</th><th>পাওয়া যাচ্ছে</th><th>অবস্থা</th><th>তারিখ</th></tr></thead>
+                      <tbody>${
+                        p.recent
+                          .map(
+                            (r) => `<tr>
+                        <td style="font-family:monospace">${r.batch_code}</td>
+                        <td>${r.seedling || "—"}</td>
+                        <td>${typeLabel(r.production_type)}</td>
+                        <td style="color:var(--purple);font-weight:600">${fmtN(r.produced_quantity)}</td>
+                        <td style="color:var(--green)">${fmtN(r.available_quantity)}</td>
+                        <td><span class="pill ${r.status === "active" ? "active" : "sold"}">${r.status === "active" ? "সক্রিয়" : "বিক্রি শেষ"}</span></td>
+                        <td style="color:var(--muted)">${r.created_at?.toString().slice(0, 10) || "—"}</td>
+                        </tr>`,
+                          )
+                          .join("") ||
+                        '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:20px">কোনো ব্যাচ নেই</td></tr>'
+                      }
+                      </tbody></table>
+                    </div>
+                  </div>`;
+                    } else if (tab === "dStock") {
+                      const st = d.stock;
+                      el.innerHTML = `
+                  <div class="kpi-grid" style="margin-bottom:16px">
+                    <div class="kpi amber"><div class="kpi-label"><i class="ti ti-stack-2"></i> মোট স্টক</div>
+                      <div class="kpi-value">${fmtN(st.summary.total_stock)}</div>
+                      <div class="kpi-sub">${st.summary.total_species} প্রজাতি</div></div>
+                    <div class="kpi green"><div class="kpi-label"><i class="ti ti-currency-taka"></i> স্টক মূল্য</div>
+                      <div class="kpi-value">৳${fmt(st.summary.stock_value)}</div></div>
+                    <div class="kpi red"><div class="kpi-label"><i class="ti ti-alert-triangle"></i> কম স্টক</div>
+                      <div class="kpi-value">${st.summary.low_stock_count}</div>
+                      <div class="kpi-sub">সতর্কতা প্রয়োজন</div></div>
+                  </div>
+                  ${
+                    st.low_stock.length
+                      ? `
+                  <div class="card">
+                    <div class="card-head" style="color:var(--red)">⚠ কম স্টক সতর্কতা <span>${st.low_stock.length} টি</span></div>
+                    <div class="card-body">
+                      ${st.low_stock
+                        .map(
+                          (s) => `
+                        <div class="low-item">
+                          <div><div class="low-name">${s.name_bn}</div>
+                          <div class="low-cat">${s.category || "—"} • কোড: ${s.seedling_code}</div></div>
+                          <div style="text-align:right">
+                            <div class="low-stock">${s.current_stock} টি</div>
+                            <div class="low-min">সর্বনিম্ন: ${s.min_stock_alert}</div>
+                          </div>
+                        </div>`,
+                        )
+                        .join("")}
+                    </div>
+                  </div>`
+                      : ""
+                  }
+                  <div class="card">
+                    <div class="card-head">📂 ক্যাটাগরি অনুযায়ী স্টক</div>
+                    <div class="tw">
+                      <table><thead><tr><th>ক্যাটাগরি</th><th>প্রজাতি</th><th>মোট স্টক</th></tr></thead>
+                      <tbody>${
+                        st.categories
+                          .map(
+                            (c) => `<tr>
+                        <td>${c.name_bn}</td>
+                        <td>${c.seedling_count}</td>
+                        <td style="color:var(--amber);font-weight:600">${fmtN(c.total_stock)}</td>
+                        </tr>`,
+                          )
+                          .join("") ||
+                        '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">কোনো data নেই</td></tr>'
+                      }
+                      </tbody></table>
+                    </div>
+                  </div>`;
+                    } else if (tab === "dUsers") {
+                      el.innerHTML = `
+                  <div class="kpi-grid" style="margin-bottom:16px">
+                    <div class="kpi blue"><div class="kpi-label"><i class="ti ti-users"></i> মোট ব্যবহারকারী</div>
+                      <div class="kpi-value">${d.users.length}</div></div>
+                    <div class="kpi green"><div class="kpi-label"><i class="ti ti-user-check"></i> সক্রিয়</div>
+                      <div class="kpi-value">${d.users.filter((u) => u.is_active).length}</div></div>
+                    <div class="kpi red"><div class="kpi-label"><i class="ti ti-user-off"></i> নিষ্ক্রিয়</div>
+                      <div class="kpi-value">${d.users.filter((u) => !u.is_active).length}</div></div>
+                  </div>
+                  <div class="card">
+                    <div class="card-head">👥 ব্যবহারকারী তালিকা</div>
+                    <div class="card-body">
+                      <div class="user-list">
+                        ${
+                          d.users
+                            .map(
+                              (u) => `
+                          <div class="user-item">
+                            <div class="user-av" style="background:${roleColor(u.role)}">${u.name.charAt(0).toUpperCase()}</div>
+                            <div>
+                              <div class="user-name">${u.name}</div>
+                              <div class="user-email">${u.email}</div>
+                              <div style="margin-top:4px;display:flex;gap:4px">
+                                <span class="pill ${roleClass(u.role)}">${roleLabel(u.role)}</span>
+                                <span class="pill ${u.is_active ? "on" : "off"}">${u.is_active ? "সক্রিয়" : "বন্ধ"}</span>
+                              </div>
+                            </div>
+                          </div>`,
+                            )
+                            .join("") || '<div class="empty">কোনো ব্যবহারকারী নেই</div>'
+                        }
+                      </div>
+                    </div>
+                  </div>`;
+                    } else if (tab === "dFinance") {
+                      const oi = d.other_income;
+                      el.innerHTML = `
+                  <div class="kpi-grid" style="margin-bottom:16px">
+                    <div class="kpi green"><div class="kpi-label"><i class="ti ti-coin"></i> বিক্রয় রাজস্ব</div>
+                      <div class="kpi-value">৳${fmt(d.sales.summary.total_revenue)}</div></div>
+                    <div class="kpi teal"><div class="kpi-label"><i class="ti ti-building-bank"></i> অন্যান্য আয়</div>
+                      <div class="kpi-value">৳${fmt(oi.total)}</div></div>
+                    <div class="kpi purple"><div class="kpi-label"><i class="ti ti-calculator"></i> মোট আয়</div>
+                      <div class="kpi-value">৳${fmt(parseFloat(d.sales.summary.total_revenue) + oi.total)}</div></div>
+                    <div class="kpi amber"><div class="kpi-label"><i class="ti ti-tag"></i> ছাড়</div>
+                      <div class="kpi-value">৳${fmt(d.sales.summary.total_discount)}</div></div>
+                  </div>
+                  <div class="card">
+                    <div class="card-head">🏦 অন্যান্য আয়ের বিভাগ</div>
+                    <div class="tw">
+                      <table><thead><tr><th>ধরন</th><th>মোট পরিমাণ</th><th>এন্ট্রি সংখ্যা</th></tr></thead>
+                      <tbody>${
+                        oi.breakdown
+                          .map(
+                            (o) => `<tr>
+                        <td>${incomeLabel(o.income_type)}</td>
+                        <td style="color:var(--teal);font-weight:600">৳${fmt(o.total)}</td>
+                        <td>${o.count} টি</td>
+                        </tr>`,
+                          )
+                          .join("") ||
+                        '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">কোনো অন্যান্য আয় নেই</td></tr>'
+                      }
+                      </tbody></table>
+                    </div>
+                  </div>
+                  ${
+                    d.targets.length
+                      ? `
+                  <div class="card">
+                    <div class="card-head">🎯 লক্ষ্যমাত্রা (চলতি বছর)</div>
+                    <div class="tw">
+                      <table><thead><tr><th>ধরন</th><th>মাস</th><th>পরিমাণ লক্ষ্য</th><th>আয় লক্ষ্য</th></tr></thead>
+                      <tbody>${d.targets
+                        .map(
+                          (t) => `<tr>
+                        <td>${t.target_type === "production" ? "উৎপাদন" : "বিক্রয়"}</td>
+                        <td>${t.target_month === 0 ? "বার্ষিক" : monthLabel(t.target_month)}</td>
+                        <td>${fmtN(t.target_quantity)}</td>
+                        <td>৳${fmt(t.target_amount)}</td>
+                        </tr>`,
+                        )
+                        .join("")}
+                      </tbody></table>
+                    </div>
+                  </div>`
+                      : ""
+                  }`;
+                    } else if (tab === "dDamage") {
+                      const dm = d.damages;
+                      el.innerHTML = `
+                  <div class="kpi-grid" style="margin-bottom:16px">
+                    <div class="kpi red"><div class="kpi-label"><i class="ti ti-plant-off"></i> মোট ক্ষতিগ্রস্ত</div>
+                      <div class="kpi-value">${fmtN(dm.total_damaged)}</div>
+                      <div class="kpi-sub">চারা / কলম</div></div>
+                    <div class="kpi amber"><div class="kpi-label"><i class="ti ti-file-report"></i> রিপোর্ট সংখ্যা</div>
+                      <div class="kpi-value">${dm.total_reports}</div></div>
+                  </div>
+                  <div class="card">
+                    <div class="card-head">💥 কারণ অনুযায়ী ক্ষতি</div>
+                    <div class="tw">
+                      <table><thead><tr><th>কারণ</th><th>ক্ষতিগ্রস্ত</th><th>রিপোর্ট</th></tr></thead>
+                      <tbody>${
+                        dm.by_reason
+                          .map(
+                            (r) => `<tr>
+                        <td>${dmgLabel(r.reason)}</td>
+                        <td style="color:var(--red);font-weight:600">${fmtN(r.total_damaged || 0)}</td>
+                        <td>${r.count || 0}</td>
+                        </tr>`,
+                          )
+                          .join("") ||
+                        '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">কোনো ক্ষতির রেকর্ড নেই</td></tr>'
+                      }
+                      </tbody></table>
+                    </div>
+                  </div>`;
+                    }
+                  }
+
+                  // ════ COMPARE ════
+      function renderOverviewGrid() {
+          const role     = localStorage.getItem('sa_role') || 'director';
+          const assigned = JSON.parse(localStorage.getItem('sa_assigned') || '[]');
+          let stats = allStats;
+          if (role !== 'director') {
+              stats = allStats.filter(c => assigned.includes(c.slug));
           }
-          </tbody></table>
-        </div>
-      </div>
-      ${
-        d.targets.length
-          ? `
-      <div class="card">
-        <div class="card-head">🎯 লক্ষ্যমাত্রা (চলতি বছর)</div>
-        <div class="tw">
-          <table><thead><tr><th>ধরন</th><th>মাস</th><th>পরিমাণ লক্ষ্য</th><th>আয় লক্ষ্য</th></tr></thead>
-          <tbody>${d.targets
-            .map(
-              (t) => `<tr>
-            <td>${t.target_type === "production" ? "উৎপাদন" : "বিক্রয়"}</td>
-            <td>${t.target_month === 0 ? "বার্ষিক" : monthLabel(t.target_month)}</td>
-            <td>${fmtN(t.target_quantity)}</td>
-            <td>৳${fmt(t.target_amount)}</td>
-            </tr>`,
-            )
-            .join("")}
-          </tbody></table>
-        </div>
-      </div>`
-          : ""
-      }`;
-        } else if (tab === "dDamage") {
-          const dm = d.damages;
-          el.innerHTML = `
-      <div class="kpi-grid" style="margin-bottom:16px">
-        <div class="kpi red"><div class="kpi-label"><i class="ti ti-plant-off"></i> মোট ক্ষতিগ্রস্ত</div>
-          <div class="kpi-value">${fmtN(dm.total_damaged)}</div>
-          <div class="kpi-sub">চারা / কলম</div></div>
-        <div class="kpi amber"><div class="kpi-label"><i class="ti ti-file-report"></i> রিপোর্ট সংখ্যা</div>
-          <div class="kpi-value">${dm.total_reports}</div></div>
-      </div>
-      <div class="card">
-        <div class="card-head">💥 কারণ অনুযায়ী ক্ষতি</div>
-        <div class="tw">
-          <table><thead><tr><th>কারণ</th><th>ক্ষতিগ্রস্ত</th><th>রিপোর্ট</th></tr></thead>
-          <tbody>${
-            dm.by_reason
-              .map(
-                (r) => `<tr>
-            <td>${dmgLabel(r.reason)}</td>
-            <td style="color:var(--red);font-weight:600">${fmtN(r.total_damaged || 0)}</td>
-            <td>${r.count || 0}</td>
-            </tr>`,
-              )
-              .join("") ||
-            '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:20px">কোনো ক্ষতির রেকর্ড নেই</td></tr>'
-          }
-          </tbody></table>
-        </div>
-      </div>`;
-        }
-      }
+          // বাকি code-এ allStats → stats করো
 
-      // ════ COMPARE ════
-      function renderCompare() {
-        const ok = allStats.filter((c) => c.status === "ok");
-        const el = document.getElementById("compareContent");
+                  // ── Helper functions (script-এর শেষে যোগ করো) ──
+                  function scoreColor(s) {
+                    return s >= 70 ? "#4ade80" : s >= 45 ? "#fbbf24" : "#f87171";
+                  }
+                  function tlLabel(t) {
+                    return t === "green" ? "ভালো" : t === "yellow" ? "সতর্ক" : "সমস্যা";
+                  }
+                  function tlBorderColor(t) {
+                    return t === "green"
+                      ? "#16a34a"
+                      : t === "yellow"
+                        ? "#d97706"
+                        : "#dc2626";
+                  }
 
-        if (!ok.length) {
-          el.innerHTML =
-            '<div class="empty"><i class="ti ti-chart-off"></i>Data নেই।</div>';
-          return;
-        }
-
-        // Performance score অনুযায়ী sort করো (বেশি score উপরে)
-        const ranked = [...ok].sort((a, b) => b.perf_score - a.perf_score);
-
-        el.innerHTML = `
-
-    <!-- ══ ১. PERFORMANCE LEADERBOARD ══ -->
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-head">
-        🏆 Performance Leaderboard
-        <span>সার্বিক score অনুযায়ী rank — বিক্রয়, উৎপাদন, স্টক health মিলিয়ে</span>
-      </div>
-      <div class="card-body">
-        ${ranked
-          .map(
-            (c, i) => `
-          <div class="eff-row">
-            <div class="eff-rank ${i === 0 ? "rank-1" : i === 1 ? "rank-2" : i === 2 ? "rank-3" : "rank-n"}">
-              ${i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : "#" + (i + 1)}
-            </div>
-            <!-- Score Ring -->
-            <div class="score-ring">
-              <svg width="72" height="72" viewBox="0 0 72 72">
-                <circle cx="36" cy="36" r="30" fill="none" stroke="#1e293b" stroke-width="7"/>
-                <circle cx="36" cy="36" r="30" fill="none"
-                  stroke="${scoreColor(c.perf_score)}" stroke-width="7"
-                  stroke-dasharray="${((c.perf_score / 100) * 188.4).toFixed(1)} 188.4"
-                  stroke-linecap="round"/>
-              </svg>
-              <div class="score-text">
-                <div class="score-num" style="color:${scoreColor(c.perf_score)}">${c.perf_score}</div>
-                <div class="score-lbl">/ 100</div>
-              </div>
-            </div>
-            <!-- Info -->
-            <div class="eff-info">
-              <div class="eff-name">${c.name_bn}</div>
-              <div class="eff-loc">${c.name_en} • ${c.location || ""}</div>
-            </div>
-            <!-- Metrics -->
-            <div class="eff-metrics">
-              <div class="eff-m">
-                <div class="eff-mv" style="color:#4ade80">৳${fmtK(c.total_revenue)}</div>
-                <div class="eff-ml">মোট বিক্রয়</div>
-              </div>
-              <div class="eff-m">
-                <div class="eff-mv ${c.growth_rate >= 0 ? "growth-up" : "growth-dn"}">
-                  ${c.growth_rate >= 0 ? "▲" : "▼"}${Math.abs(c.growth_rate).toFixed(1)}%
+                  function compTable(title, data, valFn, max, labelFn) {
+                    return `<div class="card">
+                <div class="card-head">${title}</div>
+                <div class="card-body">
+                  ${data
+                    .map(
+                      (c, i) => `
+                    <div class="bar-row">
+                      <div class="bar-label">${c.name_bn}</div>
+                      <div class="bar-track">
+                        <div class="bar-fill" style="width:${Math.max((valFn(c) / max) * 100, 2).toFixed(0)}%;background:${COLORS[i % COLORS.length]}">
+                          ${c.location}
+                        </div>
+                      </div>
+                      <div class="bar-end">${labelFn(valFn(c))}</div>
+                    </div>`,
+                    )
+                    .join("")}
                 </div>
-                <div class="eff-ml">মাসিক প্রবৃদ্ধি</div>
-              </div>
-              <div class="eff-m">
-                <div class="eff-mv" style="color:#c4b5fd">${c.avg_success.toFixed(1)}%</div>
-                <div class="eff-ml">উৎপাদন সাফল্য</div>
-              </div>
-              <div class="eff-m">
-                <div class="tl-dot tl-${c.traffic_light}" style="margin:0 auto 4px"></div>
-                <div class="eff-ml">${tlLabel(c.traffic_light)}</div>
-              </div>
-            </div>
-          </div>`,
-          )
-          .join("")}
-      </div>
-    </div>
+              </div>`;
+                  }
 
-    <!-- ══ ২. TRAFFIC LIGHT — CENTER HEALTH ══ -->
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-head">
-        🚦 Center Health Indicators
-        <span>🟢 ভালো (70+) • 🟡 সতর্ক (45-69) • 🔴 সমস্যা (45 এর নিচে)</span>
-      </div>
-      <div class="card-body">
-        <div class="indicator-grid">
-          ${ranked
-            .map(
-              (c) => `
-            <div class="indicator-card" style="border-color:${tlBorderColor(c.traffic_light)}">
-              <div class="ind-header">
-                <div class="tl-dot tl-${c.traffic_light}"></div>
-                <div class="ind-name">
-                  <h3>${c.name_bn}</h3>
-                  <p>${c.location || c.name_en}</p>
-                </div>
-                <div style="text-align:right">
-                  <div style="font-size:22px;font-weight:800;color:${scoreColor(c.perf_score)}">${c.perf_score}</div>
-                  <div style="font-size:10px;color:var(--muted)">score</div>
-                </div>
-              </div>
-              <div class="ind-rows">
-                <div class="ind-row">
-                  <div class="ind-row-label">📈 বিক্রয়</div>
-                  <div class="target-track">
-                    <div class="target-fill ${c.growth_rate >= 10 ? "good" : c.growth_rate >= 0 ? "ok" : "bad"}"
-                      style="width:${Math.min(Math.max(c.growth_rate + 50, 5), 100)}%"></div>
-                  </div>
-                  <div class="ind-row-val" style="color:${c.growth_rate >= 0 ? "#4ade80" : "#f87171"}">
-                    ${c.growth_rate >= 0 ? "▲" : "▼"}${Math.abs(c.growth_rate).toFixed(1)}%
-                  </div>
-                </div>
-                <div class="ind-row">
-                  <div class="ind-row-label">🌱 উৎপাদন</div>
-                  <div class="target-track">
-                    <div class="target-fill ${c.avg_success >= 70 ? "good" : c.avg_success >= 50 ? "ok" : "bad"}"
-                      style="width:${c.avg_success}%"></div>
-                  </div>
-                  <div class="ind-row-val" style="color:${c.avg_success >= 70 ? "#4ade80" : c.avg_success >= 50 ? "#fbbf24" : "#f87171"}">
-                    ${c.avg_success.toFixed(1)}%
-                  </div>
-                </div>
-                <div class="ind-row">
-                  <div class="ind-row-label">📦 স্টক</div>
-                  <div class="target-track">
-                    <div class="target-fill ${c.stock_health >= 80 ? "good" : c.stock_health >= 60 ? "ok" : "bad"}"
-                      style="width:${c.stock_health}%"></div>
-                  </div>
-                  <div class="ind-row-val" style="color:${c.stock_health >= 80 ? "#4ade80" : c.stock_health >= 60 ? "#fbbf24" : "#f87171"}">
-                    ${c.stock_health.toFixed(0)}%
-                  </div>
-                </div>
-              </div>
-            </div>`,
-            )
-            .join("")}
-        </div>
-      </div>
-    </div>
+                  // ════ MODAL ════
+                  function openAddModal() {
+                    document.getElementById("editId").value = "";
+                    document.getElementById("modalTitle").textContent =
+                      "নতুন Center যোগ করুন";
+                    ["fSlug", "fNameBn", "fNameEn", "fLocation", "fDbUrl"].forEach(
+                      (id) => (document.getElementById(id).value = ""),
+                    );
+                    document.getElementById("fSlug").disabled = false;
+                    document.getElementById("fCurrency").value = "BDT";
+                    document.getElementById("centerModal").classList.add("open");
+                  }
+                  function openEditModal(id) {
+                    if (!id) return;
+                    const c = centers.find((x) => x.id === id);
+                    if (!c) return;
+                    document.getElementById("editId").value = c.id;
+                    document.getElementById("modalTitle").textContent = "Center সম্পাদনা";
+                    document.getElementById("fSlug").value = c.slug;
+                    document.getElementById("fSlug").disabled = true;
+                    document.getElementById("fNameBn").value = c.name_bn;
+                    document.getElementById("fNameEn").value = c.name_en;
+                    document.getElementById("fLocation").value = c.location || "";
+                    document.getElementById("fDbUrl").value = "";
+                    document.getElementById("fCurrency").value = c.currency || "BDT";
+                    document.getElementById("centerModal").classList.add("open");
+                  }
+                  function closeModal() {
+                    document.getElementById("centerModal").classList.remove("open");
+                  }
 
-    <!-- ══ ৩. GROWTH RATE COMPARISON ══ -->
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-head">
-        📈 মাসিক প্রবৃদ্ধির হার
-        <span>চলতি মাস বনাম গত মাস</span>
-      </div>
-      <div class="card-body">
-        ${[...ranked]
-          .sort((a, b) => b.growth_rate - a.growth_rate)
-          .map(
-            (c) => `
-          <div class="eff-row">
-            <div class="eff-info">
-              <div class="eff-name">${c.name_bn}</div>
-              <div class="eff-loc">
-                চলতি মাস: ৳${fmt(c.current_month_rev)} •
-                গত মাস: ৳${fmt(c.last_month_rev)}
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:160px">
-                <div class="target-track" style="height:14px">
-                  <div class="target-fill ${c.growth_rate >= 10 ? "good" : c.growth_rate >= 0 ? "ok" : "bad"}"
-                    style="width:${Math.min(Math.max(c.growth_rate + 50, 2), 100)}%"></div>
-                </div>
-              </div>
-              <span class="${c.growth_rate >= 0 ? "growth-up" : c.growth_rate < -5 ? "growth-dn" : "growth-ne"}">
-                ${c.growth_rate > 0 ? "▲" : "▼"} ${Math.abs(c.growth_rate).toFixed(1)}%
-              </span>
-            </div>
-          </div>`,
-          )
-          .join("")}
-      </div>
-    </div>
+                  async function saveCenter() {
+                    const id = document.getElementById("editId").value;
+                    const slug = document
+                      .getElementById("fSlug")
+                      .value.trim()
+                      .toLowerCase();
+                    const name_bn = document.getElementById("fNameBn").value.trim();
+                    const name_en = document.getElementById("fNameEn").value.trim();
+                    const location = document.getElementById("fLocation").value.trim();
+                    const db_url = document.getElementById("fDbUrl").value.trim();
+                    const currency = document.getElementById("fCurrency").value;
+                    if (!name_bn || !name_en) return showToast("নাম দিন।");
+                    if (!id && (!slug || !db_url)) return showToast("Slug ও DB URL দিন।");
+                    try {
+                      let res;
+                      if (id) {
+                        const cur = centers.find((c) => c.id == id);
+                        res = await fetch(`${API}/tenants/${id}`, {
+                          method: "PUT",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: "Bearer " + token,
+                          },
+                          body: JSON.stringify({
+                            name_bn,
+                            name_en,
+                            location,
+                            db_url: db_url || cur?.db_url || "",
+                            currency,
+                            active: cur?.active ?? true,
+                          }),
+                        });
+                      } else {
+                        res = await fetch(`${API}/tenants`, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: "Bearer " + token,
+                          },
+                          body: JSON.stringify({
+                            slug,
+                            name_bn,
+                            name_en,
+                            location,
+                            db_url,
+                            currency,
+                          }),
+                        });
+                      }
+                      const d = await res.json();
+                      if (!d.success) return showToast(d.message || d.error);
+                      showToast(d.message);
+                      closeModal();
+                      loadCenters();
+                      loadAllStats();
+                    } catch {
+                      showToast("সমস্যা হয়েছে।");
+                    }
+                  }
 
-    <!-- ══ ৪. TARGET ACHIEVEMENT ══ -->
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-head">
-        🎯 মাসিক লক্ষ্যমাত্রা অর্জন
-        <span>চলতি মাসের target vs actual বিক্রয়</span>
-      </div>
-      <div class="card-body">
-        ${ranked
-          .map((c) => {
-            if (c.target_achieved === null)
-              return `
-            <div class="eff-row">
-              <div class="eff-info">
-                <div class="eff-name">${c.name_bn}</div>
-                <div class="eff-loc" style="color:#fbbf24">⚠ লক্ষ্যমাত্রা সেট করা নেই</div>
-              </div>
-              <span style="font-size:12px;color:var(--muted)">৳${fmt(c.current_month_rev)} এই মাসে</span>
-            </div>`;
-            const pct = c.target_achieved;
-            return `
-            <div class="eff-row">
-              <div class="eff-info">
-                <div class="eff-name">${c.name_bn}</div>
-                <div class="eff-loc">
-                  অর্জিত: ৳${fmt(c.current_month_rev)} / লক্ষ্য: ৳${fmt(c.target_amount)}
-                </div>
-              </div>
-              <div style="display:flex;align-items:center;gap:12px;min-width:220px">
-                <div class="target-track" style="height:14px;flex:1">
-                  <div class="target-fill ${pct >= 100 ? "good" : pct >= 60 ? "ok" : "bad"}"
-                    style="width:${Math.min(pct, 100)}%"></div>
-                </div>
-                <span style="font-size:14px;font-weight:700;color:${pct >= 100 ? "#4ade80" : pct >= 60 ? "#fbbf24" : "#f87171"};min-width:50px;text-align:right">
-                  ${pct.toFixed(1)}%
-                </span>
-              </div>
-            </div>`;
-          })
-          .join("")}
-      </div>
-    </div>
+                  async function toggleCenter(id) {
+                    try {
+                      const r = await fetch(`${API}/tenants/${id}/toggle`, {
+                        method: "POST",
+                        headers: { Authorization: "Bearer " + token },
+                      });
+                      const d = await r.json();
+                      showToast(d.message);
+                      loadCenters();
+                      loadAllStats();
+                    } catch {}
+                  }
 
-    <!-- ══ ৫. EFFICIENCY TABLE ══ -->
-    <div class="card">
-      <div class="card-head">
-        ⚡ কার্যকারিতা বিশ্লেষণ
-        <span>প্রতিটি center কতটা efficient</span>
-      </div>
-      <div class="tw">
-        <table>
-          <thead>
-            <tr>
-              <th>Center</th>
-              <th>প্রতি ব্যাচে আয়</th>
-              <th>উৎপাদন সাফল্য</th>
-              <th>স্টক health</th>
-              <th>কম স্টক</th>
-              <th>আজকের বিক্রয়</th>
-              <th>মোট চালান</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${[...ranked]
-              .sort((a, b) => b.rev_per_batch - a.rev_per_batch)
-              .map(
-                (c) => `
-              <tr>
-                <td>
-                  <div style="font-weight:600">${c.name_bn}</div>
-                  <div style="font-size:11px;color:var(--muted)">${c.location || ""}</div>
-                </td>
-                <td style="color:#4ade80;font-weight:700">৳${fmt(c.rev_per_batch)}</td>
-                <td>
-                  <span style="color:${c.avg_success >= 70 ? "#4ade80" : c.avg_success >= 50 ? "#fbbf24" : "#f87171"};font-weight:600">
-                    ${c.avg_success.toFixed(1)}%
-                  </span>
-                </td>
-                <td>
-                  <div style="display:flex;align-items:center;gap:6px">
-                    <div class="tl-dot tl-${c.stock_health >= 80 ? "green" : c.stock_health >= 60 ? "yellow" : "red"}"></div>
-                    ${c.stock_health.toFixed(0)}%
-                  </div>
-                </td>
-                <td style="color:${c.low_stock_count > 0 ? "#f87171" : "#4ade80"};font-weight:600">
-                  ${c.low_stock_count > 0 ? "⚠ " + c.low_stock_count + " টি" : "✓ ঠিক আছে"}
-                </td>
-                <td style="color:#60a5fa;font-weight:600">৳${fmt(c.today_revenue)}</td>
-                <td style="color:var(--muted)">${c.total_invoices} টি</td>
-              </tr>`,
-              )
-              .join("")}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  `;
-      }
+                  async function deleteCenter(id, name) {
+                    if (
+                      !confirm(
+                        `"${name}" মুছে ফেলবেন? এই কাজ পূর্বাবস্থায় ফেরানো যাবে না।`,
+                      )
+                    )
+                      return;
+                    try {
+                      const r = await fetch(`${API}/tenants/${id}`, {
+                        method: "DELETE",
+                        headers: { Authorization: "Bearer " + token },
+                      });
+                      const d = await r.json();
+                      showToast(d.message);
+                      loadCenters();
+                      loadAllStats();
+                    } catch {}
+                  }
 
-      // ── Helper functions (script-এর শেষে যোগ করো) ──
-      function scoreColor(s) {
-        return s >= 70 ? "#4ade80" : s >= 45 ? "#fbbf24" : "#f87171";
-      }
-      function tlLabel(t) {
-        return t === "green" ? "ভালো" : t === "yellow" ? "সতর্ক" : "সমস্যা";
-      }
-      function tlBorderColor(t) {
-        return t === "green"
-          ? "#16a34a"
-          : t === "yellow"
-            ? "#d97706"
-            : "#dc2626";
-      }
-
-      function compTable(title, data, valFn, max, labelFn) {
-        return `<div class="card">
-    <div class="card-head">${title}</div>
-    <div class="card-body">
-      ${data
-        .map(
-          (c, i) => `
-        <div class="bar-row">
-          <div class="bar-label">${c.name_bn}</div>
-          <div class="bar-track">
-            <div class="bar-fill" style="width:${Math.max((valFn(c) / max) * 100, 2).toFixed(0)}%;background:${COLORS[i % COLORS.length]}">
-              ${c.location}
-            </div>
-          </div>
-          <div class="bar-end">${labelFn(valFn(c))}</div>
-        </div>`,
-        )
-        .join("")}
-    </div>
-  </div>`;
-      }
-
-      // ════ MODAL ════
-      function openAddModal() {
-        document.getElementById("editId").value = "";
-        document.getElementById("modalTitle").textContent =
-          "নতুন Center যোগ করুন";
-        ["fSlug", "fNameBn", "fNameEn", "fLocation", "fDbUrl"].forEach(
-          (id) => (document.getElementById(id).value = ""),
-        );
-        document.getElementById("fSlug").disabled = false;
-        document.getElementById("fCurrency").value = "BDT";
-        document.getElementById("centerModal").classList.add("open");
-      }
-      function openEditModal(id) {
-        if (!id) return;
-        const c = centers.find((x) => x.id === id);
-        if (!c) return;
-        document.getElementById("editId").value = c.id;
-        document.getElementById("modalTitle").textContent = "Center সম্পাদনা";
-        document.getElementById("fSlug").value = c.slug;
-        document.getElementById("fSlug").disabled = true;
-        document.getElementById("fNameBn").value = c.name_bn;
-        document.getElementById("fNameEn").value = c.name_en;
-        document.getElementById("fLocation").value = c.location || "";
-        document.getElementById("fDbUrl").value = "";
-        document.getElementById("fCurrency").value = c.currency || "BDT";
-        document.getElementById("centerModal").classList.add("open");
-      }
-      function closeModal() {
-        document.getElementById("centerModal").classList.remove("open");
-      }
-
-      async function saveCenter() {
-        const id = document.getElementById("editId").value;
-        const slug = document
-          .getElementById("fSlug")
-          .value.trim()
-          .toLowerCase();
-        const name_bn = document.getElementById("fNameBn").value.trim();
-        const name_en = document.getElementById("fNameEn").value.trim();
-        const location = document.getElementById("fLocation").value.trim();
-        const db_url = document.getElementById("fDbUrl").value.trim();
-        const currency = document.getElementById("fCurrency").value;
-        if (!name_bn || !name_en) return showToast("নাম দিন।");
-        if (!id && (!slug || !db_url)) return showToast("Slug ও DB URL দিন।");
-        try {
-          let res;
-          if (id) {
-            const cur = centers.find((c) => c.id == id);
-            res = await fetch(`${API}/tenants/${id}`, {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + token,
-              },
-              body: JSON.stringify({
-                name_bn,
-                name_en,
-                location,
-                db_url: db_url || cur?.db_url || "",
-                currency,
-                active: cur?.active ?? true,
-              }),
-            });
-          } else {
-            res = await fetch(`${API}/tenants`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: "Bearer " + token,
-              },
-              body: JSON.stringify({
-                slug,
-                name_bn,
-                name_en,
-                location,
-                db_url,
-                currency,
-              }),
-            });
-          }
-          const d = await res.json();
-          if (!d.success) return showToast(d.message || d.error);
-          showToast(d.message);
-          closeModal();
-          loadCenters();
-          loadAllStats();
-        } catch {
-          showToast("সমস্যা হয়েছে।");
-        }
-      }
-
-      async function toggleCenter(id) {
-        try {
-          const r = await fetch(`${API}/tenants/${id}/toggle`, {
-            method: "POST",
-            headers: { Authorization: "Bearer " + token },
-          });
-          const d = await r.json();
-          showToast(d.message);
-          loadCenters();
-          loadAllStats();
-        } catch {}
-      }
-
-      async function deleteCenter(id, name) {
-        if (
-          !confirm(
-            `"${name}" মুছে ফেলবেন? এই কাজ পূর্বাবস্থায় ফেরানো যাবে না।`,
-          )
-        )
-          return;
-        try {
-          const r = await fetch(`${API}/tenants/${id}`, {
-            method: "DELETE",
-            headers: { Authorization: "Bearer " + token },
-          });
-          const d = await r.json();
-          showToast(d.message);
-          loadCenters();
-          loadAllStats();
-        } catch {}
-      }
-
-      // ════ HELPERS ════
-      function showToast(msg) {
-        const t = document.getElementById("toast");
-        t.textContent = msg;
-        t.classList.add("show");
-        setTimeout(() => t.classList.remove("show"), 3000);
-      }
-      function fmt(n) {
-        return parseFloat(n || 0).toLocaleString("bn-BD", {
-          maximumFractionDigits: 0,
-        });
-      }
-      function fmtN(n) {
-        return parseInt(n || 0).toLocaleString("bn-BD");
-      }
-      function fmtK(n) {
-        const v = parseFloat(n || 0);
-        if (v >= 100000) return (v / 100000).toFixed(1) + "L";
-        if (v >= 1000) return (v / 1000).toFixed(1) + "K";
-        return v.toFixed(0);
-      }
-      function typeLabel(t) {
-        return (
-          {
-            seed: "বীজ",
-            cutting: "কাটিং",
-            layering: "লেয়ারিং",
-            grafting: "গ্রাফটিং",
-            budding: "বাডিং",
-            tissue_culture: "টিস্যু কালচার",
-            purchase: "ক্রয়",
-          }[t] || t
-        );
-      }
-      function roleLabel(r) {
-        return (
-          {
-            admin: "Admin",
-            manager: "Manager",
-            production_officer: "Production",
-            sales_operator: "Sales",
-            viewer: "Viewer",
-          }[r] || r
-        );
-      }
-      function roleClass(r) {
-        return (
-          { admin: "admin", manager: "manager", viewer: "viewer" }[r] ||
-          "viewer"
-        );
-      }
-      function roleColor(r) {
-        return (
-          {
-            admin: "#7c3aed",
-            manager: "#0ea5e9",
-            production_officer: "#10b981",
-            sales_operator: "#f59e0b",
-            viewer: "#64748b",
-          }[r] || "#64748b"
-        );
-      }
-      function incomeLabel(t) {
-        return (
-          {
-            agriculture: "কৃষি পণ্য বিক্রয়",
-            dormitory: "ডরমিটরি ভাড়া",
-            other: "অন্যান্য",
-          }[t] || t
-        );
-      }
-      function dmgLabel(r) {
-        return (
-          {
-            disease: "রোগ",
-            drought: "খরা",
-            flood: "বন্যা",
-            pest: "পোকামাকড়",
-            cold: "ঠান্ডা",
-            other: "অন্যান্য",
-          }[r] || r
-        );
-      }
-      function monthLabel(m) {
-        return (
-          [
-            "",
-            "জানুয়ারি",
-            "ফেব্রুয়ারি",
-            "মার্চ",
-            "এপ্রিল",
-            "মে",
-            "জুন",
-            "জুলাই",
-            "আগস্ট",
-            "সেপ্টেম্বর",
-            "অক্টোবর",
-            "নভেম্বর",
-            "ডিসেম্বর",
-          ][m] || m
-        );
-      }
+                  // ════ HELPERS ════
+                  function showToast(msg) {
+                    const t = document.getElementById("toast");
+                    t.textContent = msg;
+                    t.classList.add("show");
+                    setTimeout(() => t.classList.remove("show"), 3000);
+                  }
+                  function fmt(n) {
+                    return parseFloat(n || 0).toLocaleString("bn-BD", {
+                      maximumFractionDigits: 0,
+                    });
+                  }
+                  function fmtN(n) {
+                    return parseInt(n || 0).toLocaleString("bn-BD");
+                  }
+                  function fmtK(n) {
+                    const v = parseFloat(n || 0);
+                    if (v >= 100000) return (v / 100000).toFixed(1) + "L";
+                    if (v >= 1000) return (v / 1000).toFixed(1) + "K";
+                    return v.toFixed(0);
+                  }
+                  function typeLabel(t) {
+                    return (
+                      {
+                        seed: "বীজ",
+                        cutting: "কাটিং",
+                        layering: "লেয়ারিং",
+                        grafting: "গ্রাফটিং",
+                        budding: "বাডিং",
+                        tissue_culture: "টিস্যু কালচার",
+                        purchase: "ক্রয়",
+                      }[t] || t
+                    );
+                  }
+                  function roleLabel(r) {
+                    return (
+                      {
+                        admin: "Admin",
+                        manager: "Manager",
+                        production_officer: "Production",
+                        sales_operator: "Sales",
+                        viewer: "Viewer",
+                      }[r] || r
+                    );
+                  }
+                  function roleClass(r) {
+                    return (
+                      { admin: "admin", manager: "manager", viewer: "viewer" }[r] ||
+                      "viewer"
+                    );
+                  }
+                  function roleColor(r) {
+                    return (
+                      {
+                        admin: "#7c3aed",
+                        manager: "#0ea5e9",
+                        production_officer: "#10b981",
+                        sales_operator: "#f59e0b",
+                        viewer: "#64748b",
+                      }[r] || "#64748b"
+                    );
+                  }
+                  function incomeLabel(t) {
+                    return (
+                      {
+                        agriculture: "কৃষি পণ্য বিক্রয়",
+                        dormitory: "ডরমিটরি ভাড়া",
+                        other: "অন্যান্য",
+                      }[t] || t
+                    );
+                  }
+                  function dmgLabel(r) {
+                    return (
+                      {
+                        disease: "রোগ",
+                        drought: "খরা",
+                        flood: "বন্যা",
+                        pest: "পোকামাকড়",
+                        cold: "ঠান্ডা",
+                        other: "অন্যান্য",
+                      }[r] || r
+                    );
+                  }
+                  function monthLabel(m) {
+                    return (
+                      [
+                        "",
+                        "জানুয়ারি",
+                        "ফেব্রুয়ারি",
+                        "মার্চ",
+                        "এপ্রিল",
+                        "মে",
+                        "জুন",
+                        "জুলাই",
+                        "আগস্ট",
+                        "সেপ্টেম্বর",
+                        "অক্টোবর",
+                        "নভেম্বর",
+                        "ডিসেম্বর",
+                      ][m] || m
+                    );
+                  }
     </script>
   </body>
 </html>

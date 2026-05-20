@@ -41,24 +41,45 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
     const r = await masterDb.query(
-      "SELECT * FROM super_admins WHERE email=$1",
+      "SELECT * FROM super_admins WHERE email=$1 AND is_active=true",
       [email],
     );
     if (!r.rows.length)
       return res
         .status(401)
         .json({ success: false, message: "ইমেইল বা পাসওয়ার্ড ভুল।" });
+
     const isMatch = await bcrypt.compare(password, r.rows[0].password);
     if (!isMatch)
       return res
         .status(401)
         .json({ success: false, message: "ইমেইল বা পাসওয়ার্ড ভুল।" });
+
+    // Assigned centers বের করো
+    const assignments = await masterDb.query(
+      "SELECT tenant_slug FROM admin_center_assignments WHERE admin_id=$1",
+      [r.rows[0].id],
+    );
+    const assignedCenters = assignments.rows.map((a) => a.tenant_slug);
+
     const token = jwt.sign(
-      { id: r.rows[0].id, email: r.rows[0].email, name: r.rows[0].name },
+      {
+        id: r.rows[0].id,
+        email: r.rows[0].email,
+        name: r.rows[0].name,
+        role: r.rows[0].role,
+        assignedCenters: assignedCenters,
+      },
       SA_SECRET,
       { expiresIn: "8h" },
     );
-    res.json({ success: true, token, name: r.rows[0].name });
+    res.json({
+      success: true,
+      token,
+      name: r.rows[0].name,
+      role: r.rows[0].role,
+      assignedCenters,
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
