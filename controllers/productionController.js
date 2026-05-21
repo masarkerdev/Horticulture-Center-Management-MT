@@ -88,12 +88,10 @@ const createSeedBatch = async (req, res) => {
   } = req.body;
 
   if (!seedling_id || !sowing_date || !produced_quantity) {
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: "চারা, বপন তারিখ ও উৎপাদিত পরিমাণ দিন।",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "চারা, বপন তারিখ ও উৎপাদিত পরিমাণ দিন।",
+    });
   }
 
   const client = await db.pool.connect();
@@ -167,13 +165,11 @@ const createSeedBatch = async (req, res) => {
     );
 
     await client.query("COMMIT");
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "বীজ উৎপাদন ব্যাচ তৈরি হয়েছে।",
-        data: batch,
-      });
+    res.status(201).json({
+      success: true,
+      message: "বীজ উৎপাদন ব্যাচ তৈরি হয়েছে।",
+      data: batch,
+    });
   } catch (err) {
     await client.query("ROLLBACK");
     res.status(500).json({ success: false, error: err.message });
@@ -271,13 +267,11 @@ const createAsexualBatch = async (req, res) => {
     );
 
     await client.query("COMMIT");
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "অঙ্গজ বংশবিস্তার ব্যাচ তৈরি হয়েছে।",
-        data: batch,
-      });
+    res.status(201).json({
+      success: true,
+      message: "অঙ্গজ বংশবিস্তার ব্যাচ তৈরি হয়েছে।",
+      data: batch,
+    });
   } catch (err) {
     await client.query("ROLLBACK");
     res.status(500).json({ success: false, error: err.message });
