@@ -16,6 +16,12 @@ function saAuth(req, res, next) {
     catch { res.status(401).json({ success: false, message: 'Session শেষ।' }); }
 }
 
+function directorOnly(req, res, next) {
+    if (req.saUser.role !== 'director')
+        return res.status(403).json({ success: false, message: 'শুধু পরিচালক করতে পারবেন।' });
+    next();
+}
+
 async function queryTenant(dbUrl, sql, params = []) {
     const pool = new Pool({ connectionString: dbUrl, ssl: { rejectUnauthorized: false }, max: 1, connectionTimeoutMillis: 8000 });
     try { const r = await pool.query(sql, params); return r.rows; }
@@ -71,7 +77,7 @@ router.get('/tenants', saAuth, async (req, res) => {
             query += ` WHERE slug IN (${placeholders})`;
             params = req.saUser.assignedCenters;
         }
-        query += ' ORDER BY category,created_at DESC';
+        query += ' ORDER BY category, slug';
         const r = await masterDb.query(query, params);
         res.json({ success: true, data: r.rows });
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
@@ -121,6 +127,7 @@ router.get('/stats-all', saAuth, async (req, res) => {
                     return {
                         slug, name_bn: tenant.name_bn, name_en: tenant.name_en,
                         location: tenant.location, category: tenant.category,
+                        district: tenant.district, division: tenant.division,
                         total_revenue: parseFloat(sales[0].total_revenue),
                         total_invoices: parseInt(sales[0].total_invoices),
                         today_revenue: parseFloat(todaySales[0].today_revenue),
@@ -148,7 +155,7 @@ router.get('/stats-all', saAuth, async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// ===== COMPREHENSIVE CENTER DATA =====
+// ===== CENTER DETAIL =====
 router.get('/center/:slug', saAuth, async (req, res) => {
     if (req.saUser.role !== 'director' && req.saUser.assignedCenters?.length > 0) {
         if (!req.saUser.assignedCenters.includes(req.params.slug)) {
@@ -194,9 +201,8 @@ router.get('/center/:slug', saAuth, async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-// ===== ADD/UPDATE/TOGGLE/DELETE TENANT (Director only) =====
-router.post('/tenants', saAuth, async (req, res) => {
-    if (req.saUser.role !== 'director') return res.status(403).json({ success: false, message: 'শুধু পরিচালক করতে পারবেন।' });
+// ===== TENANT CRUD (Director only) =====
+router.post('/tenants', saAuth, directorOnly, async (req, res) => {
     const { slug, name_bn, name_en, location, district, division, category, db_url, currency } = req.body;
     if (!slug||!name_bn||!name_en||!db_url) return res.status(400).json({ success: false, message: 'সব তথ্য দিন।' });
     try {
@@ -207,41 +213,121 @@ router.post('/tenants', saAuth, async (req, res) => {
             [slug.toLowerCase(),name_bn,name_en,location||'',district||'',division||'',category||'B',db_url,currency||'BDT']
         );
         clearCache();
-        res.json({ success: true, message: 'নতুন center যোগ হয়েছে।', data: r.rows[0] });
+        res.json({ success: true, message: `"${name_bn}" যোগ হয়েছে।`, data: r.rows[0] });
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-router.put('/tenants/:id', saAuth, async (req, res) => {
-    if (req.saUser.role !== 'director') return res.status(403).json({ success: false, message: 'শুধু পরিচালক করতে পারবেন।' });
+router.put('/tenants/:id', saAuth, directorOnly, async (req, res) => {
     const { name_bn, name_en, location, district, division, category, db_url, currency, active } = req.body;
     try {
         await masterDb.query(
             `UPDATE tenants SET name_bn=$1,name_en=$2,location=$3,district=$4,division=$5,category=$6,db_url=$7,currency=$8,active=$9,updated_at=NOW() WHERE id=$10`,
-            [name_bn,name_en,location,district||'',division||'',category||'B',db_url,currency,active,req.params.id]
+            [name_bn,name_en,location||'',district||'',division||'',category||'B',db_url,currency,active,req.params.id]
         );
         clearCache();
         res.json({ success: true, message: 'আপডেট হয়েছে।' });
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-router.post('/tenants/:id/toggle', saAuth, async (req, res) => {
-    if (req.saUser.role !== 'director') return res.status(403).json({ success: false, message: 'শুধু পরিচালক করতে পারবেন।' });
+router.post('/tenants/:id/toggle', saAuth, directorOnly, async (req, res) => {
     try {
-        const cur = await masterDb.query('SELECT active,name_en FROM tenants WHERE id=$1', [req.params.id]);
+        const cur = await masterDb.query('SELECT active,name_bn FROM tenants WHERE id=$1', [req.params.id]);
         if (!cur.rows.length) return res.status(404).json({ success: false, message: 'পাওয়া যায়নি।' });
         const newStatus = !cur.rows[0].active;
         await masterDb.query('UPDATE tenants SET active=$1,updated_at=NOW() WHERE id=$2', [newStatus,req.params.id]);
         clearCache();
-        res.json({ success: true, message: cur.rows[0].name_en+(newStatus?' সক্রিয়।':' বন্ধ।'), active: newStatus });
+        res.json({ success: true, message: cur.rows[0].name_bn+(newStatus?' সক্রিয়।':' বন্ধ।'), active: newStatus });
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
-router.delete('/tenants/:id', saAuth, async (req, res) => {
-    if (req.saUser.role !== 'director') return res.status(403).json({ success: false, message: 'শুধু পরিচালক করতে পারবেন।' });
+router.delete('/tenants/:id', saAuth, directorOnly, async (req, res) => {
     try {
         await masterDb.query('DELETE FROM tenants WHERE id=$1', [req.params.id]);
         clearCache();
         res.json({ success: true, message: 'মুছে ফেলা হয়েছে।' });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+// ===== ADMIN MANAGEMENT (Director only) =====
+
+// সব admin list
+router.get('/admins', saAuth, directorOnly, async (req, res) => {
+    try {
+        const r = await masterDb.query(
+            `SELECT sa.id, sa.name, sa.email, sa.role, sa.district, sa.division, sa.phone, sa.is_active, sa.created_at,
+             COALESCE(json_agg(aca.tenant_slug) FILTER (WHERE aca.tenant_slug IS NOT NULL), '[]') AS assigned_centers
+             FROM super_admins sa
+             LEFT JOIN admin_center_assignments aca ON sa.id = aca.admin_id
+             GROUP BY sa.id ORDER BY sa.role, sa.name`
+        );
+        res.json({ success: true, data: r.rows });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+// নতুন admin তৈরি
+router.post('/admins', saAuth, directorOnly, async (req, res) => {
+    const { name, email, password, role, district, division, phone, assigned_centers } = req.body;
+    if (!name||!email||!password||!role) return res.status(400).json({ success: false, message: 'নাম, ইমেইল, পাসওয়ার্ড ও পদবী দিন।' });
+    try {
+        const ex = await masterDb.query('SELECT id FROM super_admins WHERE email=$1', [email]);
+        if (ex.rows.length) return res.status(400).json({ success: false, message: 'এই ইমেইল আগে থেকে আছে।' });
+
+        const hash = await bcrypt.hash(password, 10);
+        const r = await masterDb.query(
+            `INSERT INTO super_admins (name,email,password,role,district,division,phone,is_active) VALUES($1,$2,$3,$4,$5,$6,$7,true) RETURNING id`,
+            [name,email,hash,role,district||'',division||'',phone||'']
+        );
+        const adminId = r.rows[0].id;
+
+        // Center assignments
+        if (assigned_centers?.length > 0) {
+            const values = assigned_centers.map(slug => `(${adminId},'${slug}')`).join(',');
+            await masterDb.query(`INSERT INTO admin_center_assignments (admin_id,tenant_slug) VALUES ${values}`);
+        }
+
+        res.json({ success: true, message: `"${name}" তৈরি হয়েছে।`, id: adminId });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+// admin আপডেট
+router.put('/admins/:id', saAuth, directorOnly, async (req, res) => {
+    const { name, email, role, district, division, phone, is_active, password } = req.body;
+    try {
+        if (password) {
+            const hash = await bcrypt.hash(password, 10);
+            await masterDb.query(
+                `UPDATE super_admins SET name=$1,email=$2,role=$3,district=$4,division=$5,phone=$6,is_active=$7,password=$8 WHERE id=$9`,
+                [name,email,role,district||'',division||'',phone||'',is_active,hash,req.params.id]
+            );
+        } else {
+            await masterDb.query(
+                `UPDATE super_admins SET name=$1,email=$2,role=$3,district=$4,division=$5,phone=$6,is_active=$7 WHERE id=$8`,
+                [name,email,role,district||'',division||'',phone||'',is_active,req.params.id]
+            );
+        }
+        res.json({ success: true, message: 'আপডেট হয়েছে।' });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+// admin delete
+router.delete('/admins/:id', saAuth, directorOnly, async (req, res) => {
+    try {
+        await masterDb.query('DELETE FROM admin_center_assignments WHERE admin_id=$1', [req.params.id]);
+        await masterDb.query('DELETE FROM super_admins WHERE id=$1', [req.params.id]);
+        res.json({ success: true, message: 'মুছে ফেলা হয়েছে।' });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+// admin-এর center assignment আপডেট
+router.put('/admins/:id/assignments', saAuth, directorOnly, async (req, res) => {
+    const { assigned_centers } = req.body;
+    try {
+        await masterDb.query('DELETE FROM admin_center_assignments WHERE admin_id=$1', [req.params.id]);
+        if (assigned_centers?.length > 0) {
+            const values = assigned_centers.map(slug => `(${req.params.id},'${slug}')`).join(',');
+            await masterDb.query(`INSERT INTO admin_center_assignments (admin_id,tenant_slug) VALUES ${values}`);
+        }
+        res.json({ success: true, message: 'Assignment আপডেট হয়েছে।' });
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 

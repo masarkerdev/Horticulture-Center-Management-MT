@@ -262,6 +262,10 @@ tr:hover td{background:#1a2438}
           <button class="nav-item" onclick="navTo('allCenters',this)" id="nav-allCenters">
             <i class="ti ti-settings"></i> সব Center পরিচালনা
           </button>
+          <button class="nav-item" onclick="navTo('adminMgmt',this)" id="nav-adminMgmt">
+            <i class="ti ti-users-group"></i> Admin পরিচালনা
+            <span class="badge" id="badge-admins">—</span>
+          </button>
         </div>
       </nav>
 
@@ -391,8 +395,21 @@ function showApp(){
 function saLogout(){localStorage.removeItem('sa_token');location.reload();}
 
 async function loadAll(){
-  await Promise.all([loadCenters(),loadAllStats()]);
+  await Promise.all([loadCenters(),loadAllStats(),loadAdmins()]);
   renderView(currentView);
+}
+
+let allAdmins=[];
+async function loadAdmins(){
+  if(userRole!=='director') return;
+  try{
+    const r=await fetch(API+'/admins',{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();
+    if(d.success){
+      allAdmins=d.data;
+      document.getElementById('badge-admins').textContent=d.data.length;
+    }
+  }catch{}
 }
 
 async function refreshAll(){await loadAll();}
@@ -421,7 +438,7 @@ function navTo(view,btn){
   btn.classList.add('active');
   currentView=view;
   if(view==='detail') return;
-  const titles={overview:'📊 Overview',catA:'🏛️ A Category — উপপরিচালক',catB:'🌿 B Category — উদ্যানতত্ত্ববিদ',catC:'🪴 C Category — নার্সারী তত্ত্বাবধায়ক',compare:'📈 তুলনামূলক রিপোর্ট',allCenters:'⚙️ সব Center পরিচালনা'};
+  const titles={overview:'📊 Overview',catA:'🏛️ A Category — উপপরিচালক',catB:'🌿 B Category — উদ্যানতত্ত্ববিদ',catC:'🪴 C Category — নার্সারী তত্ত্বাবধায়ক',compare:'📈 তুলনামূলক রিপোর্ট',allCenters:'⚙️ সব Center পরিচালনা',adminMgmt:'👥 Admin পরিচালনা'};
   document.getElementById('topbarTitle').textContent=titles[view]||'Overview';
   renderView(view);
 }
@@ -434,6 +451,7 @@ function renderView(view){
   else if(view==='catC') renderCategoryView(el,'C');
   else if(view==='compare') renderCompareView(el);
   else if(view==='allCenters') renderAllCenters(el);
+  else if(view==='adminMgmt') renderAdminMgmt(el);
 }
 
 // ── OVERVIEW ──
@@ -756,6 +774,195 @@ async function saveCenter(){
 
 async function toggleCenter(id){
   try{const r=await fetch(`${API}/tenants/${id}/toggle`,{method:'POST',headers:{Authorization:'Bearer '+token}});const d=await r.json();showToast(d.message);await loadAll();renderView(currentView);}catch{}
+}
+
+// ── ADMIN MANAGEMENT ──
+function renderAdminMgmt(el){
+  const roleLabels={director:'পরিচালক',deputy_director:'উপপরিচালক',horticulturist:'উদ্যানতত্ত্ববিদ',nursery_supervisor:'নার্সারী তত্ত্বাবধায়ক'};
+  const roleColors={director:'#7c3aed',deputy_director:'#059669',horticulturist:'#0284c7',nursery_supervisor:'#d97706'};
+
+  el.innerHTML=`
+    <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+      <button class="h-btn primary" onclick="openAdminModal()">
+        <i class="ti ti-user-plus"></i> নতুন Admin তৈরি
+      </button>
+    </div>
+    ${allAdmins.length===0?'<div class="empty"><i class="ti ti-users"></i>কোনো Admin নেই।</div>':
+    `<div class="center-list">
+      ${allAdmins.map(a=>`
+        <div class="h-card" style="border-left:4px solid ${roleColors[a.role]||'#7c3aed'}">
+          <div style="width:44px;height:44px;border-radius:10px;background:${roleColors[a.role]||'#7c3aed'}22;border:1px solid ${roleColors[a.role]||'#7c3aed'}44;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:${roleColors[a.role]||'#7c3aed'};flex-shrink:0">
+            ${a.name.charAt(0).toUpperCase()}
+          </div>
+          <div class="h-card-info">
+            <div class="h-card-name">${a.name}</div>
+            <div class="h-card-sub">
+              <span style="color:${roleColors[a.role]||'#7c3aed'};font-weight:600">${roleLabels[a.role]||a.role}</span>
+              ${a.district?' • '+a.district:''}
+              ${a.email?' • '+a.email:''}
+            </div>
+            <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
+              ${a.assigned_centers.map(slug=>`
+                <span style="background:#1e293b;border:1px solid #334155;padding:2px 8px;border-radius:6px;font-size:10px;color:#94a3b8">
+                  ${slug}
+                </span>`).join('')}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <span class="pill ${a.is_active?'on':'off'}">${a.is_active?'সক্রিয়':'বন্ধ'}</span>
+          </div>
+          <div class="h-card-actions">
+            <button class="h-btn" onclick="openAdminModal(${a.id})"><i class="ti ti-edit"></i> সম্পাদনা</button>
+            <button class="h-btn" onclick="openAssignModal(${a.id})" style="color:var(--accent)"><i class="ti ti-link"></i> Center Assign</button>
+            ${a.role!=='director'?`<button class="h-btn" onclick="deleteAdmin(${a.id},'${a.name}')" style="color:var(--red)"><i class="ti ti-trash"></i></button>`:''}
+          </div>
+        </div>`).join('')}
+    </div>`}
+
+    <!-- Admin Modal -->
+    <div class="modal" id="adminModal">
+      <div class="modal-box">
+        <div class="modal-hdr">
+          <h3 id="adminModalTitle">নতুন Admin তৈরি</h3>
+          <button class="close-btn" onclick="closeAdminModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <input type="hidden" id="adminEditId"/>
+        <div class="fg-row">
+          <div class="fg"><label>নাম*</label><input id="aName" placeholder="মোঃ করিম"/></div>
+          <div class="fg"><label>পদবী*</label>
+            <select id="aRole">
+              <option value="deputy_director">উপপরিচালক</option>
+              <option value="horticulturist">উদ্যানতত্ত্ববিদ</option>
+              <option value="nursery_supervisor">নার্সারী তত্ত্বাবধায়ক</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg"><label>ইমেইল*</label><input id="aEmail" type="email" placeholder="dd.feni@horticulture.bd"/></div>
+        <div class="fg"><label>পাসওয়ার্ড* <span id="passHint" style="color:var(--muted);font-weight:400">(নতুন তৈরিতে আবশ্যক)</span></label>
+          <input id="aPassword" type="password" placeholder="••••••••"/>
+        </div>
+        <div class="fg-row">
+          <div class="fg"><label>জেলা</label><input id="aDistrict" placeholder="ফেনী"/></div>
+          <div class="fg"><label>বিভাগ</label><input id="aDivision" placeholder="চট্টগ্রাম"/></div>
+        </div>
+        <div class="fg"><label>ফোন</label><input id="aPhone" placeholder="01700000000"/></div>
+        <div class="fg" id="aStatusFg" style="display:none">
+          <label>অবস্থা</label>
+          <select id="aIsActive"><option value="true">সক্রিয়</option><option value="false">বন্ধ</option></select>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" onclick="closeAdminModal()">বাতিল</button>
+          <button class="btn-save" onclick="saveAdmin()">সংরক্ষণ</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Assign Modal -->
+    <div class="modal" id="assignModal">
+      <div class="modal-box">
+        <div class="modal-hdr">
+          <h3>Center Assign করুন</h3>
+          <button class="close-btn" onclick="closeAssignModal()"><i class="ti ti-x"></i></button>
+        </div>
+        <input type="hidden" id="assignAdminId"/>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:14px">যে center গুলো এই admin দেখবেন সেগুলো select করুন</p>
+        <div id="centerCheckboxes" style="display:flex;flex-direction:column;gap:8px;max-height:300px;overflow-y:auto"></div>
+        <div class="modal-footer">
+          <button class="btn-cancel" onclick="closeAssignModal()">বাতিল</button>
+          <button class="btn-save" onclick="saveAssignments()">সংরক্ষণ</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function openAdminModal(id){
+  document.getElementById('adminModal').classList.add('open');
+  if(id){
+    const a=allAdmins.find(x=>x.id===id);if(!a)return;
+    document.getElementById('adminModalTitle').textContent='Admin সম্পাদনা';
+    document.getElementById('adminEditId').value=a.id;
+    document.getElementById('aName').value=a.name;
+    document.getElementById('aEmail').value=a.email;
+    document.getElementById('aRole').value=a.role;
+    document.getElementById('aDistrict').value=a.district||'';
+    document.getElementById('aDivision').value=a.division||'';
+    document.getElementById('aPhone').value=a.phone||'';
+    document.getElementById('aPassword').value='';
+    document.getElementById('aPassword').placeholder='খালি রাখলে পরিবর্তন হবে না';
+    document.getElementById('passHint').textContent='(খালি রাখলে পরিবর্তন হবে না)';
+    document.getElementById('aIsActive').value=a.is_active?'true':'false';
+    document.getElementById('aStatusFg').style.display='block';
+  }else{
+    document.getElementById('adminModalTitle').textContent='নতুন Admin তৈরি';
+    document.getElementById('adminEditId').value='';
+    ['aName','aEmail','aPassword','aDistrict','aDivision','aPhone'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('aPassword').placeholder='••••••••';
+    document.getElementById('passHint').textContent='(আবশ্যক)';
+    document.getElementById('aRole').value='deputy_director';
+    document.getElementById('aStatusFg').style.display='none';
+  }
+}
+function closeAdminModal(){document.getElementById('adminModal').classList.remove('open');}
+
+async function saveAdmin(){
+  const id=document.getElementById('adminEditId').value;
+  const data={
+    name:document.getElementById('aName').value.trim(),
+    email:document.getElementById('aEmail').value.trim(),
+    role:document.getElementById('aRole').value,
+    district:document.getElementById('aDistrict').value.trim(),
+    division:document.getElementById('aDivision').value.trim(),
+    phone:document.getElementById('aPhone').value.trim(),
+    password:document.getElementById('aPassword').value,
+    is_active:id?document.getElementById('aIsActive').value==='true':true
+  };
+  if(!data.name||!data.email||!data.role) return showToast('নাম, ইমেইল ও পদবী দিন।');
+  if(!id&&!data.password) return showToast('নতুন admin-এর জন্য পাসওয়ার্ড দিন।');
+  try{
+    const url=id?`${API}/admins/${id}`:`${API}/admins`;
+    const method=id?'PUT':'POST';
+    const r=await fetch(url,{method,headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify(data)});
+    const d=await r.json();
+    if(!d.success) return showToast(d.message||d.error);
+    showToast(d.message);closeAdminModal();await loadAdmins();renderView('adminMgmt');
+  }catch{showToast('সমস্যা হয়েছে।');}
+}
+
+async function deleteAdmin(id,name){
+  if(!confirm(`"${name}" মুছে ফেলবেন?`))return;
+  try{
+    const r=await fetch(`${API}/admins/${id}`,{method:'DELETE',headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();showToast(d.message);await loadAdmins();renderView('adminMgmt');
+  }catch{}
+}
+
+function openAssignModal(adminId){
+  document.getElementById('assignAdminId').value=adminId;
+  const admin=allAdmins.find(a=>a.id===adminId);
+  const assigned=admin?.assigned_centers||[];
+  const cb=document.getElementById('centerCheckboxes');
+  cb.innerHTML=centers.map(c=>`
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:#0f172a;border-radius:8px;cursor:pointer">
+      <input type="checkbox" value="${c.slug}" ${assigned.includes(c.slug)?'checked':''} style="width:16px;height:16px;accent-color:var(--accent)"/>
+      <div>
+        <div style="font-size:13px;font-weight:600">${c.name_bn}</div>
+        <div style="font-size:11px;color:var(--muted)">${c.slug} • ${c.category} Category • ${c.district||''}</div>
+      </div>
+    </label>`).join('');
+  document.getElementById('assignModal').classList.add('open');
+}
+function closeAssignModal(){document.getElementById('assignModal').classList.remove('open');}
+
+async function saveAssignments(){
+  const adminId=document.getElementById('assignAdminId').value;
+  const checkboxes=document.getElementById('centerCheckboxes').querySelectorAll('input[type=checkbox]:checked');
+  const assigned_centers=[...checkboxes].map(cb=>cb.value);
+  try{
+    const r=await fetch(`${API}/admins/${adminId}/assignments`,{method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({assigned_centers})});
+    const d=await r.json();
+    if(!d.success) return showToast(d.message||d.error);
+    showToast(d.message);closeAssignModal();await loadAdmins();renderView('adminMgmt');
+  }catch{showToast('সমস্যা হয়েছে।');}
 }
 
 // ── HELPERS ──
