@@ -328,7 +328,15 @@ const COLORS=['#7c3aed','#0ea5e9','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6
 
 if(token) showApp();
 
-function decodeToken(t){try{return JSON.parse(atob(t.split('.')[1]));}catch{return {};}}
+function decodeToken(t){
+  try{
+    const base64=t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    const decoded=decodeURIComponent(
+      atob(base64).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')
+    );
+    return JSON.parse(decoded);
+  }catch{return {};}
+}
 
 async function saLogin(){
   const email=document.getElementById('saEmail').value.trim();
