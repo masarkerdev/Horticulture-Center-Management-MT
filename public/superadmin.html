@@ -369,22 +369,18 @@ function showApp(){
     nursery_supervisor:'নার্সারী তত্ত্বাবধায়ক'
   };
 
-  // Line 1: উপপরিচালক, হর্টিকালচার সেন্টার
-  const rTitles={
-    director:'পরিচালক, হর্টিকালচার উইং',
-    deputy_director:'উপপরিচালক, হর্টিকালচার সেন্টার',
-    horticulturist:'উদ্যানতত্ত্ববিদ, হর্টিকালচার সেন্টার',
-    nursery_supervisor:'নার্সারী তত্ত্বাবধায়ক, হর্টিকালচার সেন্টার'
-  };
-  document.getElementById('adminName').textContent=rTitles[userRole]||userRole;
-  document.getElementById('adminAv').textContent=(rLabels[userRole]||'A').charAt(0).toUpperCase();
-
-  // Line 2: স্থানের নাম, জেলা, বিভাগ
+  // Line 1: উপপরিচালক, পাচগাছিয়া
   const locationName=payload.name||'';
   const district=payload.district||'';
   const division=payload.division||'';
-  const line2=[locationName,district,division].filter(Boolean).join(', ');
-  document.getElementById('adminRole').textContent=line2||rLabels[userRole]||userRole;
+  document.getElementById('adminName').textContent=
+    rLabels[userRole]+(locationName?', '+locationName:'');
+  document.getElementById('adminAv').textContent=
+    (rLabels[userRole]||'A').charAt(0).toUpperCase();
+
+  // Line 2: হর্টিকালচার সেন্টার, পাচগাছিয়া, ফেনী, চট্টগ্রাম
+  const line2=['হর্টিকালচার সেন্টার',locationName,district,division].filter(Boolean).join(', ');
+  document.getElementById('adminRole').textContent=line2;
 
   if(userRole==='director') document.getElementById('directorOnly').style.display='block';
 
@@ -805,9 +801,9 @@ function renderAdminMgmt(el){
             ${a.name.charAt(0).toUpperCase()}
           </div>
           <div class="h-card-info">
-            <div class="h-card-name">${roleLabels[a.role]||a.role}, হর্টিকালচার সেন্টার</div>
+            <div class="h-card-name">${roleLabels[a.role]||a.role}${a.name?', '+a.name:''}</div>
             <div class="h-card-sub">
-              ${a.name?a.name+', ':''}${a.district||''}${a.division?', '+a.division:''}
+              হর্টিকালচার সেন্টার${a.name?', '+a.name:''}${a.district?', '+a.district:''}${a.division?', '+a.division:''}
             </div>
             <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
               ${a.assigned_centers.map(slug=>`
