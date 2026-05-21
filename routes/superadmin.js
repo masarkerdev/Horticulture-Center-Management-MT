@@ -1,246 +1,528 @@
 // routes/superadmin.js
-const express   = require('express');
-const router    = express.Router();
-const bcrypt    = require('bcryptjs');
-const jwt       = require('jsonwebtoken');
-const { Pool }  = require('pg');
-const masterDb  = require('../config/masterDb');
-const { clearCache, getTenants } = require('../lib/tenantCache');
+const express = require("express");
+const router = express.Router();
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const { Pool } = require("pg");
+const masterDb = require("../config/masterDb");
+const { clearCache, getTenants } = require("../lib/tenantCache");
 
-const SA_SECRET = process.env.SA_JWT_SECRET || 'sa-secret-change-this';
+const SA_SECRET = process.env.SA_JWT_SECRET || "sa-secret-change-this";
 
 function saAuth(req, res, next) {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ success: false, message: 'Login করুন।' });
-    try { req.saUser = jwt.verify(token, SA_SECRET); next(); }
-    catch { res.status(401).json({ success: false, message: 'Session শেষ।' }); }
+  const token = req.headers.authorization?.replace("Bearer ", "");
+  if (!token)
+    return res.status(401).json({ success: false, message: "Login করুন।" });
+  try {
+    req.saUser = jwt.verify(token, SA_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ success: false, message: "Session শেষ।" });
+  }
 }
 
 async function queryTenant(dbUrl, sql, params = []) {
-    const pool = new Pool({ connectionString: dbUrl, ssl: { rejectUnauthorized: false }, max: 1, connectionTimeoutMillis: 8000 });
-    try { const r = await pool.query(sql, params); return r.rows; }
-    finally { await pool.end(); }
+  const pool = new Pool({
+    connectionString: dbUrl,
+    ssl: { rejectUnauthorized: false },
+    max: 1,
+    connectionTimeoutMillis: 8000,
+  });
+  try {
+    const r = await pool.query(sql, params);
+    return r.rows;
+  } finally {
+    await pool.end();
+  }
 }
 
 // ===== LOGIN =====
-router.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    try {
-        const r = await masterDb.query(
-            'SELECT * FROM super_admins WHERE email=$1 AND is_active=true', [email]
-        );
-        if (!r.rows.length)
-            return res.status(401).json({ success: false, message: 'ইমেইল বা পাসওয়ার্ড ভুল।' });
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    const r = await masterDb.query(
+      "SELECT * FROM super_admins WHERE email=$1 AND is_active=true",
+      [email],
+    );
+    if (!r.rows.length)
+      return res
+        .status(401)
+        .json({ success: false, message: "ইমেইল বা পাসওয়ার্ড ভুল।" });
 
-        const isMatch = await bcrypt.compare(password, r.rows[0].password);
-        if (!isMatch)
-            return res.status(401).json({ success: false, message: 'ইমেইল বা পাসওয়ার্ড ভুল।' });
+    const isMatch = await bcrypt.compare(password, r.rows[0].password);
+    if (!isMatch)
+      return res
+        .status(401)
+        .json({ success: false, message: "ইমেইল বা পাসওয়ার্ড ভুল।" });
 
-        const assignments = await masterDb.query(
-            'SELECT tenant_slug FROM admin_center_assignments WHERE admin_id=$1',
-            [r.rows[0].id]
-        );
-        const assignedCenters = assignments.rows.map(a => a.tenant_slug);
+    const assignments = await masterDb.query(
+      "SELECT tenant_slug FROM admin_center_assignments WHERE admin_id=$1",
+      [r.rows[0].id],
+    );
+    const assignedCenters = assignments.rows.map((a) => a.tenant_slug);
 
-        const token = jwt.sign(
-            {
-                id:              r.rows[0].id,
-                email:           r.rows[0].email,
-                name:            r.rows[0].name,
-                role:            r.rows[0].role,
-                assignedCenters: assignedCenters
-            },
-            SA_SECRET,
-            { expiresIn: '8h' }
-        );
-        res.json({ success: true, token, name: r.rows[0].name, role: r.rows[0].role, assignedCenters });
-    } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
-    }
+    const token = jwt.sign(
+      {
+        id: r.rows[0].id,
+        email: r.rows[0].email,
+        name: r.rows[0].name,
+        role: r.rows[0].role,
+        district: r.rows[0].district,
+        division: r.rows[0].division,
+        assignedCenters: assignedCenters,
+      },
+      SA_SECRET,
+      { expiresIn: "8h" },
+    );
+    res.json({
+      success: true,
+      token,
+      name: r.rows[0].name,
+      role: r.rows[0].role,
+      assignedCenters,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // ===== TENANT LIST =====
-router.get('/tenants', saAuth, async (req, res) => {
-    try {
-        let query = 'SELECT id,slug,name_bn,name_en,location,district,division,category,currency,active,created_at FROM tenants';
-        let params = [];
-        if (req.saUser.role !== 'director' && req.saUser.assignedCenters?.length > 0) {
-            const placeholders = req.saUser.assignedCenters.map((_, i) => `$${i+1}`).join(',');
-            query += ` WHERE slug IN (${placeholders})`;
-            params = req.saUser.assignedCenters;
-        }
-        query += ' ORDER BY category,created_at DESC';
-        const r = await masterDb.query(query, params);
-        res.json({ success: true, data: r.rows });
-    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+router.get("/tenants", saAuth, async (req, res) => {
+  try {
+    let query =
+      "SELECT id,slug,name_bn,name_en,location,district,division,category,currency,active,created_at FROM tenants";
+    let params = [];
+    if (
+      req.saUser.role !== "director" &&
+      req.saUser.assignedCenters?.length > 0
+    ) {
+      const placeholders = req.saUser.assignedCenters
+        .map((_, i) => `$${i + 1}`)
+        .join(",");
+      query += ` WHERE slug IN (${placeholders})`;
+      params = req.saUser.assignedCenters;
+    }
+    query += " ORDER BY category,created_at DESC";
+    const r = await masterDb.query(query, params);
+    res.json({ success: true, data: r.rows });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // ===== ALL CENTER STATS =====
-router.get('/stats-all', saAuth, async (req, res) => {
-    try {
-        const tenants = await getTenants();
-        let tenantEntries = Object.entries(tenants);
+router.get("/stats-all", saAuth, async (req, res) => {
+  try {
+    const tenants = await getTenants();
+    let tenantEntries = Object.entries(tenants);
 
-        if (req.saUser.role !== 'director' && req.saUser.assignedCenters?.length > 0) {
-            tenantEntries = tenantEntries.filter(([slug]) =>
-                req.saUser.assignedCenters.includes(slug)
-            );
+    if (
+      req.saUser.role !== "director" &&
+      req.saUser.assignedCenters?.length > 0
+    ) {
+      tenantEntries = tenantEntries.filter(([slug]) =>
+        req.saUser.assignedCenters.includes(slug),
+      );
+    }
+
+    const results = await Promise.all(
+      tenantEntries.map(async ([slug, tenant]) => {
+        try {
+          const [
+            sales,
+            todaySales,
+            currentMonth,
+            lastMonth,
+            monthlyTarget,
+            production,
+            stock,
+            lowStock,
+          ] = await Promise.all([
+            queryTenant(
+              tenant.db_url,
+              `SELECT COALESCE(SUM(total_amount),0) AS total_revenue, COUNT(*) AS total_invoices FROM sales`,
+            ),
+            queryTenant(
+              tenant.db_url,
+              `SELECT COALESCE(SUM(total_amount),0) AS today_revenue FROM sales WHERE sale_date=CURRENT_DATE`,
+            ),
+            queryTenant(
+              tenant.db_url,
+              `SELECT COALESCE(SUM(total_amount),0) AS revenue FROM sales WHERE EXTRACT(MONTH FROM sale_date)=EXTRACT(MONTH FROM NOW()) AND EXTRACT(YEAR FROM sale_date)=EXTRACT(YEAR FROM NOW())`,
+            ),
+            queryTenant(
+              tenant.db_url,
+              `SELECT COALESCE(SUM(total_amount),0) AS revenue FROM sales WHERE EXTRACT(MONTH FROM sale_date)=EXTRACT(MONTH FROM NOW()-INTERVAL '1 month') AND EXTRACT(YEAR FROM sale_date)=EXTRACT(YEAR FROM (NOW()-INTERVAL '1 month'))`,
+            ),
+            queryTenant(
+              tenant.db_url,
+              `SELECT COALESCE(target_amount,0) AS target_amount FROM targets WHERE target_type='sales' AND target_month=EXTRACT(MONTH FROM NOW()) AND target_year=EXTRACT(YEAR FROM NOW()) LIMIT 1`,
+            ),
+            queryTenant(
+              tenant.db_url,
+              `SELECT COUNT(*) AS total_batches, COALESCE(SUM(produced_quantity),0) AS total_produced, COALESCE(AVG(CASE WHEN success_percent>0 THEN success_percent END),0) AS avg_success, COALESCE(SUM(available_quantity),0) AS total_available FROM production_batches`,
+            ),
+            queryTenant(
+              tenant.db_url,
+              `SELECT COALESCE(SUM(current_stock),0) AS total_stock, COALESCE(SUM(current_stock*unit_price),0) AS stock_value, COUNT(*) AS total_species FROM seedlings WHERE is_active=true`,
+            ),
+            queryTenant(
+              tenant.db_url,
+              `SELECT COUNT(*) AS low_count FROM seedlings WHERE is_active=true AND current_stock<=min_stock_alert`,
+            ),
+          ]);
+
+          const curRev = parseFloat(currentMonth[0].revenue);
+          const lastRev = parseFloat(lastMonth[0].revenue);
+          const growthRate =
+            lastRev > 0
+              ? ((curRev - lastRev) / lastRev) * 100
+              : curRev > 0
+                ? 100
+                : 0;
+          const targetAmt = parseFloat(monthlyTarget[0]?.target_amount || 0);
+          const targetAchv =
+            targetAmt > 0 ? Math.min((curRev / targetAmt) * 100, 200) : null;
+          const totalSpecies = parseInt(stock[0].total_species) || 1;
+          const lowCount = parseInt(lowStock[0].low_count) || 0;
+          const stockHealth = Math.max(0, 1 - lowCount / totalSpecies) * 100;
+          const successRate = parseFloat(production[0].avg_success) || 0;
+          const perfScore = Math.round(
+            Math.min(Math.max(growthRate + 50, 0), 100) * 0.3 +
+              (targetAchv !== null ? Math.min(targetAchv, 100) : stockHealth) *
+                0.3 +
+              successRate * 0.2 +
+              stockHealth * 0.2,
+          );
+
+          return {
+            slug,
+            name_bn: tenant.name_bn,
+            name_en: tenant.name_en,
+            location: tenant.location,
+            category: tenant.category,
+            total_revenue: parseFloat(sales[0].total_revenue),
+            total_invoices: parseInt(sales[0].total_invoices),
+            today_revenue: parseFloat(todaySales[0].today_revenue),
+            total_produced: parseInt(production[0].total_produced),
+            total_stock: parseInt(stock[0].total_stock),
+            stock_value: parseFloat(stock[0].stock_value),
+            current_month_rev: curRev,
+            last_month_rev: lastRev,
+            growth_rate: parseFloat(growthRate.toFixed(1)),
+            target_amount: targetAmt,
+            target_achieved: targetAchv,
+            avg_success: parseFloat(successRate.toFixed(1)),
+            low_stock_count: lowCount,
+            total_species: parseInt(stock[0].total_species),
+            stock_health: parseFloat(stockHealth.toFixed(1)),
+            rev_per_batch: parseFloat(
+              (
+                parseFloat(sales[0].total_revenue) /
+                (parseInt(production[0].total_batches) || 1)
+              ).toFixed(0),
+            ),
+            perf_score: perfScore,
+            traffic_light:
+              perfScore >= 70 ? "green" : perfScore >= 45 ? "yellow" : "red",
+            status: "ok",
+          };
+        } catch (e) {
+          return {
+            slug,
+            name_en: tenant.name_en,
+            name_bn: tenant.name_bn,
+            status: "error",
+            error: e.message,
+          };
         }
-
-        const results = await Promise.all(
-            tenantEntries.map(async ([slug, tenant]) => {
-                try {
-                    const [sales, todaySales, currentMonth, lastMonth, monthlyTarget, production, stock, lowStock] = await Promise.all([
-                        queryTenant(tenant.db_url, `SELECT COALESCE(SUM(total_amount),0) AS total_revenue, COUNT(*) AS total_invoices FROM sales`),
-                        queryTenant(tenant.db_url, `SELECT COALESCE(SUM(total_amount),0) AS today_revenue FROM sales WHERE sale_date=CURRENT_DATE`),
-                        queryTenant(tenant.db_url, `SELECT COALESCE(SUM(total_amount),0) AS revenue FROM sales WHERE EXTRACT(MONTH FROM sale_date)=EXTRACT(MONTH FROM NOW()) AND EXTRACT(YEAR FROM sale_date)=EXTRACT(YEAR FROM NOW())`),
-                        queryTenant(tenant.db_url, `SELECT COALESCE(SUM(total_amount),0) AS revenue FROM sales WHERE EXTRACT(MONTH FROM sale_date)=EXTRACT(MONTH FROM NOW()-INTERVAL '1 month') AND EXTRACT(YEAR FROM sale_date)=EXTRACT(YEAR FROM (NOW()-INTERVAL '1 month'))`),
-                        queryTenant(tenant.db_url, `SELECT COALESCE(target_amount,0) AS target_amount FROM targets WHERE target_type='sales' AND target_month=EXTRACT(MONTH FROM NOW()) AND target_year=EXTRACT(YEAR FROM NOW()) LIMIT 1`),
-                        queryTenant(tenant.db_url, `SELECT COUNT(*) AS total_batches, COALESCE(SUM(produced_quantity),0) AS total_produced, COALESCE(AVG(CASE WHEN success_percent>0 THEN success_percent END),0) AS avg_success, COALESCE(SUM(available_quantity),0) AS total_available FROM production_batches`),
-                        queryTenant(tenant.db_url, `SELECT COALESCE(SUM(current_stock),0) AS total_stock, COALESCE(SUM(current_stock*unit_price),0) AS stock_value, COUNT(*) AS total_species FROM seedlings WHERE is_active=true`),
-                        queryTenant(tenant.db_url, `SELECT COUNT(*) AS low_count FROM seedlings WHERE is_active=true AND current_stock<=min_stock_alert`),
-                    ]);
-
-                    const curRev = parseFloat(currentMonth[0].revenue);
-                    const lastRev = parseFloat(lastMonth[0].revenue);
-                    const growthRate = lastRev > 0 ? ((curRev - lastRev) / lastRev * 100) : (curRev > 0 ? 100 : 0);
-                    const targetAmt = parseFloat(monthlyTarget[0]?.target_amount || 0);
-                    const targetAchv = targetAmt > 0 ? Math.min((curRev / targetAmt * 100), 200) : null;
-                    const totalSpecies = parseInt(stock[0].total_species) || 1;
-                    const lowCount = parseInt(lowStock[0].low_count) || 0;
-                    const stockHealth = Math.max(0, (1 - lowCount / totalSpecies)) * 100;
-                    const successRate = parseFloat(production[0].avg_success) || 0;
-                    const perfScore = Math.round(
-                        Math.min(Math.max(growthRate + 50, 0), 100) * 0.30 +
-                        (targetAchv !== null ? Math.min(targetAchv, 100) : stockHealth) * 0.30 +
-                        successRate * 0.20 + stockHealth * 0.20
-                    );
-
-                    return {
-                        slug, name_bn: tenant.name_bn, name_en: tenant.name_en,
-                        location: tenant.location, category: tenant.category,
-                        total_revenue: parseFloat(sales[0].total_revenue),
-                        total_invoices: parseInt(sales[0].total_invoices),
-                        today_revenue: parseFloat(todaySales[0].today_revenue),
-                        total_produced: parseInt(production[0].total_produced),
-                        total_stock: parseInt(stock[0].total_stock),
-                        stock_value: parseFloat(stock[0].stock_value),
-                        current_month_rev: curRev, last_month_rev: lastRev,
-                        growth_rate: parseFloat(growthRate.toFixed(1)),
-                        target_amount: targetAmt, target_achieved: targetAchv,
-                        avg_success: parseFloat(successRate.toFixed(1)),
-                        low_stock_count: lowCount,
-                        total_species: parseInt(stock[0].total_species),
-                        stock_health: parseFloat(stockHealth.toFixed(1)),
-                        rev_per_batch: parseFloat((parseFloat(sales[0].total_revenue) / (parseInt(production[0].total_batches) || 1)).toFixed(0)),
-                        perf_score: perfScore,
-                        traffic_light: perfScore >= 70 ? 'green' : perfScore >= 45 ? 'yellow' : 'red',
-                        status: 'ok'
-                    };
-                } catch (e) {
-                    return { slug, name_en: tenant.name_en, name_bn: tenant.name_bn, status: 'error', error: e.message };
-                }
-            })
-        );
-        res.json({ success: true, data: results });
-    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+      }),
+    );
+    res.json({ success: true, data: results });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // ===== COMPREHENSIVE CENTER DATA =====
-router.get('/center/:slug', saAuth, async (req, res) => {
-    if (req.saUser.role !== 'director' && req.saUser.assignedCenters?.length > 0) {
-        if (!req.saUser.assignedCenters.includes(req.params.slug)) {
-            return res.status(403).json({ success: false, message: 'এই center দেখার অনুমতি নেই।' });
-        }
+router.get("/center/:slug", saAuth, async (req, res) => {
+  if (
+    req.saUser.role !== "director" &&
+    req.saUser.assignedCenters?.length > 0
+  ) {
+    if (!req.saUser.assignedCenters.includes(req.params.slug)) {
+      return res
+        .status(403)
+        .json({ success: false, message: "এই center দেখার অনুমতি নেই।" });
     }
-    try {
-        const tenants = await getTenants();
-        const tenant  = tenants[req.params.slug];
-        if (!tenant) return res.status(404).json({ success: false, message: 'Center পাওয়া যায়নি।' });
+  }
+  try {
+    const tenants = await getTenants();
+    const tenant = tenants[req.params.slug];
+    if (!tenant)
+      return res
+        .status(404)
+        .json({ success: false, message: "Center পাওয়া যায়নি।" });
 
-        const [salesSummary, todaySales, monthlySales, productionSummary, productionByType,
-               stockSummary, lowStock, damagesSummary, topSeedlings, recentSales,
-               recentBatches, users, otherIncome, targets, categories] = await Promise.all([
-            queryTenant(tenant.db_url, `SELECT COUNT(*) AS total_invoices, COALESCE(SUM(total_amount),0) AS total_revenue, COALESCE(SUM(discount),0) AS total_discount, COALESCE(SUM(CASE WHEN payment_status='due' THEN total_amount ELSE 0 END),0) AS due_amount, COALESCE(SUM(CASE WHEN payment_status='paid' THEN total_amount ELSE 0 END),0) AS paid_amount FROM sales`),
-            queryTenant(tenant.db_url, `SELECT COALESCE(SUM(total_amount),0) AS today_revenue, COUNT(*) AS today_invoices FROM sales WHERE sale_date=CURRENT_DATE`),
-            queryTenant(tenant.db_url, `SELECT TO_CHAR(sale_date,'YYYY-MM') AS month, TO_CHAR(sale_date,'Mon YY') AS label, COALESCE(SUM(total_amount),0) AS revenue, COUNT(*) AS invoices FROM sales WHERE sale_date>=NOW()-INTERVAL '6 months' GROUP BY month,label ORDER BY month`),
-            queryTenant(tenant.db_url, `SELECT COUNT(*) AS total_batches, COALESCE(SUM(produced_quantity),0) AS total_produced, COALESCE(SUM(success_quantity),0) AS total_success, COALESCE(SUM(failed_quantity),0) AS total_failed, COALESCE(SUM(available_quantity),0) AS total_available, COALESCE(AVG(CASE WHEN success_percent>0 THEN success_percent END),0) AS avg_success, COUNT(CASE WHEN status='active' THEN 1 END) AS active_batches FROM production_batches`),
-            queryTenant(tenant.db_url, `SELECT production_type, COUNT(*) AS batches, COALESCE(SUM(produced_quantity),0) AS total_qty FROM production_batches GROUP BY production_type ORDER BY total_qty DESC`),
-            queryTenant(tenant.db_url, `SELECT COUNT(*) AS total_species, COALESCE(SUM(current_stock),0) AS total_stock, COALESCE(SUM(current_stock*unit_price),0) AS stock_value, COUNT(CASE WHEN current_stock<=min_stock_alert THEN 1 END) AS low_stock_count FROM seedlings WHERE is_active=true`),
-            queryTenant(tenant.db_url, `SELECT s.name_bn, s.seedling_code, s.current_stock, s.min_stock_alert, c.name_bn AS category FROM seedlings s LEFT JOIN categories c ON s.category_id=c.id WHERE s.is_active=true AND s.current_stock<=s.min_stock_alert ORDER BY s.current_stock ASC LIMIT 8`),
-            queryTenant(tenant.db_url, `SELECT COUNT(*) AS total_reports, COALESCE(SUM(quantity),0) AS total_damaged, reason, COUNT(*) AS count FROM damages GROUP BY reason ORDER BY count DESC`),
-            queryTenant(tenant.db_url, `SELECT s.name_bn, s.variety, s.unit_price, s.current_stock, COALESCE(SUM(si.quantity),0) AS total_sold, COALESCE(SUM(si.total_price),0) AS revenue, COUNT(DISTINCT si.sale_id) AS orders FROM seedlings s LEFT JOIN sales_items si ON s.id=si.seedling_id WHERE s.is_active=true GROUP BY s.id,s.name_bn,s.variety,s.unit_price,s.current_stock ORDER BY total_sold DESC LIMIT 8`),
-            queryTenant(tenant.db_url, `SELECT s.invoice_no, s.customer_name, s.customer_phone, s.total_amount, s.payment_method, s.payment_status, s.sale_date FROM sales s ORDER BY s.created_at DESC LIMIT 8`),
-            queryTenant(tenant.db_url, `SELECT pb.batch_code, s.name_bn AS seedling, pb.production_type, pb.produced_quantity, pb.available_quantity, pb.status, pb.created_at FROM production_batches pb LEFT JOIN seedlings s ON pb.seedling_id=s.id ORDER BY pb.created_at DESC LIMIT 6`),
-            queryTenant(tenant.db_url, `SELECT id,name,email,role,is_active,created_at FROM users ORDER BY created_at DESC`),
-            queryTenant(tenant.db_url, `SELECT income_type, COALESCE(SUM(amount),0) AS total, COUNT(*) AS count FROM other_income GROUP BY income_type`),
-            queryTenant(tenant.db_url, `SELECT target_type,target_month,target_year,target_quantity,target_amount FROM targets WHERE target_year=EXTRACT(YEAR FROM NOW()) ORDER BY target_type,target_month`),
-            queryTenant(tenant.db_url, `SELECT c.name_bn, COUNT(s.id) AS seedling_count, COALESCE(SUM(s.current_stock),0) AS total_stock FROM categories c LEFT JOIN seedlings s ON c.id=s.category_id AND s.is_active=true GROUP BY c.id,c.name_bn ORDER BY seedling_count DESC`),
-        ]);
+    const [
+      salesSummary,
+      todaySales,
+      monthlySales,
+      productionSummary,
+      productionByType,
+      stockSummary,
+      lowStock,
+      damagesSummary,
+      topSeedlings,
+      recentSales,
+      recentBatches,
+      users,
+      otherIncome,
+      targets,
+      categories,
+    ] = await Promise.all([
+      queryTenant(
+        tenant.db_url,
+        `SELECT COUNT(*) AS total_invoices, COALESCE(SUM(total_amount),0) AS total_revenue, COALESCE(SUM(discount),0) AS total_discount, COALESCE(SUM(CASE WHEN payment_status='due' THEN total_amount ELSE 0 END),0) AS due_amount, COALESCE(SUM(CASE WHEN payment_status='paid' THEN total_amount ELSE 0 END),0) AS paid_amount FROM sales`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT COALESCE(SUM(total_amount),0) AS today_revenue, COUNT(*) AS today_invoices FROM sales WHERE sale_date=CURRENT_DATE`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT TO_CHAR(sale_date,'YYYY-MM') AS month, TO_CHAR(sale_date,'Mon YY') AS label, COALESCE(SUM(total_amount),0) AS revenue, COUNT(*) AS invoices FROM sales WHERE sale_date>=NOW()-INTERVAL '6 months' GROUP BY month,label ORDER BY month`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT COUNT(*) AS total_batches, COALESCE(SUM(produced_quantity),0) AS total_produced, COALESCE(SUM(success_quantity),0) AS total_success, COALESCE(SUM(failed_quantity),0) AS total_failed, COALESCE(SUM(available_quantity),0) AS total_available, COALESCE(AVG(CASE WHEN success_percent>0 THEN success_percent END),0) AS avg_success, COUNT(CASE WHEN status='active' THEN 1 END) AS active_batches FROM production_batches`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT production_type, COUNT(*) AS batches, COALESCE(SUM(produced_quantity),0) AS total_qty FROM production_batches GROUP BY production_type ORDER BY total_qty DESC`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT COUNT(*) AS total_species, COALESCE(SUM(current_stock),0) AS total_stock, COALESCE(SUM(current_stock*unit_price),0) AS stock_value, COUNT(CASE WHEN current_stock<=min_stock_alert THEN 1 END) AS low_stock_count FROM seedlings WHERE is_active=true`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT s.name_bn, s.seedling_code, s.current_stock, s.min_stock_alert, c.name_bn AS category FROM seedlings s LEFT JOIN categories c ON s.category_id=c.id WHERE s.is_active=true AND s.current_stock<=s.min_stock_alert ORDER BY s.current_stock ASC LIMIT 8`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT COUNT(*) AS total_reports, COALESCE(SUM(quantity),0) AS total_damaged, reason, COUNT(*) AS count FROM damages GROUP BY reason ORDER BY count DESC`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT s.name_bn, s.variety, s.unit_price, s.current_stock, COALESCE(SUM(si.quantity),0) AS total_sold, COALESCE(SUM(si.total_price),0) AS revenue, COUNT(DISTINCT si.sale_id) AS orders FROM seedlings s LEFT JOIN sales_items si ON s.id=si.seedling_id WHERE s.is_active=true GROUP BY s.id,s.name_bn,s.variety,s.unit_price,s.current_stock ORDER BY total_sold DESC LIMIT 8`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT s.invoice_no, s.customer_name, s.customer_phone, s.total_amount, s.payment_method, s.payment_status, s.sale_date FROM sales s ORDER BY s.created_at DESC LIMIT 8`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT pb.batch_code, s.name_bn AS seedling, pb.production_type, pb.produced_quantity, pb.available_quantity, pb.status, pb.created_at FROM production_batches pb LEFT JOIN seedlings s ON pb.seedling_id=s.id ORDER BY pb.created_at DESC LIMIT 6`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT id,name,email,role,is_active,created_at FROM users ORDER BY created_at DESC`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT income_type, COALESCE(SUM(amount),0) AS total, COUNT(*) AS count FROM other_income GROUP BY income_type`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT target_type,target_month,target_year,target_quantity,target_amount FROM targets WHERE target_year=EXTRACT(YEAR FROM NOW()) ORDER BY target_type,target_month`,
+      ),
+      queryTenant(
+        tenant.db_url,
+        `SELECT c.name_bn, COUNT(s.id) AS seedling_count, COALESCE(SUM(s.current_stock),0) AS total_stock FROM categories c LEFT JOIN seedlings s ON c.id=s.category_id AND s.is_active=true GROUP BY c.id,c.name_bn ORDER BY seedling_count DESC`,
+      ),
+    ]);
 
-        res.json({
-            success: true,
-            center: { slug: req.params.slug, name_bn: tenant.name_bn, name_en: tenant.name_en, location: tenant.location, currency: tenant.currency, category: tenant.category },
-            sales:      { summary: salesSummary[0], today: todaySales[0], monthly: monthlySales, recent: recentSales },
-            production: { summary: productionSummary[0], by_type: productionByType, recent: recentBatches },
-            stock:      { summary: stockSummary[0], low_stock: lowStock, categories: categories },
-            damages:    { total_damaged: damagesSummary.reduce((s,r)=>s+parseInt(r.total_damaged||0),0), total_reports: parseInt(damagesSummary[0]?.total_reports||0), by_reason: damagesSummary },
-            top_seedlings: topSeedlings, users: users,
-            other_income: { breakdown: otherIncome, total: otherIncome.reduce((s,r)=>s+parseFloat(r.total||0),0) },
-            targets: targets,
-        });
-    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+    res.json({
+      success: true,
+      center: {
+        slug: req.params.slug,
+        name_bn: tenant.name_bn,
+        name_en: tenant.name_en,
+        location: tenant.location,
+        currency: tenant.currency,
+        category: tenant.category,
+      },
+      sales: {
+        summary: salesSummary[0],
+        today: todaySales[0],
+        monthly: monthlySales,
+        recent: recentSales,
+      },
+      production: {
+        summary: productionSummary[0],
+        by_type: productionByType,
+        recent: recentBatches,
+      },
+      stock: {
+        summary: stockSummary[0],
+        low_stock: lowStock,
+        categories: categories,
+      },
+      damages: {
+        total_damaged: damagesSummary.reduce(
+          (s, r) => s + parseInt(r.total_damaged || 0),
+          0,
+        ),
+        total_reports: parseInt(damagesSummary[0]?.total_reports || 0),
+        by_reason: damagesSummary,
+      },
+      top_seedlings: topSeedlings,
+      users: users,
+      other_income: {
+        breakdown: otherIncome,
+        total: otherIncome.reduce((s, r) => s + parseFloat(r.total || 0), 0),
+      },
+      targets: targets,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 // ===== ADD/UPDATE/TOGGLE/DELETE TENANT (Director only) =====
-router.post('/tenants', saAuth, async (req, res) => {
-    if (req.saUser.role !== 'director') return res.status(403).json({ success: false, message: 'শুধু পরিচালক করতে পারবেন।' });
-    const { slug, name_bn, name_en, location, district, division, category, db_url, currency } = req.body;
-    if (!slug||!name_bn||!name_en||!db_url) return res.status(400).json({ success: false, message: 'সব তথ্য দিন।' });
-    try {
-        const ex = await masterDb.query('SELECT id FROM tenants WHERE slug=$1', [slug]);
-        if (ex.rows.length) return res.status(400).json({ success: false, message: 'এই slug আগে থেকে আছে।' });
-        const r = await masterDb.query(
-            `INSERT INTO tenants (slug,name_bn,name_en,location,district,division,category,db_url,currency,active) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,true) RETURNING id,slug,name_bn`,
-            [slug.toLowerCase(),name_bn,name_en,location||'',district||'',division||'',category||'B',db_url,currency||'BDT']
-        );
-        clearCache();
-        res.json({ success: true, message: 'নতুন center যোগ হয়েছে।', data: r.rows[0] });
-    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+router.post("/tenants", saAuth, async (req, res) => {
+  if (req.saUser.role !== "director")
+    return res
+      .status(403)
+      .json({ success: false, message: "শুধু পরিচালক করতে পারবেন।" });
+  const {
+    slug,
+    name_bn,
+    name_en,
+    location,
+    district,
+    division,
+    category,
+    db_url,
+    currency,
+  } = req.body;
+  if (!slug || !name_bn || !name_en || !db_url)
+    return res.status(400).json({ success: false, message: "সব তথ্য দিন।" });
+  try {
+    const ex = await masterDb.query("SELECT id FROM tenants WHERE slug=$1", [
+      slug,
+    ]);
+    if (ex.rows.length)
+      return res
+        .status(400)
+        .json({ success: false, message: "এই slug আগে থেকে আছে।" });
+    const r = await masterDb.query(
+      `INSERT INTO tenants (slug,name_bn,name_en,location,district,division,category,db_url,currency,active) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,true) RETURNING id,slug,name_bn`,
+      [
+        slug.toLowerCase(),
+        name_bn,
+        name_en,
+        location || "",
+        district || "",
+        division || "",
+        category || "B",
+        db_url,
+        currency || "BDT",
+      ],
+    );
+    clearCache();
+    res.json({
+      success: true,
+      message: "নতুন center যোগ হয়েছে।",
+      data: r.rows[0],
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
-router.put('/tenants/:id', saAuth, async (req, res) => {
-    if (req.saUser.role !== 'director') return res.status(403).json({ success: false, message: 'শুধু পরিচালক করতে পারবেন।' });
-    const { name_bn, name_en, location, district, division, category, db_url, currency, active } = req.body;
-    try {
-        await masterDb.query(
-            `UPDATE tenants SET name_bn=$1,name_en=$2,location=$3,district=$4,division=$5,category=$6,db_url=$7,currency=$8,active=$9,updated_at=NOW() WHERE id=$10`,
-            [name_bn,name_en,location,district||'',division||'',category||'B',db_url,currency,active,req.params.id]
-        );
-        clearCache();
-        res.json({ success: true, message: 'আপডেট হয়েছে।' });
-    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+router.put("/tenants/:id", saAuth, async (req, res) => {
+  if (req.saUser.role !== "director")
+    return res
+      .status(403)
+      .json({ success: false, message: "শুধু পরিচালক করতে পারবেন।" });
+  const {
+    name_bn,
+    name_en,
+    location,
+    district,
+    division,
+    category,
+    db_url,
+    currency,
+    active,
+  } = req.body;
+  try {
+    await masterDb.query(
+      `UPDATE tenants SET name_bn=$1,name_en=$2,location=$3,district=$4,division=$5,category=$6,db_url=$7,currency=$8,active=$9,updated_at=NOW() WHERE id=$10`,
+      [
+        name_bn,
+        name_en,
+        location,
+        district || "",
+        division || "",
+        category || "B",
+        db_url,
+        currency,
+        active,
+        req.params.id,
+      ],
+    );
+    clearCache();
+    res.json({ success: true, message: "আপডেট হয়েছে।" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
-router.post('/tenants/:id/toggle', saAuth, async (req, res) => {
-    if (req.saUser.role !== 'director') return res.status(403).json({ success: false, message: 'শুধু পরিচালক করতে পারবেন।' });
-    try {
-        const cur = await masterDb.query('SELECT active,name_en FROM tenants WHERE id=$1', [req.params.id]);
-        if (!cur.rows.length) return res.status(404).json({ success: false, message: 'পাওয়া যায়নি।' });
-        const newStatus = !cur.rows[0].active;
-        await masterDb.query('UPDATE tenants SET active=$1,updated_at=NOW() WHERE id=$2', [newStatus,req.params.id]);
-        clearCache();
-        res.json({ success: true, message: cur.rows[0].name_en+(newStatus?' সক্রিয়।':' বন্ধ।'), active: newStatus });
-    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+router.post("/tenants/:id/toggle", saAuth, async (req, res) => {
+  if (req.saUser.role !== "director")
+    return res
+      .status(403)
+      .json({ success: false, message: "শুধু পরিচালক করতে পারবেন।" });
+  try {
+    const cur = await masterDb.query(
+      "SELECT active,name_en FROM tenants WHERE id=$1",
+      [req.params.id],
+    );
+    if (!cur.rows.length)
+      return res
+        .status(404)
+        .json({ success: false, message: "পাওয়া যায়নি।" });
+    const newStatus = !cur.rows[0].active;
+    await masterDb.query(
+      "UPDATE tenants SET active=$1,updated_at=NOW() WHERE id=$2",
+      [newStatus, req.params.id],
+    );
+    clearCache();
+    res.json({
+      success: true,
+      message: cur.rows[0].name_en + (newStatus ? " সক্রিয়।" : " বন্ধ।"),
+      active: newStatus,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
-router.delete('/tenants/:id', saAuth, async (req, res) => {
-    if (req.saUser.role !== 'director') return res.status(403).json({ success: false, message: 'শুধু পরিচালক করতে পারবেন।' });
-    try {
-        await masterDb.query('DELETE FROM tenants WHERE id=$1', [req.params.id]);
-        clearCache();
-        res.json({ success: true, message: 'মুছে ফেলা হয়েছে।' });
-    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+router.delete("/tenants/:id", saAuth, async (req, res) => {
+  if (req.saUser.role !== "director")
+    return res
+      .status(403)
+      .json({ success: false, message: "শুধু পরিচালক করতে পারবেন।" });
+  try {
+    await masterDb.query("DELETE FROM tenants WHERE id=$1", [req.params.id]);
+    clearCache();
+    res.json({ success: true, message: "মুছে ফেলা হয়েছে।" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 module.exports = router;
