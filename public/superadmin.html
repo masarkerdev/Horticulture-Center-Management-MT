@@ -373,14 +373,18 @@ function showApp(){
   const locationName=payload.name||'';
   const district=payload.district||'';
   const division=payload.division||'';
-  document.getElementById('adminName').textContent=
-    rLabels[userRole]+(locationName?', '+locationName:'');
-  document.getElementById('adminAv').textContent=
-    (rLabels[userRole]||'A').charAt(0).toUpperCase();
+  // Director-এর জন্য শুধু পদবী
+  const line1=userRole==='director'
+    ? 'পরিচালক'
+    : rLabels[userRole]+(locationName?', '+locationName:'');
+  document.getElementById('adminName').textContent=line1;
+  document.getElementById('adminAv').textContent=(rLabels[userRole]||'প').charAt(0).toUpperCase();
 
   // Line 2: হর্টিকালচার সেন্টার, পাচগাছিয়া, ফেনী, চট্টগ্রাম
-  const line2=['হর্টিকালচার সেন্টার',locationName,district,division].filter(Boolean).join(', ');
-  document.getElementById('adminRole').textContent=line2;
+  const parts=userRole==='director'
+    ? ['হর্টিকালচার উইং, DAE', district, division].filter(Boolean)
+    : ['হর্টিকালচার সেন্টার', locationName, district, division].filter(Boolean);
+  document.getElementById('adminRole').textContent=parts.join(', ');
 
   if(userRole==='director') document.getElementById('directorOnly').style.display='block';
 
@@ -803,7 +807,7 @@ function renderAdminMgmt(el){
           <div class="h-card-info">
             <div class="h-card-name">${roleLabels[a.role]||a.role}${a.name?', '+a.name:''}</div>
             <div class="h-card-sub">
-              হর্টিকালচার সেন্টার${a.name?', '+a.name:''}${a.district?', '+a.district:''}${a.division?', '+a.division:''}
+              ${ ['হর্টিকালচার সেন্টার', a.name, a.district, a.division].filter(Boolean).join(', ') }
             </div>
             <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
               ${a.assigned_centers.map(slug=>`
