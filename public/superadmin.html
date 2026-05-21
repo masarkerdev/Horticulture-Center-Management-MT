@@ -361,20 +361,22 @@ function showApp(){
   document.getElementById('loginWrap').style.display='none';
   document.getElementById('saApp').style.display='block';
 
-  // নাম
-  document.getElementById('adminName').textContent=payload.name||'Admin';
-  document.getElementById('adminAv').textContent=(payload.name||'A').charAt(0).toUpperCase();
-
-  // পদবী + কর্মস্থল
-  const rLabels={
-    director:'পরিচালক',
-    deputy_director:'উপপরিচালক',
-    horticulturist:'উদ্যানতত্ত্ববিদ',
-    nursery_supervisor:'নার্সারী তত্ত্বাবধায়ক'
+  // Line 1: উপপরিচালক, হর্টিকালচার সেন্টার
+  const rTitles={
+    director:'পরিচালক, হর্টিকালচার উইং',
+    deputy_director:'উপপরিচালক, হর্টিকালচার সেন্টার',
+    horticulturist:'উদ্যানতত্ত্ববিদ, হর্টিকালচার সেন্টার',
+    nursery_supervisor:'নার্সারী তত্ত্বাবধায়ক, হর্টিকালচার সেন্টার'
   };
-  const workplace=payload.district||'';
-  document.getElementById('adminRole').textContent=
-    (rLabels[userRole]||userRole)+(workplace?' • '+workplace:'');
+  document.getElementById('adminName').textContent=rTitles[userRole]||userRole;
+  document.getElementById('adminAv').textContent=(rLabels[userRole]||'A').charAt(0).toUpperCase();
+
+  // Line 2: স্থানের নাম, জেলা, বিভাগ
+  const locationName=payload.name||'';
+  const district=payload.district||'';
+  const division=payload.division||'';
+  const line2=[locationName,district,division].filter(Boolean).join(', ');
+  document.getElementById('adminRole').textContent=line2||rLabels[userRole]||userRole;
 
   if(userRole==='director') document.getElementById('directorOnly').style.display='block';
 
@@ -795,11 +797,9 @@ function renderAdminMgmt(el){
             ${a.name.charAt(0).toUpperCase()}
           </div>
           <div class="h-card-info">
-            <div class="h-card-name">${a.name}</div>
+            <div class="h-card-name">${roleLabels[a.role]||a.role}, হর্টিকালচার সেন্টার</div>
             <div class="h-card-sub">
-              <span style="color:${roleColors[a.role]||'#7c3aed'};font-weight:600">${roleLabels[a.role]||a.role}</span>
-              ${a.district?' • '+a.district:''}
-              ${a.email?' • '+a.email:''}
+              ${a.name?a.name+', ':''}${a.district||''}${a.division?', '+a.division:''}
             </div>
             <div style="margin-top:6px;display:flex;gap:4px;flex-wrap:wrap">
               ${a.assigned_centers.map(slug=>`
@@ -828,7 +828,7 @@ function renderAdminMgmt(el){
         </div>
         <input type="hidden" id="adminEditId"/>
         <div class="fg-row">
-          <div class="fg"><label>নাম*</label><input id="aName" placeholder="মোঃ করিম"/></div>
+          <div class="fg"><label>স্থানের নাম*</label><input id="aLocation" placeholder="পাচগাছিয়া"/></div>
           <div class="fg"><label>পদবী*</label>
             <select id="aRole">
               <option value="deputy_director">উপপরিচালক</option>
@@ -877,11 +877,14 @@ function renderAdminMgmt(el){
 
 function openAdminModal(id){
   document.getElementById('adminModal').classList.add('open');
+  const rLabels={deputy_director:'উপপরিচালক',horticulturist:'উদ্যানতত্ত্ববিদ',nursery_supervisor:'নার্সারী তত্ত্বাবধায়ক'};
   if(id){
     const a=allAdmins.find(x=>x.id===id);if(!a)return;
     document.getElementById('adminModalTitle').textContent='Admin সম্পাদনা';
     document.getElementById('adminEditId').value=a.id;
-    document.getElementById('aName').value=a.name;
+    // name থেকে location বের করো (e.g. "উপপরিচালক, পাচগাছিয়া" → "পাচগাছিয়া")
+    const nameParts=a.name.split(', ');
+    document.getElementById('aLocation').value=nameParts.length>1?nameParts.slice(1).join(', '):a.name;
     document.getElementById('aEmail').value=a.email;
     document.getElementById('aRole').value=a.role;
     document.getElementById('aDistrict').value=a.district||'';
@@ -895,7 +898,7 @@ function openAdminModal(id){
   }else{
     document.getElementById('adminModalTitle').textContent='নতুন Admin তৈরি';
     document.getElementById('adminEditId').value='';
-    ['aName','aEmail','aPassword','aDistrict','aDivision','aPhone'].forEach(id=>document.getElementById(id).value='');
+    ['aLocation','aEmail','aPassword','aDistrict','aDivision','aPhone'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('aPassword').placeholder='••••••••';
     document.getElementById('passHint').textContent='(আবশ্যক)';
     document.getElementById('aRole').value='deputy_director';
@@ -906,17 +909,22 @@ function closeAdminModal(){document.getElementById('adminModal').classList.remov
 
 async function saveAdmin(){
   const id=document.getElementById('adminEditId').value;
+  const role=document.getElementById('aRole').value;
+  const location=document.getElementById('aLocation').value.trim();
+  const rLabels={deputy_director:'উপপরিচালক',horticulturist:'উদ্যানতত্ত্ববিদ',nursery_supervisor:'নার্সারী তত্ত্বাবধায়ক'};
+  // name = শুধু স্থানের নাম (e.g. "পাচগাছিয়া")
+  const name=location;
   const data={
-    name:document.getElementById('aName').value.trim(),
+    name,
     email:document.getElementById('aEmail').value.trim(),
-    role:document.getElementById('aRole').value,
+    role,
     district:document.getElementById('aDistrict').value.trim(),
     division:document.getElementById('aDivision').value.trim(),
     phone:document.getElementById('aPhone').value.trim(),
     password:document.getElementById('aPassword').value,
     is_active:id?document.getElementById('aIsActive').value==='true':true
   };
-  if(!data.name||!data.email||!data.role) return showToast('নাম, ইমেইল ও পদবী দিন।');
+  if(!location||!data.email||!data.role) return showToast('স্থানের নাম, ইমেইল ও পদবী দিন।');
   if(!id&&!data.password) return showToast('নতুন admin-এর জন্য পাসওয়ার্ড দিন।');
   try{
     const url=id?`${API}/admins/${id}`:`${API}/admins`;
