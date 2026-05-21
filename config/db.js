@@ -18,14 +18,19 @@ const db = {
         return pool.connect();
     },
 
-    // db.pool.connect() — controllers যেগুলো db.pool.connect() use করে
+    // db.pool.connect() — controllers যেগুলো db.pool ব্যবহার করে
     get pool() {
         const pool = als.getStore();
         if (!pool) throw new Error('Tenant DB pool পাওয়া যায়নি।');
         return pool;
     },
 
-    // Pool সরাসরি
+    // db.run(pool, next) — tenant middleware এটা call করে
+    run: (pool, fn) => {
+        return als.run(pool, fn);
+    },
+
+    // Pool সরাসরি নেওয়া
     getPool: () => als.getStore(),
 
     // AsyncLocalStorage
