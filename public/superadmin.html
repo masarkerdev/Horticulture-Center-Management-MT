@@ -1343,6 +1343,32 @@
           rLabels[userRole] || userRole;
         if (userRole === "director")
           document.getElementById("directorOnly").style.display = "block";
+        // Role-based theme apply করো
+        const themes = {
+          director: {
+            accent: "#7c3aed",
+            sidebar: "#0f0a1a",
+            loginBg: "#1e1b4b",
+          },
+          deputy_director: {
+            accent: "#059669",
+            sidebar: "#021f14",
+            loginBg: "#022c22",
+          },
+          horticulturist: {
+            accent: "#0284c7",
+            sidebar: "#021a2a",
+            loginBg: "#082f49",
+          },
+          nursery_supervisor: {
+            accent: "#d97706",
+            sidebar: "#1a1000",
+            loginBg: "#431407",
+          },
+        };
+        const theme = themes[userRole] || themes.director;
+        document.documentElement.style.setProperty("--accent", theme.accent);
+        document.documentElement.style.setProperty("--sidebar", theme.sidebar);
         document.body.setAttribute("data-role", userRole);
         loadAll();
       }
