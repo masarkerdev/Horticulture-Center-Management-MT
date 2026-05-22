@@ -367,26 +367,26 @@ function showApp(){
     nursery_supervisor:'নার্সারী তত্ত্বাবধায়ক'
   };
 
-  // Line 1: উপপরিচালক, পাচগাছিয়া
+  // Line 1: শুধু পদবী → "উপপরিচালক"
   const locationName=payload.name||'';
   const district=payload.district||'';
   const division=payload.division||'';
-  // Director-এর জন্য শুধু পদবী
-  const line1=userRole==='director'
-    ? 'পরিচালক'
-    : rLabels[userRole]+(locationName?', '+locationName:'');
+  const line1=rLabels[userRole]||userRole;
   document.getElementById('adminName').textContent=line1;
   document.getElementById('adminAv').textContent=(rLabels[userRole]||'প').charAt(0).toUpperCase();
 
-  // Line 2: হর্টিকালচার সেন্টার, পাচগাছিয়া, ফেনী, চট্টগ্রাম
+  // Line 2: হর্টিকালচার সেন্টার, বনরূপা, রাঙামাটি
   const parts=userRole==='director'
-    ? ['হর্টিকালচার উইং, DAE', district, division].filter(Boolean)
-    : ['হর্টিকালচার সেন্টার', locationName, district, division].filter(Boolean);
-  // Topbar-এ admin info দেখাও
-  document.getElementById('topbarAdminInfo').style.display='block';
-  document.getElementById('topbarAdminName').textContent=line1;
-  document.getElementById('topbarAdminRole').textContent=parts.join(', ');
+    ?['হর্টিকালচার উইং, DAE'].filter(Boolean)
+    :['হর্টিকালচার সেন্টার',locationName,district].filter(Boolean);
   document.getElementById('adminRole').textContent=parts.join(', ');
+
+  // Topbar ডানে: "উপপরিচালক, বনরূপা"
+  document.getElementById('topbarAdminInfo').style.display='block';
+  document.getElementById('topbarAdminName').textContent=
+    rLabels[userRole]+(locationName?', '+locationName:'');
+  document.getElementById('topbarAdminRole').textContent=
+    district+(division?', '+division:'');
 
   if(userRole==='director') document.getElementById('directorOnly').style.display='block';
 
