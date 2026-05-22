@@ -686,8 +686,8 @@ function renderDetailTab(tab){
       </div>`;
   }else if(tab==='dTarget'){
     const months=['','জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
-    const curFY=new Date().getMonth()>=6?new Date().getFullYear()+1:new Date().getFullYear();
-    const fyOpts=[curFY,curFY-1,curFY-2];
+    const curFY=new Date().getMonth()>=6?new Date().getFullYear():new Date().getFullYear()-1; // FY start year
+    const fyOpts=[curFY,curFY-1,curFY-2]; // FY start years
 
     const lTA=async(fy)=>{
       document.getElementById('saTargetResults').innerHTML='<div class="lt">লোড হচ্ছে...</div>';
@@ -699,10 +699,11 @@ function renderDetailTab(tab){
         const prodT=targets.filter(t=>t.target_type==='production');
         const salesT=targets.filter(t=>t.target_type==='sales');
         // Annual target row অথবা monthly sum
-        const annualProd=prodT.find(t=>!t.target_month);
-        const annualSales=salesT.find(t=>!t.target_month);
-        const tProd=annualProd?parseInt(annualProd.target_quantity||0):prodT.reduce((s,t)=>s+parseInt(t.target_quantity||0),0);
-        const tSales=annualSales?parseFloat(annualSales.target_amount||0):salesT.reduce((s,t)=>s+parseFloat(t.target_amount||0),0);
+        // Annual row: target_month=0 (center app convention)
+        const annualProd=prodT.find(t=>parseInt(t.target_month||0)===0);
+        const annualSales=salesT.find(t=>parseInt(t.target_month||0)===0);
+        const tProd=annualProd?parseInt(annualProd.target_quantity||0):prodT.reduce((s,t)=>parseInt(t.target_month)>0?s+parseInt(t.target_quantity||0):s,0);
+        const tSales=annualSales?parseFloat(annualSales.target_amount||0):salesT.reduce((s,t)=>parseInt(t.target_month)>0?s+parseFloat(t.target_amount||0):s,0);
         const pp=tProd>0?Math.min(Math.round(prod_achieved/tProd*100),100):0;
         const sp=tSales>0?Math.min(Math.round(sales_achieved/tSales*100),100):0;
         const pc=(p)=>p>=70?'var(--green)':p>=40?'var(--amber)':'var(--red)';
@@ -758,7 +759,7 @@ function renderDetailTab(tab){
           <span>🎯 লক্ষ্যমাত্রা বনাম অর্জন</span>
           <select id="saFYSelect" onchange="window._lTA(parseInt(this.value))"
             style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:7px;font-size:12px;font-family:inherit;cursor:pointer">
-            ${fyOpts.map(y=>`<option value="${y}">FY ${y-1}-${y}</option>`).join('')}
+            ${fyOpts.map(y=>`<option value="${y}">FY ${y}-${y+1}</option>`).join('')}
           </select>
         </div>
         <div id="saTargetResults"><div class="lt">লোড হচ্ছে...</div></div>

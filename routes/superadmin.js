@@ -343,19 +343,21 @@ router.get('/center/:slug/targets', saAuth, async (req, res) => {
         if (!tenant) return res.status(404).json({ success: false, message: 'Center পাওয়া যায়নি।' });
 
         const fy = parseInt(req.query.fy) || new Date().getFullYear();
-        const fyStart = fy - 1; // FY শুরু: জুলাই (fyStart)
-        const fyEnd = fy;       // FY শেষ: জুন (fyEnd)
+        const fyStart = fy;           // FY শুরু বছর (e.g. 2025 for FY 2025-2026)
+        const fyEnd   = fy + 1;       // FY শেষ বছর (e.g. 2026)
 
-        // FY-র targets: (fyStart বছরের Jul-Dec) + (fyEnd বছরের Jan-Jun) + Annual
+        // Annual: target_month=0, target_year=fyStart
+        // Monthly Jul-Dec: target_year=fyStart, target_month=7-12
+        // Monthly Jan-Jun: target_year=fyEnd, target_month=1-6
         const [targets, prodAchieved, salesAchieved] = await Promise.all([
             queryTenant(tenant.db_url,
                 `SELECT target_type, target_month, target_year, target_quantity, target_amount, remarks
                  FROM targets
-                 WHERE (target_year=$1 AND target_month IS NULL)
-                    OR (target_year=$2 AND target_month BETWEEN 7 AND 12)
-                    OR (target_year=$1 AND target_month BETWEEN 1 AND 6)
-                 ORDER BY target_type, target_month NULLS FIRST`,
-                [fyEnd, fyStart]
+                 WHERE (target_year=$1 AND target_month = 0)
+                    OR (target_year=$1 AND target_month BETWEEN 7 AND 12)
+                    OR (target_year=$2 AND target_month BETWEEN 1 AND 6)
+                 ORDER BY target_type, target_month`,
+                [fyStart, fyEnd]
             ),
             queryTenant(tenant.db_url,
                 `SELECT COALESCE(SUM(available_quantity),0) AS total
