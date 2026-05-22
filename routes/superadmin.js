@@ -183,7 +183,7 @@ router.get('/center/:slug', saAuth, async (req, res) => {
             queryTenant(tenant.db_url, `SELECT pb.batch_code, s.name_bn AS seedling, pb.production_type, pb.produced_quantity, pb.available_quantity, pb.status, pb.created_at FROM production_batches pb LEFT JOIN seedlings s ON pb.seedling_id=s.id ORDER BY pb.created_at DESC LIMIT 6`),
             queryTenant(tenant.db_url, `SELECT id,name,email,role,is_active,created_at FROM users ORDER BY created_at DESC`),
             queryTenant(tenant.db_url, `SELECT income_type, COALESCE(SUM(amount),0) AS total, COUNT(*) AS count FROM other_income GROUP BY income_type`),
-            queryTenant(tenant.db_url, `SELECT target_type,target_month,target_year,target_quantity,target_amount,remarks FROM targets ORDER BY target_year DESC, target_type, target_month`),
+            queryTenant(tenant.db_url, `SELECT target_type,target_month,target_year,target_quantity,target_amount FROM targets ORDER BY target_year DESC, target_type, target_month`),
             queryTenant(tenant.db_url, `SELECT c.name_bn, COUNT(s.id) AS seedling_count, COALESCE(SUM(s.current_stock),0) AS total_stock FROM categories c LEFT JOIN seedlings s ON c.id=s.category_id AND s.is_active=true GROUP BY c.id,c.name_bn ORDER BY seedling_count DESC`),
         ]);
 

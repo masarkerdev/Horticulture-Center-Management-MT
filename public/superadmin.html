@@ -731,13 +731,13 @@ function renderDetailTab(tab){
       <div class="card">
         <div class="card-head">📅 মাসিভিত্তিক লক্ষ্যমাত্রা</div>
         ${fyT.length?`<div class="tw"><table>
-          <thead><tr><th>সময়কাল</th><th>ধরন</th><th>লক্ষ্য (পরিমাণ)</th><th>লক্ষ্য (৳)</th><th>মন্তব্য</th></tr></thead>
+          <thead><tr><th>সময়কাল</th><th>ধরন</th><th>লক্ষ্য (পরিমাণ)</th><th>লক্ষ্য (৳)</th></tr></thead>
           <tbody>${fyT.map(t=>`<tr>
             <td style="font-weight:500">${t.target_month?months[t.target_month]+' '+t.target_year:'অর্থবছর মোট '+(parseInt(t.target_year)-1)+'-'+t.target_year}</td>
             <td><span class="pill ${t.target_type==='production'?'active':'paid'}">${t.target_type==='production'?'উৎপাদন':'বিক্রয়'}</span></td>
             <td style="color:var(--purple);font-weight:600">${fmtN(t.target_quantity)}টি</td>
             <td style="color:var(--green);font-weight:600">৳${fmt(t.target_amount)}</td>
-            <td style="color:var(--muted)">${t.remarks||'—'}</td>
+
           </tr>`).join('')}</tbody>
         </table></div>`:'<div class="empty" style="padding:20px">এই অর্থবছরে কোনো লক্ষ্যমাত্রা নেই</div>'}
       </div>`;
