@@ -1297,7 +1297,7 @@ window._exportPDF=()=>{
       <td>${c.growth_rate>=0?'▲':'▼'}${toBn(Math.abs(c.growth_rate).toFixed(1))}%</td>
       <td>${c.total_produced.toLocaleString()}</td>
       <td>${c.total_stock.toLocaleString()}</td>
-      <td>${c.target_achieved!==null?c.target_achieved.toFixed(1))+'%':'—'}</td>
+      <td>${c.target_achieved!==null?toBn(c.target_achieved.toFixed(1))+'%':'—'}</td>
       <td><b>${toBn(c.perf_score)}</b>/১০০</td>
       <td>${c.traffic_light==='green'?'✓ ভালো':c.traffic_light==='yellow'?'~ মাঝারি':'✗ দুর্বল'}</td>
     </tr>`).join('');
