@@ -894,7 +894,7 @@ function renderTargetSummaryView(el){
         <span>FY ${curFY}-${curFY+1} | ${months[curMonth]}</span>
       </div>
       <div class="tw"><table>
-        <thead><tr><th>Center</th><th>Cat</th><th style="color:var(--purple)">অর্থবছরের লক্ষ্যমাত্রা</th><th style="color:var(--blue)">মাসিক লক্ষ্যমাত্রা</th><th style="color:var(--green)">মাসিক অর্জন</th><th>অগ্রগতি</th><th>অবস্থা</th></tr></thead>
+        <thead><tr><th>Center</th><th>Cat</th><th style="color:var(--purple)">অর্থবছরের লক্ষ্যমাত্রা</th><th style="color:var(--blue)">চলতি মাসের লক্ষ্যমাত্রা</th><th style="color:var(--green)">চলতি মাসের অর্জন</th><th>অগ্রগতি</th><th>অবস্থা</th></tr></thead>
         <tbody>${[...ok].sort((a,b)=>{
           const ap=a.monthly_prod_target>0?a.monthly_prod_achieved/a.monthly_prod_target:0;
           const bp=b.monthly_prod_target>0?b.monthly_prod_achieved/b.monthly_prod_target:0;
