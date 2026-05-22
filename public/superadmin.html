@@ -253,6 +253,9 @@ tr:hover td{background:#1a2438}
         <button class="nav-item" onclick="navTo('targetSummary',this)" id="nav-targetSummary">
           <i class="ti ti-target"></i> লক্ষ্যমাত্রা সারসংক্ষেপ
         </button>
+        <button class="nav-item" onclick="navTo('districtSummary',this)" id="nav-districtSummary">
+          <i class="ti ti-map-pin"></i> জেলাভিত্তিক সারসংক্ষেপ
+        </button>
 
         <div id="directorOnly" style="display:none">
           <div class="nav-divider"></div>
@@ -454,7 +457,7 @@ function navTo(view,btn){
   btn.classList.add('active');
   currentView=view;
   if(view==='detail') return;
-  const titles={overview:'📊 Overview',catA:'🏛️ A Category — উপপরিচালক',catB:'🌿 B Category — উদ্যানতত্ত্ববিদ',catC:'🪴 C Category — নার্সারী তত্ত্বাবধায়ক',compare:'📈 তুলনামূলক রিপোর্ট',targetSummary:'🎯 লক্ষ্যমাত্রা সারসংক্ষেপ',allCenters:'⚙️ সব Center পরিচালনা',adminMgmt:'👥 Admin পরিচালনা'};
+  const titles={overview:'📊 Overview',catA:'🏛️ A Category — উপপরিচালক',catB:'🌿 B Category — উদ্যানতত্ত্ববিদ',catC:'🪴 C Category — নার্সারী তত্ত্বাবধায়ক',compare:'📈 তুলনামূলক রিপোর্ট',targetSummary:'🎯 লক্ষ্যমাত্রা সারসংক্ষেপ',districtSummary:'🗺️ জেলাভিত্তিক সারসংক্ষেপ',allCenters:'⚙️ সব Center পরিচালনা',adminMgmt:'👥 Admin পরিচালনা'};
   document.getElementById('topbarTitle').textContent=titles[view]||'Overview';
   renderView(view);
 }
@@ -467,6 +470,7 @@ function renderView(view){
   else if(view==='catC') renderCategoryView(el,'C');
   else if(view==='compare') renderCompareView(el);
   else if(view==='targetSummary') renderTargetSummaryView(el);
+  else if(view==='districtSummary') renderDistrictSummaryView(el);
   else if(view==='allCenters') renderAllCenters(el);
   else if(view==='adminMgmt') renderAdminMgmt(el);
 }
@@ -871,6 +875,132 @@ function renderDetailTab(tab){
 
 // ── COMPARE ──
 // ── TARGET SUMMARY VIEW ──
+// ── DISTRICT SUMMARY VIEW ──
+function renderDistrictSummaryView(el){
+  const ok=allStats.filter(c=>c.status==='ok');
+  if(!ok.length){el.innerHTML='<div class="empty">Data নেই।</div>';return;}
+
+  // Group by district and division
+  const byDistrict={};const byDivision={};
+  ok.forEach(c=>{
+    const d=c.district||'অজানা';const dv=c.division||'অজানা';
+    if(!byDistrict[d]) byDistrict[d]={centers:[],division:dv};
+    byDistrict[d].centers.push(c);
+    if(!byDivision[dv]) byDivision[dv]={centers:[]};
+    byDivision[dv].centers.push(c);
+  });
+
+  const districtCards=Object.entries(byDistrict).sort((a,b)=>b[1].centers.length-a[1].centers.length).map(([dist,data])=>{
+    const cs=data.centers;
+    const rev=cs.reduce((s,c)=>s+c.total_revenue,0);
+    const prod=cs.reduce((s,c)=>s+c.total_produced,0);
+    const stock=cs.reduce((s,c)=>s+c.total_stock,0);
+    const catA=cs.filter(c=>c.category==='A').length;
+    const catB=cs.filter(c=>c.category==='B').length;
+    const catC=cs.filter(c=>c.category==='C').length;
+    const avgScore=Math.round(cs.reduce((s,c)=>s+c.perf_score,0)/cs.length);
+    return `
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-head" style="border-left:3px solid var(--accent)">
+        <div>
+          <span style="font-size:16px;font-weight:700">${dist}</span>
+          <span style="font-size:12px;color:var(--muted);margin-left:8px">${data.division}</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          ${catA?`<span style="font-size:11px;padding:2px 8px;border-radius:5px;background:#1e1b4b;color:#a5b4fc">A×${catA}</span>`:''}
+          ${catB?`<span style="font-size:11px;padding:2px 8px;border-radius:5px;background:#052e16;color:#4ade80">B×${catB}</span>`:''}
+          ${catC?`<span style="font-size:11px;padding:2px 8px;border-radius:5px;background:#431407;color:#fb923c">C×${catC}</span>`:''}
+          <span style="font-size:12px;color:var(--muted)">${cs.length}টি center</span>
+        </div>
+      </div>
+      <!-- KPI row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)">
+        <div style="background:var(--card);padding:14px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:var(--green)">৳${fmtK(rev)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">মোট বিক্রয়</div>
+        </div>
+        <div style="background:var(--card);padding:14px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:var(--purple)">${fmtN(prod)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">মোট উৎপাদন</div>
+        </div>
+        <div style="background:var(--card);padding:14px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:var(--amber)">${fmtN(stock)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">মোট স্টক</div>
+        </div>
+        <div style="background:var(--card);padding:14px;text-align:center">
+          <div style="font-size:18px;font-weight:700;color:${scoreColor(avgScore)}">${avgScore}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">গড় Score</div>
+        </div>
+      </div>
+      <!-- Centers list -->
+      <div style="padding:12px 16px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Center সমূহ:</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${cs.map(c=>`
+          <div onclick="viewDetail('${c.slug}')" style="cursor:pointer;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:6px 10px;display:flex;align-items:center;gap:6px;transition:.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <span style="font-size:10px;padding:1px 5px;border-radius:4px;font-weight:700;background:${c.category==='A'?'#1e1b4b':c.category==='B'?'#052e16':'#431407'};color:${c.category==='A'?'#a5b4fc':c.category==='B'?'#4ade80':'#fb923c'}">${c.category}</span>
+            <span style="font-size:12px;font-weight:500">${c.name_bn.replace('হর্টিকালচার সেন্টার, ','')}</span>
+            <div class="tl-dot tl-${c.traffic_light}"></div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Division summary
+  const divisionSummary=Object.entries(byDivision).sort((a,b)=>b[1].centers.length-a[1].centers.length).map(([div,data])=>{
+    const cs=data.centers;
+    const rev=cs.reduce((s,c)=>s+c.total_revenue,0);
+    const prod=cs.reduce((s,c)=>s+c.total_produced,0);
+    return `<tr>
+      <td style="font-weight:600">${div}</td>
+      <td style="color:var(--muted)">${[...new Set(cs.map(c=>c.district))].join(', ')}</td>
+      <td style="font-weight:700">${cs.length}</td>
+      <td style="color:var(--green);font-weight:600">৳${fmtK(rev)}</td>
+      <td style="color:var(--purple);font-weight:600">${fmtN(prod)}</td>
+    </tr>`;
+  }).join('');
+
+  // Toggle buttons
+  el.innerHTML=`
+    <!-- Toggle -->
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button id="btn-district" onclick="window._dView('district')"
+        style="padding:7px 16px;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit;border:none;background:var(--accent);color:#fff">
+        🗺️ জেলাভিত্তিক
+      </button>
+      <button id="btn-division" onclick="window._dView('division')"
+        style="padding:7px 16px;border-radius:7px;font-size:13px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:var(--card);color:var(--muted)">
+        🏔️ বিভাগভিত্তিক
+      </button>
+    </div>
+
+    <!-- District view -->
+    <div id="view-district">${districtCards}</div>
+
+    <!-- Division view -->
+    <div id="view-division" style="display:none">
+      <div class="card">
+        <div class="card-head">🏔️ বিভাগভিত্তিক সারসংক্ষেপ</div>
+        <div class="tw"><table>
+          <thead><tr><th>বিভাগ</th><th>জেলাসমূহ</th><th>Center সংখ্যা</th><th style="color:var(--green)">মোট বিক্রয়</th><th style="color:var(--purple)">মোট উৎপাদন</th></tr></thead>
+          <tbody>${divisionSummary}</tbody>
+        </table></div>
+      </div>
+    </div>`;
+
+  window._dView=(type)=>{
+    document.getElementById('view-district').style.display=type==='district'?'block':'none';
+    document.getElementById('view-division').style.display=type==='division'?'block':'none';
+    document.getElementById('btn-district').style.background=type==='district'?'var(--accent)':'var(--card)';
+    document.getElementById('btn-district').style.color=type==='district'?'#fff':'var(--muted)';
+    document.getElementById('btn-district').style.border=type==='district'?'none':'1px solid var(--border)';
+    document.getElementById('btn-division').style.background=type==='division'?'var(--accent)':'var(--card)';
+    document.getElementById('btn-division').style.color=type==='division'?'#fff':'var(--muted)';
+    document.getElementById('btn-division').style.border=type==='division'?'none':'1px solid var(--border)';
+  };
+}
+
 function renderTargetSummaryView(el){
   const ok=allStats.filter(c=>c.status==='ok');
   if(!ok.length){el.innerHTML='<div class="empty">Data নেই।</div>';return;}
