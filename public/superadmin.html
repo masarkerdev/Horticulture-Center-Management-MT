@@ -594,7 +594,7 @@ function renderDetailContent(){
       <button class="dtab" onclick="showDTab('dProd',this)"><i class="ti ti-plant"></i> উৎপাদন</button>
       <button class="dtab" onclick="showDTab('dStock',this)"><i class="ti ti-stack-2"></i> স্টক</button>
       <button class="dtab" onclick="showDTab('dUsers',this)"><i class="ti ti-users"></i> ব্যবহারকারী</button>
-      <button class="dtab" onclick="showDTab('dFinance',this)"><i class="ti ti-report-money"></i> আর্থিক</button>
+      <button class="dtab" onclick="showDTab('dTarget',this)"><i class="ti ti-target"></i> লক্ষ্যমাত্রা</button>
     </div>
     <div id="detailTabContent"></div>`;
   renderDetailTab('dSales');
@@ -684,19 +684,37 @@ function renderDetailTab(tab){
           </div></div></div>`).join('')||'<div class="empty">কেউ নেই</div>'}
         </div></div>
       </div>`;
-  }else if(tab==='dFinance'){
-    const oi=d.other_income;
+  }else if(tab==='dTarget'){
+    const targets=d.targets||[];
+    const months=['','জানু','ফেব্রু','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+    const prodTargets=targets.filter(t=>t.target_type==='production');
+    const salesTargets=targets.filter(t=>t.target_type==='sales');
     el.innerHTML=`
-      <div class="kpi-grid">
-        <div class="kpi green"><div class="kpi-label">বিক্রয় রাজস্ব</div><div class="kpi-value">৳${fmt(d.sales.summary.total_revenue)}</div></div>
-        <div class="kpi teal"><div class="kpi-label">অন্যান্য আয়</div><div class="kpi-value">৳${fmt(oi.total)}</div></div>
-        <div class="kpi purple"><div class="kpi-label">মোট আয়</div><div class="kpi-value">৳${fmt(parseFloat(d.sales.summary.total_revenue)+oi.total)}</div></div>
-        <div class="kpi amber"><div class="kpi-label">মোট ছাড়</div><div class="kpi-value">৳${fmt(d.sales.summary.total_discount)}</div></div>
+      <div class="kpi-grid" style="margin-bottom:16px">
+        <div class="kpi purple"><div class="kpi-label">উৎপাদন লক্ষ্য (বার্ষিক)</div><div class="kpi-value">${fmtN(prodTargets.reduce((s,t)=>s+parseInt(t.target_quantity||0),0))}</div></div>
+        <div class="kpi green"><div class="kpi-label">বিক্রয় লক্ষ্য (বার্ষিক)</div><div class="kpi-value">৳${fmt(salesTargets.reduce((s,t)=>s+parseFloat(t.target_amount||0),0))}</div></div>
+        <div class="kpi blue"><div class="kpi-label">মোট মাস</div><div class="kpi-value">${targets.length}</div></div>
       </div>
-      ${d.targets.length?`<div class="card"><div class="card-head">🎯 লক্ষ্যমাত্রা</div>
-        <div class="tw"><table><thead><tr><th>ধরন</th><th>মাস</th><th>পরিমাণ</th><th>আয়</th></tr></thead>
-        <tbody>${d.targets.map(t=>`<tr><td>${t.target_type==='production'?'উৎপাদন':'বিক্রয়'}</td><td>${monthLabel(t.target_month)}</td><td>${fmtN(t.target_quantity)}</td><td>৳${fmt(t.target_amount)}</td></tr>`).join('')}</tbody></table></div>
-      </div>`:''}`;
+      ${prodTargets.length?`
+      <div class="card" style="margin-bottom:14px">
+        <div class="card-head"><i class="ti ti-plant"></i> উৎপাদন লক্ষ্যমাত্রা</div>
+        <div class="tw"><table><thead><tr><th>মাস</th><th>পরিমাণ (লক্ষ্য)</th><th>বর্তমান স্টক</th></tr></thead>
+        <tbody>${prodTargets.map(t=>`<tr>
+          <td>${months[t.target_month]||t.target_month}</td>
+          <td style="color:var(--purple);font-weight:600">${fmtN(t.target_quantity)}</td>
+          <td style="color:var(--muted)">—</td>
+        </tr>`).join('')}</tbody></table></div>
+      </div>`:'<div class="empty" style="padding:16px">উৎপাদন লক্ষ্যমাত্রা নেই</div>'}
+      ${salesTargets.length?`
+      <div class="card">
+        <div class="card-head"><i class="ti ti-coin"></i> বিক্রয় লক্ষ্যমাত্রা</div>
+        <div class="tw"><table><thead><tr><th>মাস</th><th>লক্ষ্য (টাকা)</th><th>অর্জন</th></tr></thead>
+        <tbody>${salesTargets.map(t=>`<tr>
+          <td>${months[t.target_month]||t.target_month}</td>
+          <td style="color:var(--green);font-weight:600">৳${fmt(t.target_amount)}</td>
+          <td style="color:var(--muted)">—</td>
+        </tr>`).join('')}</tbody></table></div>
+      </div>`:'<div class="empty" style="padding:16px">বিক্রয় লক্ষ্যমাত্রা নেই</div>'}`;
   }
 }
 
