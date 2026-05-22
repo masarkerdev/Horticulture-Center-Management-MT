@@ -250,6 +250,9 @@ tr:hover td{background:#1a2438}
         <button class="nav-item" onclick="navTo('compare',this)" id="nav-compare">
           <i class="ti ti-chart-bar"></i> তুলনামূলক রিপোর্ট
         </button>
+        <button class="nav-item" onclick="navTo('targetSummary',this)" id="nav-targetSummary">
+          <i class="ti ti-target"></i> লক্ষ্যমাত্রা সারসংক্ষেপ
+        </button>
 
         <div id="directorOnly" style="display:none">
           <div class="nav-divider"></div>
@@ -451,7 +454,7 @@ function navTo(view,btn){
   btn.classList.add('active');
   currentView=view;
   if(view==='detail') return;
-  const titles={overview:'📊 Overview',catA:'🏛️ A Category — উপপরিচালক',catB:'🌿 B Category — উদ্যানতত্ত্ববিদ',catC:'🪴 C Category — নার্সারী তত্ত্বাবধায়ক',compare:'📈 তুলনামূলক রিপোর্ট',allCenters:'⚙️ সব Center পরিচালনা',adminMgmt:'👥 Admin পরিচালনা'};
+  const titles={overview:'📊 Overview',catA:'🏛️ A Category — উপপরিচালক',catB:'🌿 B Category — উদ্যানতত্ত্ববিদ',catC:'🪴 C Category — নার্সারী তত্ত্বাবধায়ক',compare:'📈 তুলনামূলক রিপোর্ট',targetSummary:'🎯 লক্ষ্যমাত্রা সারসংক্ষেপ',allCenters:'⚙️ সব Center পরিচালনা',adminMgmt:'👥 Admin পরিচালনা'};
   document.getElementById('topbarTitle').textContent=titles[view]||'Overview';
   renderView(view);
 }
@@ -463,6 +466,7 @@ function renderView(view){
   else if(view==='catB') renderCategoryView(el,'B');
   else if(view==='catC') renderCategoryView(el,'C');
   else if(view==='compare') renderCompareView(el);
+  else if(view==='targetSummary') renderTargetSummaryView(el);
   else if(view==='allCenters') renderAllCenters(el);
   else if(view==='adminMgmt') renderAdminMgmt(el);
 }
@@ -866,6 +870,52 @@ function renderDetailTab(tab){
 }
 
 // ── COMPARE ──
+// ── TARGET SUMMARY VIEW ──
+function renderTargetSummaryView(el){
+  const ok=allStats.filter(c=>c.status==='ok');
+  if(!ok.length){el.innerHTML='<div class="empty">Data নেই।</div>';return;}
+  const curFY=new Date().getMonth()>=6?new Date().getFullYear():new Date().getFullYear()-1;
+  const months=['','জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+  const curMonth=new Date().getMonth()+1;
+  const totalAnnual=ok.reduce((s,c)=>s+(c.annual_prod_target||0),0);
+  const totalMonthlyTarget=ok.reduce((s,c)=>s+(c.monthly_prod_target||0),0);
+  const totalMonthlyAchieved=ok.reduce((s,c)=>s+(c.monthly_prod_achieved||0),0);
+  const overallPct=totalMonthlyTarget>0?Math.round(totalMonthlyAchieved/totalMonthlyTarget*100):0;
+  const centersOnTrack=ok.filter(c=>c.monthly_prod_target>0&&(c.monthly_prod_achieved/c.monthly_prod_target)>=0.7).length;
+  el.innerHTML=`
+    <div class="kpi-grid" style="margin-bottom:16px">
+      <div class="kpi purple"><div class="kpi-label">অর্থবছরের মোট লক্ষ্যমাত্রা</div><div class="kpi-value">${fmtN(totalAnnual)}টি</div><div class="kpi-sub">FY ${curFY}-${curFY+1}</div></div>
+      <div class="kpi blue"><div class="kpi-label">চলতি মাসের লক্ষ্যমাত্রা</div><div class="kpi-value">${fmtN(totalMonthlyTarget)}টি</div><div class="kpi-sub">${months[curMonth]}</div></div>
+      <div class="kpi ${overallPct>=70?'green':overallPct>=40?'amber':'red'}"><div class="kpi-label">চলতি মাসের অর্জন</div><div class="kpi-value">${fmtN(totalMonthlyAchieved)}টি</div><div class="kpi-sub">${overallPct}% অগ্রগতি</div></div>
+      <div class="kpi teal"><div class="kpi-label">লক্ষ্যমাত্রা অনুযায়ী (≥70%)</div><div class="kpi-value">${centersOnTrack}</div><div class="kpi-sub">${ok.length}টি center-এর মধ্যে</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head">📋 প্রতিটি Center-এর লক্ষ্যমাত্রা অর্জন
+        <span>FY ${curFY}-${curFY+1} | ${months[curMonth]}</span>
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>Center</th><th>Cat</th><th style="color:var(--purple)">অর্থবছরের লক্ষ্যমাত্রা</th><th style="color:var(--blue)">মাসিক লক্ষ্যমাত্রা</th><th style="color:var(--green)">মাসিক অর্জন</th><th>অগ্রগতি</th><th>অবস্থা</th></tr></thead>
+        <tbody>${[...ok].sort((a,b)=>{
+          const ap=a.monthly_prod_target>0?a.monthly_prod_achieved/a.monthly_prod_target:0;
+          const bp=b.monthly_prod_target>0?b.monthly_prod_achieved/b.monthly_prod_target:0;
+          return bp-ap;
+        }).map(c=>{
+          const pct=c.monthly_prod_target>0?Math.min(Math.round(c.monthly_prod_achieved/c.monthly_prod_target*100),200):null;
+          const col=pct===null?'var(--muted)':pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)';
+          return `<tr>
+            <td><div style="font-weight:600;font-size:13px;cursor:pointer" onclick="viewDetail('${c.slug}')">${c.name_bn}</div><div style="font-size:11px;color:var(--muted)">${c.district||''}</div></td>
+            <td><span style="font-size:11px;padding:2px 6px;border-radius:5px;font-weight:700;background:${c.category==='A'?'#1e1b4b':c.category==='B'?'#052e16':'#431407'};color:${c.category==='A'?'#a5b4fc':c.category==='B'?'#4ade80':'#fb923c'}">${c.category}</span></td>
+            <td style="color:var(--purple);font-weight:600">${c.annual_prod_target>0?fmtN(c.annual_prod_target)+'টি':'<span style="color:var(--muted);font-style:italic">নেই</span>'}</td>
+            <td style="color:var(--blue);font-weight:600">${c.monthly_prod_target>0?fmtN(c.monthly_prod_target)+'টি':'<span style="color:var(--muted)">—</span>'}</td>
+            <td style="color:var(--green);font-weight:600">${fmtN(c.monthly_prod_achieved)}টি</td>
+            <td style="min-width:130px">${pct!==null?`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:6px;background:var(--border);border-radius:3px"><div style="height:6px;width:${Math.min(pct,100)}%;background:${col};border-radius:3px"></div></div><span style="font-size:12px;font-weight:700;color:${col};min-width:36px">${pct}%</span></div>`:'<span style="font-size:11px;color:var(--muted);font-style:italic">লক্ষ্যমাত্রা নেই</span>'}</td>
+            <td><span class="pill ${c.traffic_light==='green'?'on':c.traffic_light==='yellow'?'paid':'due'}">${c.traffic_light==='green'?'ভালো':c.traffic_light==='yellow'?'মাঝারি':'দুর্বল'}</span></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table></div>
+    </div>`;
+}
+
 function renderCompareView(el){
   const ok=allStats.filter(c=>c.status==='ok');
   if(!ok.length){el.innerHTML='<div class="empty"><i class="ti ti-chart-off"></i>Data নেই।</div>';return;}
