@@ -752,18 +752,82 @@ function renderDetailTab(tab){
     };
 
     window._lTA=lTA;
+
+    // Pre-loaded current FY data ব্যবহার করো — আলাদা API call লাগবে না
+    const preloaded=d.fy_data;
+    const renderFYHTML=(targets,prod_achieved,sales_achieved)=>{
+      const prodT=targets.filter(t=>t.target_type==='production');
+      const salesT=targets.filter(t=>t.target_type==='sales');
+      const annualProd=prodT.find(t=>parseInt(t.target_month||0)===0);
+      const annualSales=salesT.find(t=>parseInt(t.target_month||0)===0);
+      const tProd=annualProd?parseInt(annualProd.target_quantity||0):prodT.reduce((s,t)=>parseInt(t.target_month)>0?s+parseInt(t.target_quantity||0):s,0);
+      const tSales=annualSales?parseFloat(annualSales.target_amount||0):salesT.reduce((s,t)=>parseInt(t.target_month)>0?s+parseFloat(t.target_amount||0):s,0);
+      const pp=tProd>0?Math.min(Math.round(prod_achieved/tProd*100),100):0;
+      const sp=tSales>0?Math.min(Math.round(sales_achieved/tSales*100),100):0;
+      const pc=(p)=>p>=70?'var(--green)':p>=40?'var(--amber)':'var(--red)';
+      return `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+          <div class="card" style="border-left:3px solid var(--purple)">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">🌱 উৎপাদন</div>
+              <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--purple)">${fmtN(tProd)}টি</b> | অর্জন: <b style="color:var(--text)">${fmtN(prod_achieved)}টি</b></div></div>
+              <div style="font-size:26px;font-weight:700;color:${pc(pp)}">${pp}%</div>
+            </div>
+            <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px"><div style="height:5px;width:${pp}%;background:${pc(pp)};border-radius:3px;transition:.5s"></div></div>
+          </div>
+          <div class="card" style="border-left:3px solid var(--green)">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">💰 বিক্রয়</div>
+              <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--green)">৳${fmt(tSales)}</b> | অর্জন: <b style="color:var(--text)">৳${fmt(sales_achieved)}</b></div></div>
+              <div style="font-size:26px;font-weight:700;color:${pc(sp)}">${sp}%</div>
+            </div>
+            <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px"><div style="height:5px;width:${sp}%;background:${pc(sp)};border-radius:3px;transition:.5s"></div></div>
+          </div>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px">মাসিভিত্তিক লক্ষ্যমাত্রা</div>
+        ${targets.length?`<div class="tw"><table>
+          <thead><tr><th>সময়কাল</th><th>ধরন</th><th>লক্ষ্য (পরিমাণ)</th><th>লক্ষ্য (৳)</th><th>মন্তব্য</th></tr></thead>
+          <tbody>${targets.map(t=>`<tr>
+            <td style="font-weight:500">${parseInt(t.target_month||0)===0?'অর্থবছর মোট '+t.target_year+'-'+(parseInt(t.target_year)+1):months[t.target_month]+' '+t.target_year}</td>
+            <td><span class="pill ${t.target_type==='production'?'active':'paid'}">${t.target_type==='production'?'উৎপাদন':'বিক্রয়'}</span></td>
+            <td style="color:var(--purple);font-weight:600">${fmtN(t.target_quantity)}টি</td>
+            <td style="color:var(--green);font-weight:600">৳${fmt(t.target_amount)}</td>
+            <td style="color:var(--muted)">${t.remarks||'—'}</td>
+          </tr>`).join('')}</tbody>
+        </table></div>`:'<div class="empty" style="padding:20px">এই অর্থবছরে কোনো লক্ষ্যমাত্রা নেই</div>'}`;
+    };
+    window._renderFYHTML=renderFYHTML;
+
+    // lTA override করো — render function ব্যবহার করবে
+    const lTAFull=async(fy)=>{
+      document.getElementById('saTargetResults').innerHTML='<div class="lt">লোড হচ্ছে...</div>';
+      try{
+        const r=await fetch(`${API}/center/${currentDetailSlug}/targets?fy=${fy}&_t=${Date.now()}`,{headers:{Authorization:'Bearer '+token,'Cache-Control':'no-cache'}});
+        const data=await r.json();
+        if(!data.success){document.getElementById('saTargetResults').innerHTML=`<div class="lt">${data.error||'Error'}</div>`;return;}
+        document.getElementById('saTargetResults').innerHTML=window._renderFYHTML(data.targets,data.prod_achieved,data.sales_achieved);
+      }catch(e){document.getElementById('saTargetResults').innerHTML=`<div class="lt">লোড হয়নি।</div>`;}
+    };
+    window._lTA=lTAFull;
+
+    const initHTML=preloaded&&preloaded.targets
+      ?renderFYHTML(preloaded.targets,preloaded.prod_achieved,preloaded.sales_achieved)
+      :'<div class="lt">লোড হচ্ছে...</div>';
+
     el.innerHTML=`
       <div class="card">
         <div class="card-head" style="display:flex;justify-content:space-between;align-items:center">
           <span>🎯 লক্ষ্যমাত্রা বনাম অর্জন</span>
           <select id="saFYSelect" onchange="window._lTA(parseInt(this.value))"
             style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:7px;font-size:12px;font-family:inherit;cursor:pointer">
-            ${fyOpts.map(y=>`<option value="${y}">FY ${y}-${y+1}</option>`).join('')}
+            ${fyOpts.map(y=>`<option value="${y}"${y===curFY?' selected':''}>FY ${y}-${y+1}</option>`).join('')}
           </select>
         </div>
-        <div id="saTargetResults"><div class="lt">লোড হচ্ছে...</div></div>
+        <div id="saTargetResults">${initHTML}</div>
       </div>`;
-    lTA(curFY);
+
+    // Pre-loaded না থাকলে API call করো
+    if(!preloaded||!preloaded.targets) lTAFull(curFY);
   }else if(tab==='dDamage'){
     const dm=d.damages;
     el.innerHTML=`

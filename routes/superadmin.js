@@ -169,7 +169,8 @@ router.get('/center/:slug', saAuth, async (req, res) => {
 
         const [salesSummary, todaySales, monthlySales, productionSummary, productionByType,
                stockSummary, lowStock, damagesSummary, topSeedlings, recentSales,
-               recentBatches, users, otherIncome, targets, categories] = await Promise.all([
+               recentBatches, users, otherIncome, targets, categories,
+               fyTargets, fyProdAchieved, fySalesAchieved] = await Promise.all([
             queryTenant(tenant.db_url, `SELECT COUNT(*) AS total_invoices, COALESCE(SUM(total_amount),0) AS total_revenue, COALESCE(SUM(discount),0) AS total_discount, COALESCE(SUM(CASE WHEN payment_status='due' THEN total_amount ELSE 0 END),0) AS due_amount, COALESCE(SUM(CASE WHEN payment_status='paid' THEN total_amount ELSE 0 END),0) AS paid_amount FROM sales`),
             queryTenant(tenant.db_url, `SELECT COALESCE(SUM(total_amount),0) AS today_revenue, COUNT(*) AS today_invoices FROM sales WHERE sale_date=CURRENT_DATE`),
             queryTenant(tenant.db_url, `SELECT TO_CHAR(sale_date,'YYYY-MM') AS month, TO_CHAR(sale_date,'Mon YY') AS label, COALESCE(SUM(total_amount),0) AS revenue, COUNT(*) AS invoices FROM sales WHERE sale_date>=NOW()-INTERVAL '6 months' GROUP BY month,label ORDER BY month`),
@@ -185,6 +186,31 @@ router.get('/center/:slug', saAuth, async (req, res) => {
             queryTenant(tenant.db_url, `SELECT income_type, COALESCE(SUM(amount),0) AS total, COUNT(*) AS count FROM other_income GROUP BY income_type`),
             queryTenant(tenant.db_url, `SELECT target_type,target_month,target_year,target_quantity,target_amount,remarks FROM targets ORDER BY target_year DESC, target_type, target_month`),
             queryTenant(tenant.db_url, `SELECT c.name_bn, COUNT(s.id) AS seedling_count, COALESCE(SUM(s.current_stock),0) AS total_stock FROM categories c LEFT JOIN seedlings s ON c.id=s.category_id AND s.is_active=true GROUP BY c.id,c.name_bn ORDER BY seedling_count DESC`),
+            // Current FY targets — pre-load করা হচ্ছে
+            (async () => {
+                const now = new Date();
+                const fyS = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+                const fyE = fyS + 1;
+                return queryTenant(tenant.db_url,
+                    `SELECT target_type,target_month,target_year,target_quantity,target_amount,remarks FROM targets WHERE (target_year=$1 AND target_month=0) OR (target_year=$1 AND target_month BETWEEN 7 AND 12) OR (target_year=$2 AND target_month BETWEEN 1 AND 6) ORDER BY target_type,target_month`,
+                    [fyS, fyE]);
+            })(),
+            (async () => {
+                const now = new Date();
+                const fyS = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+                const fyE = fyS + 1;
+                return queryTenant(tenant.db_url,
+                    `SELECT COALESCE(SUM(available_quantity),0) AS total FROM production_batches WHERE (EXTRACT(YEAR FROM sowing_date)=$1 AND EXTRACT(MONTH FROM sowing_date)>=7) OR (EXTRACT(YEAR FROM sowing_date)=$2 AND EXTRACT(MONTH FROM sowing_date)<=6)`,
+                    [fyS, fyE]);
+            })(),
+            (async () => {
+                const now = new Date();
+                const fyS = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+                const fyE = fyS + 1;
+                return queryTenant(tenant.db_url,
+                    `SELECT COALESCE(SUM(total_amount),0) AS total FROM sales WHERE (EXTRACT(YEAR FROM sale_date)=$1 AND EXTRACT(MONTH FROM sale_date)>=7) OR (EXTRACT(YEAR FROM sale_date)=$2 AND EXTRACT(MONTH FROM sale_date)<=6)`,
+                    [fyS, fyE]);
+            })(),
         ]);
 
         res.json({
@@ -197,6 +223,12 @@ router.get('/center/:slug', saAuth, async (req, res) => {
             top_seedlings: topSeedlings, users: users,
             other_income: { breakdown: otherIncome, total: otherIncome.reduce((s,r)=>s+parseFloat(r.total||0),0) },
             targets: targets,
+            fy_data: {
+                fy: new Date().getMonth()>=6?new Date().getFullYear():new Date().getFullYear()-1,
+                targets: fyTargets,
+                prod_achieved: parseInt(fyProdAchieved[0]?.total||0),
+                sales_achieved: parseFloat(fySalesAchieved[0]?.total||0),
+            },
         });
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
