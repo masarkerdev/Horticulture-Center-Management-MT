@@ -869,7 +869,62 @@ function renderDetailTab(tab){
 function renderCompareView(el){
   const ok=allStats.filter(c=>c.status==='ok');
   if(!ok.length){el.innerHTML='<div class="empty"><i class="ti ti-chart-off"></i>Data নেই।</div>';return;}
-  const ranked=[...ok].sort((a,b)=>b.perf_score-a.perf_score);
+
+  // Filter options
+  const districts=[...new Set(ok.map(c=>c.district).filter(Boolean))].sort();
+  const divisions=[...new Set(ok.map(c=>c.division).filter(Boolean))].sort();
+
+  const applyFilter=()=>{
+    const cat=document.getElementById('fcCat').value;
+    const dist=document.getElementById('fcDist').value;
+    const div=document.getElementById('fcDiv').value;
+    let filtered=ok;
+    if(cat) filtered=filtered.filter(c=>c.category===cat);
+    if(dist) filtered=filtered.filter(c=>c.district===dist);
+    if(div) filtered=filtered.filter(c=>c.division===div);
+    renderCompareTable(filtered);
+  };
+  window._applyCompareFilter=applyFilter;
+
+  el.innerHTML=`
+    <!-- Filters -->
+    <div class="card" style="margin-bottom:14px;padding:14px 16px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:13px;color:var(--muted);font-weight:600">ফিল্টার:</span>
+        <select id="fcCat" onchange="window._applyCompareFilter()"
+          style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:7px;font-size:13px;font-family:inherit;cursor:pointer">
+          <option value="">সব Category</option>
+          <option value="A">A — উপপরিচালক</option>
+          <option value="B">B — উদ্যানতত্ত্ববিদ</option>
+          <option value="C">C — নার্সারী</option>
+        </select>
+        <select id="fcDist" onchange="window._applyCompareFilter()"
+          style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:7px;font-size:13px;font-family:inherit;cursor:pointer">
+          <option value="">সব জেলা</option>
+          ${districts.map(d=>`<option value="${d}">${d}</option>`).join('')}
+        </select>
+        <select id="fcDiv" onchange="window._applyCompareFilter()"
+          style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:7px;font-size:13px;font-family:inherit;cursor:pointer">
+          <option value="">সব বিভাগ</option>
+          ${divisions.map(d=>`<option value="${d}">${d}</option>`).join('')}
+        </select>
+        <button onclick="document.getElementById('fcCat').value='';document.getElementById('fcDist').value='';document.getElementById('fcDiv').value='';window._applyCompareFilter()"
+          style="background:var(--card);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:7px;font-size:12px;cursor:pointer">
+          ✕ Reset
+        </button>
+        <span id="compareCount" style="font-size:12px;color:var(--muted);margin-left:auto">${ok.length}টি center</span>
+      </div>
+    </div>
+    <div id="compareResults"></div>`;
+
+  renderCompareTable(ok);
+}
+
+function renderCompareTable(data){
+  const el=document.getElementById('compareResults');
+  document.getElementById('compareCount').textContent=data.length+'টি center';
+  if(!data.length){el.innerHTML='<div class="empty">এই ফিল্টারে কোনো center নেই।</div>';return;}
+  const ranked=[...data].sort((a,b)=>b.perf_score-a.perf_score);
   el.innerHTML=`
     <div class="card" style="margin-bottom:14px">
       <div class="card-head">🏆 Performance Leaderboard <span>Score অনুযায়ী rank</span></div>
@@ -880,7 +935,7 @@ function renderCompareView(el){
             <circle cx="30" cy="30" r="25" fill="none" stroke="#1e293b" stroke-width="6"/>
             <circle cx="30" cy="30" r="25" fill="none" stroke="${scoreColor(c.perf_score)}" stroke-width="6" stroke-dasharray="${(c.perf_score/100*157).toFixed(1)} 157" stroke-linecap="round"/>
           </svg><div class="score-text"><div class="score-num" style="color:${scoreColor(c.perf_score)}">${c.perf_score}</div><div class="score-lbl">/100</div></div></div>
-          <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${c.name_bn}</div><div style="font-size:11px;color:var(--muted)">${c.location||''} • ${c.category} Category</div></div>
+          <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${c.name_bn}</div><div style="font-size:11px;color:var(--muted)">${c.district||''} • ${c.category} Category</div></div>
           <div style="display:flex;gap:16px;flex-wrap:wrap">
             <div style="text-align:center"><div style="font-size:13px;font-weight:700;color:var(--green)">৳${fmtK(c.total_revenue)}</div><div style="font-size:10px;color:var(--muted)">বিক্রয়</div></div>
             <div style="text-align:center"><div class="${c.growth_rate>=0?'growth-up':'growth-dn'}">${c.growth_rate>=0?'▲':'▼'}${Math.abs(c.growth_rate).toFixed(1)}%</div><div style="font-size:10px;color:var(--muted);margin-top:2px">প্রবৃদ্ধি</div></div>
@@ -906,7 +961,7 @@ function renderCompareView(el){
       <div class="card-head">⚡ কার্যকারিতা বিশ্লেষণ</div>
       <div class="tw"><table><thead><tr><th>Center</th><th>Cat</th><th>প্রতি ব্যাচে আয়</th><th>উৎপাদন সাফল্য</th><th>কম স্টক</th><th>আজকের বিক্রয়</th></tr></thead>
       <tbody>${ranked.map(c=>`<tr>
-        <td><div style="font-weight:600">${c.name_bn}</div><div style="font-size:11px;color:var(--muted)">${c.location||''}</div></td>
+        <td><div style="font-weight:600">${c.name_bn}</div><div style="font-size:11px;color:var(--muted)">${c.district||''}</div></td>
         <td><span style="font-size:11px;padding:2px 7px;border-radius:6px;font-weight:700;background:${c.category==='A'?'#1e1b4b':c.category==='B'?'#052e16':'#431407'};color:${c.category==='A'?'#a5b4fc':c.category==='B'?'#4ade80':'#fb923c'}">${c.category}</span></td>
         <td style="color:var(--green);font-weight:600">৳${fmt(c.rev_per_batch)}</td>
         <td style="color:${c.avg_success>=70?'var(--green)':c.avg_success>=50?'var(--amber)':'var(--red)'};font-weight:600">${c.avg_success.toFixed(1)}%</td>
@@ -915,7 +970,6 @@ function renderCompareView(el){
       </tr>`).join('')}
       </tbody></table></div>
     </div>`;
-}
 
 // ── MODAL ──
 function openAddModal(){
