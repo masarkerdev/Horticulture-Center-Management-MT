@@ -595,6 +595,8 @@ function renderDetailContent(){
       <button class="dtab" onclick="showDTab('dStock',this)"><i class="ti ti-stack-2"></i> স্টক</button>
       <button class="dtab" onclick="showDTab('dUsers',this)"><i class="ti ti-users"></i> ব্যবহারকারী</button>
       <button class="dtab" onclick="showDTab('dTarget',this)"><i class="ti ti-target"></i> লক্ষ্যমাত্রা</button>
+      <button class="dtab" onclick="showDTab('dDamage',this)"><i class="ti ti-alert-triangle"></i> ক্ষতি/নষ্ট</button>
+      <button class="dtab" onclick="showDTab('dIncome',this)"><i class="ti ti-cash"></i> অন্যান্য আয়</button>
     </div>
     <div id="detailTabContent"></div>`;
   renderDetailTab('dSales');
@@ -659,10 +661,7 @@ function renderDetailTab(tab){
         <div class="kpi green"><div class="kpi-label">স্টক মূল্য</div><div class="kpi-value">৳${fmt(st.summary.stock_value)}</div></div>
         <div class="kpi red"><div class="kpi-label">কম স্টক</div><div class="kpi-value">${st.summary.low_stock_count}</div></div>
       </div>
-      ${st.low_stock.length?`<div class="card"><div class="card-head" style="color:var(--red)">⚠ কম স্টক সতর্কতা</div>
-        <div class="tw"><table><thead><tr><th>চারা</th><th>কোড</th><th>স্টক</th><th>সর্বনিম্ন</th></tr></thead>
-        <tbody>${st.low_stock.map(s=>`<tr><td>${s.name_bn}</td><td style="font-family:monospace">${s.seedling_code}</td><td style="color:var(--red);font-weight:700">${s.current_stock}</td><td>${s.min_stock_alert}</td></tr>`).join('')}</tbody></table></div>
-      </div>`:''}
+
       <div class="card"><div class="card-head">📂 ক্যাটাগরি অনুযায়ী</div>
         <div class="tw"><table><thead><tr><th>ক্যাটাগরি</th><th>প্রজাতি</th><th>স্টক</th></tr></thead>
         <tbody>${st.categories.map(c=>`<tr><td>${c.name_bn}</td><td>${c.seedling_count}</td><td style="color:var(--amber);font-weight:600">${fmtN(c.total_stock)}</td></tr>`).join('')||'<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:16px">Data নেই</td></tr>'}</tbody></table></div>
@@ -765,6 +764,41 @@ function renderDetailTab(tab){
         <div id="saTargetResults"><div class="lt">লোড হচ্ছে...</div></div>
       </div>`;
     lTA(curFY);
+  }
+
+  }else if(tab==='dDamage'){
+    const dm=d.damages;
+    el.innerHTML=`
+      <div class="kpi-grid" style="margin-bottom:16px">
+        <div class="kpi red"><div class="kpi-label">মোট ক্ষতিগ্রস্ত</div><div class="kpi-value">${fmtN(dm.total_damaged)}</div></div>
+        <div class="kpi amber"><div class="kpi-label">মোট রিপোর্ট</div><div class="kpi-value">${dm.total_reports}</div></div>
+      </div>
+      ${dm.by_reason.length?`<div class="card">
+        <div class="card-head">📋 কারণ অনুযায়ী ক্ষতির বিবরণ</div>
+        <div class="tw"><table><thead><tr><th>কারণ</th><th>মোট ক্ষতিগ্রস্ত</th><th>রিপোর্ট সংখ্যা</th></tr></thead>
+        <tbody>${dm.by_reason.map(r=>`<tr>
+          <td>${r.reason||'অজানা'}</td>
+          <td style="color:var(--red);font-weight:600">${fmtN(r.total_damaged)}</td>
+          <td style="color:var(--amber)">${r.count}</td>
+        </tr>`).join('')}</tbody></table></div>
+      </div>`:'<div class="empty"><i class="ti ti-plant-off"></i>কোনো ক্ষতির তথ্য নেই</div>'}`;
+
+  }else if(tab==='dIncome'){
+    const oi=d.other_income;
+    el.innerHTML=`
+      <div class="kpi-grid" style="margin-bottom:16px">
+        <div class="kpi teal"><div class="kpi-label">মোট অন্যান্য আয়</div><div class="kpi-value">৳${fmt(oi.total)}</div></div>
+        <div class="kpi blue"><div class="kpi-label">আয়ের ধরন</div><div class="kpi-value">${oi.breakdown.length}</div></div>
+      </div>
+      ${oi.breakdown.length?`<div class="card">
+        <div class="card-head">💰 আয়ের বিবরণ</div>
+        <div class="tw"><table><thead><tr><th>আয়ের ধরন</th><th>মোট আয়</th><th>সংখ্যা</th></tr></thead>
+        <tbody>${oi.breakdown.map(r=>`<tr>
+          <td>${r.income_type||'অজানা'}</td>
+          <td style="color:var(--teal);font-weight:600">৳${fmt(r.total)}</td>
+          <td style="color:var(--muted)">${r.count}</td>
+        </tr>`).join('')}</tbody></table></div>
+      </div>`:'<div class="empty"><i class="ti ti-cash-off"></i>কোনো অন্যান্য আয় নেই</div>'}`;
   }
 }
 
