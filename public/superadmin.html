@@ -844,29 +844,27 @@ function renderDetailTab(tab){
       const pc=(p)=>p>=70?'var(--green)':p>=40?'var(--amber)':'var(--red)';
       return `
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-          <div class="card" style="border-left:3px solid var(--purple)">
-            <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card" style="border-left:3px solid var(--purple);padding:14px 16px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
               <div>
-                <div style="font-size:13px;font-weight:600;color:var(--purple);margin-bottom:6px">🌱 উৎপাদন</div>
-                <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--text)">${fmtN(tProd)}টি</b></div>
-                <div style="font-size:12px;color:var(--muted);margin-top:2px">অর্জন: <b style="color:var(--green)">${fmtN(prod_achieved)}টি</b></div>
+                <div style="font-size:12px;font-weight:600;color:var(--purple)">🌱 উৎপাদন</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:4px">লক্ষ্য: <b style="color:var(--text)">${fmtN(tProd)}টি</b> &nbsp;|&nbsp; অর্জন: <b style="color:var(--green)">${fmtN(prod_achieved)}টি</b></div>
               </div>
-              <div style="font-size:32px;font-weight:700;color:${pc(pp)}">${toBn(pp)}%</div>
+              <div style="font-size:28px;font-weight:700;color:${pc(pp)};line-height:1">${toBn(pp)}%</div>
             </div>
-            <div style="margin-top:12px;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+            <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
               <div style="height:6px;width:${pp}%;background:${pc(pp)};border-radius:3px;transition:.5s"></div>
             </div>
           </div>
-          <div class="card" style="border-left:3px solid var(--green)">
-            <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="card" style="border-left:3px solid var(--green);padding:14px 16px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
               <div>
-                <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:6px">💰 বিক্রয়</div>
-                <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--text)">৳${fmt(tSales)}</b></div>
-                <div style="font-size:12px;color:var(--muted);margin-top:2px">অর্জন: <b style="color:var(--green)">৳${fmt(sales_achieved)}</b></div>
+                <div style="font-size:12px;font-weight:600;color:var(--green)">💰 বিক্রয়</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:4px">লক্ষ্য: <b style="color:var(--text)">৳${fmt(tSales)}</b> &nbsp;|&nbsp; অর্জন: <b style="color:var(--green)">৳${fmt(sales_achieved)}</b></div>
               </div>
-              <div style="font-size:32px;font-weight:700;color:${pc(sp)}">${toBn(sp)}%</div>
+              <div style="font-size:28px;font-weight:700;color:${pc(sp)};line-height:1">${toBn(sp)}%</div>
             </div>
-            <div style="margin-top:12px;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+            <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
               <div style="height:6px;width:${sp}%;background:${pc(sp)};border-radius:3px;transition:.5s"></div>
             </div>
           </div>
