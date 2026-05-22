@@ -779,5 +779,5 @@ textarea.fc {
   }
   .tb .btn:not(.btnp):not([onclick*="mPwdReq"]) {
     display: none;
-  } */
+  }
 }
