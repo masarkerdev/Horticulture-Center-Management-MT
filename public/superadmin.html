@@ -273,6 +273,10 @@ tr:hover td{background:#1a2438}
       <div class="topbar">
         <div class="topbar-title" id="topbarTitle">Overview</div>
         <div class="topbar-right">
+          <div id="topbarAdminInfo" style="text-align:right;margin-right:12px;display:none">
+            <div style="font-size:12px;font-weight:600;color:var(--text)" id="topbarAdminName"></div>
+            <div style="font-size:10px;color:var(--muted)" id="topbarAdminRole"></div>
+          </div>
           <button class="refresh-btn" onclick="refreshAll()"><i class="ti ti-refresh"></i> Refresh</button>
         </div>
       </div>
@@ -378,6 +382,10 @@ function showApp(){
   const parts=userRole==='director'
     ? ['হর্টিকালচার উইং, DAE', district, division].filter(Boolean)
     : ['হর্টিকালচার সেন্টার', locationName, district, division].filter(Boolean);
+  // Topbar-এ admin info দেখাও
+  document.getElementById('topbarAdminInfo').style.display='block';
+  document.getElementById('topbarAdminName').textContent=line1;
+  document.getElementById('topbarAdminRole').textContent=parts.join(', ');
   document.getElementById('adminRole').textContent=parts.join(', ');
 
   if(userRole==='director') document.getElementById('directorOnly').style.display='block';
