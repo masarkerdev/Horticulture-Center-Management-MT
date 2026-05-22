@@ -351,10 +351,11 @@ router.get('/center/:slug/targets', saAuth, async (req, res) => {
             queryTenant(tenant.db_url,
                 `SELECT target_type, target_month, target_year, target_quantity, target_amount, remarks
                  FROM targets
-                 WHERE (target_year=$1 AND (target_month IS NULL OR target_month BETWEEN 7 AND 12))
-                    OR (target_year=$2 AND (target_month IS NULL OR target_month BETWEEN 1 AND 6))
+                 WHERE (target_year=$1 AND target_month IS NULL)
+                    OR (target_year=$2 AND target_month BETWEEN 7 AND 12)
+                    OR (target_year=$1 AND target_month BETWEEN 1 AND 6)
                  ORDER BY target_type, target_month NULLS FIRST`,
-                [fyStart, fyEnd]
+                [fyEnd, fyStart]
             ),
             queryTenant(tenant.db_url,
                 `SELECT COALESCE(SUM(available_quantity),0) AS total

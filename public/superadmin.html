@@ -698,8 +698,11 @@ function renderDetailTab(tab){
         const {targets,prod_achieved,sales_achieved}=data;
         const prodT=targets.filter(t=>t.target_type==='production');
         const salesT=targets.filter(t=>t.target_type==='sales');
-        const tProd=prodT.reduce((s,t)=>s+parseInt(t.target_quantity||0),0);
-        const tSales=salesT.reduce((s,t)=>s+parseFloat(t.target_amount||0),0);
+        // Annual target row অথবা monthly sum
+        const annualProd=prodT.find(t=>!t.target_month);
+        const annualSales=salesT.find(t=>!t.target_month);
+        const tProd=annualProd?parseInt(annualProd.target_quantity||0):prodT.reduce((s,t)=>s+parseInt(t.target_quantity||0),0);
+        const tSales=annualSales?parseFloat(annualSales.target_amount||0):salesT.reduce((s,t)=>s+parseFloat(t.target_amount||0),0);
         const pp=tProd>0?Math.min(Math.round(prod_achieved/tProd*100),100):0;
         const sp=tSales>0?Math.min(Math.round(sales_achieved/tSales*100),100):0;
         const pc=(p)=>p>=70?'var(--green)':p>=40?'var(--amber)':'var(--red)';
