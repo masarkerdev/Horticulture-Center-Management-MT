@@ -98,7 +98,13 @@ router.get('/stats-all', saAuth, async (req, res) => {
         const results = await Promise.all(
             tenantEntries.map(async ([slug, tenant]) => {
                 try {
-                    const [sales, todaySales, currentMonth, lastMonth, monthlyTarget, production, stock, lowStock] = await Promise.all([
+                    const now = new Date();
+                    const curMonth = now.getMonth() + 1;
+                    const curYear = now.getFullYear();
+                    const fyStart = curMonth >= 7 ? curYear : curYear - 1;
+
+                    const [sales, todaySales, currentMonth, lastMonth, monthlyTarget, production, stock, lowStock,
+                           annualProdTarget, monthlyProdTarget, monthlyProdAchieved] = await Promise.all([
                         queryTenant(tenant.db_url, `SELECT COALESCE(SUM(total_amount),0) AS total_revenue, COUNT(*) AS total_invoices FROM sales`),
                         queryTenant(tenant.db_url, `SELECT COALESCE(SUM(total_amount),0) AS today_revenue FROM sales WHERE sale_date=CURRENT_DATE`),
                         queryTenant(tenant.db_url, `SELECT COALESCE(SUM(total_amount),0) AS revenue FROM sales WHERE EXTRACT(MONTH FROM sale_date)=EXTRACT(MONTH FROM NOW()) AND EXTRACT(YEAR FROM sale_date)=EXTRACT(YEAR FROM NOW())`),
@@ -107,6 +113,12 @@ router.get('/stats-all', saAuth, async (req, res) => {
                         queryTenant(tenant.db_url, `SELECT COUNT(*) AS total_batches, COALESCE(SUM(produced_quantity),0) AS total_produced, COALESCE(AVG(CASE WHEN success_percent>0 THEN success_percent END),0) AS avg_success, COALESCE(SUM(available_quantity),0) AS total_available FROM production_batches`),
                         queryTenant(tenant.db_url, `SELECT COALESCE(SUM(current_stock),0) AS total_stock, COALESCE(SUM(current_stock*unit_price),0) AS stock_value, COUNT(*) AS total_species FROM seedlings WHERE is_active=true`),
                         queryTenant(tenant.db_url, `SELECT COUNT(*) AS low_count FROM seedlings WHERE is_active=true AND current_stock<=min_stock_alert`),
+                        // অর্থবছরের বার্ষিক উৎপাদন লক্ষ্যমাত্রা (target_month=0)
+                        queryTenant(tenant.db_url, `SELECT COALESCE(target_quantity,0) AS qty FROM targets WHERE target_type='production' AND target_month=0 AND target_year=$1 LIMIT 1`, [fyStart]),
+                        // চলতি মাসের উৎপাদন লক্ষ্যমাত্রা
+                        queryTenant(tenant.db_url, `SELECT COALESCE(target_quantity,0) AS qty FROM targets WHERE target_type='production' AND target_month=$1 AND target_year=$2 LIMIT 1`, [curMonth, curYear]),
+                        // চলতি মাসের উৎপাদন অর্জন
+                        queryTenant(tenant.db_url, `SELECT COALESCE(SUM(produced_quantity),0) AS qty FROM production_batches WHERE EXTRACT(MONTH FROM sowing_date)=$1 AND EXTRACT(YEAR FROM sowing_date)=$2`, [curMonth, curYear]),
                     ]);
 
                     const curRev = parseFloat(currentMonth[0].revenue);
@@ -144,6 +156,10 @@ router.get('/stats-all', saAuth, async (req, res) => {
                         rev_per_batch: parseFloat((parseFloat(sales[0].total_revenue) / (parseInt(production[0].total_batches) || 1)).toFixed(0)),
                         perf_score: perfScore,
                         traffic_light: perfScore >= 70 ? 'green' : perfScore >= 45 ? 'yellow' : 'red',
+                        // লক্ষ্যমাত্রা data
+                        annual_prod_target: parseInt(annualProdTarget[0]?.qty || 0),
+                        monthly_prod_target: parseInt(monthlyProdTarget[0]?.qty || 0),
+                        monthly_prod_achieved: parseInt(monthlyProdAchieved[0]?.qty || 0),
                         status: 'ok'
                     };
                 } catch (e) {

@@ -967,83 +967,45 @@ function renderCompareTable(data){
 
     <!-- লক্ষ্যমাত্রা অর্জন -->
     <div class="card" style="margin-bottom:14px">
-      <div class="card-head">🎯 লক্ষ্যমাত্রা অর্জন <span>চলতি মাস — সব center</span></div>
-      <div class="card-body">
-        ${[...data].sort((a,b)=>(b.target_achieved||0)-(a.target_achieved||0)).map((c,i)=>`
-        <div style="margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:11px;padding:2px 6px;border-radius:5px;font-weight:700;background:${c.category==='A'?'#1e1b4b':c.category==='B'?'#052e16':'#431407'};color:${c.category==='A'?'#a5b4fc':c.category==='B'?'#4ade80':'#fb923c'}">${c.category}</span>
-              <span style="font-size:13px;font-weight:600">${c.name_bn}</span>
-              <span style="font-size:11px;color:var(--muted)">${c.district||''}</span>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px">
-              ${c.target_achieved!==null?`
-                <span style="font-size:12px;color:var(--muted)">৳${fmtK(c.current_month_rev)} / ৳${fmtK(c.target_amount)}</span>
-                <span style="font-size:15px;font-weight:700;min-width:48px;text-align:right;color:${c.target_achieved>=70?'var(--green)':c.target_achieved>=40?'var(--amber)':'var(--red)'}">${c.target_achieved.toFixed(1)}%</span>
-              `:`<span style="font-size:12px;color:var(--muted);font-style:italic">লক্ষ্যমাত্রা নির্ধারিত নেই</span>`}
-            </div>
-          </div>
-          <div style="height:7px;background:var(--border);border-radius:4px;overflow:hidden">
-            ${c.target_achieved!==null?`
-              <div style="height:7px;width:${Math.min(c.target_achieved,100)}%;background:${c.target_achieved>=70?'var(--green)':c.target_achieved>=40?'var(--amber)':'var(--red)'};border-radius:4px;transition:.5s"></div>
-            `:`<div style="height:7px;width:0%;background:var(--sub);border-radius:4px"></div>`}
-          </div>
-        </div>`).join('')}
+      <div class="card-head">🎯 লক্ষ্যমাত্রা অর্জন
+        <span>অর্থবছর: FY ${new Date().getMonth()>=6?new Date().getFullYear():new Date().getFullYear()-1}-${new Date().getMonth()>=6?new Date().getFullYear()+1:new Date().getFullYear()}</span>
       </div>
-    </div>
-    <!-- Bar Chart: বিক্রয় তুলনা -->
-    <div class="card" style="margin-bottom:14px">
-      <div class="card-head">📊 বিক্রয় তুলনা <span>Bar Chart</span></div>
-      <div style="padding:16px;overflow-x:auto">
-        <div style="min-width:${Math.max(data.length*80,400)}px">
-          <!-- Bars -->
-          <div style="display:flex;align-items:flex-end;gap:6px;height:180px;padding:0 8px">
-            ${[...data].sort((a,b)=>b.total_revenue-a.total_revenue).map((c,i)=>`
-            <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer" onclick="viewDetail('${c.slug}')">
-              <div style="font-size:10px;font-weight:700;color:${CHART_COLORS[i%CHART_COLORS.length]}">৳${fmtK(c.total_revenue)}</div>
-              <div style="width:100%;background:${CHART_COLORS[i%CHART_COLORS.length]};border-radius:4px 4px 0 0;min-height:4px;height:${Math.max((c.total_revenue/maxRev*160),4)}px;transition:.5s;opacity:.85"></div>
-            </div>`).join('')}
-          </div>
-          <!-- X axis line -->
-          <div style="height:1px;background:var(--border);margin:0 8px"></div>
-          <!-- Labels -->
-          <div style="display:flex;gap:6px;padding:6px 8px 0">
-            ${[...data].sort((a,b)=>b.total_revenue-a.total_revenue).map(c=>`
-            <div style="flex:1;text-align:center;font-size:9px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.name_bn}">${c.name_bn.replace('হর্টিকালচার সেন্টার, ','')}</div>`).join('')}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Growth Chart -->
-    <div class="card" style="margin-bottom:14px">
-      <div class="card-head">📈 মাসওয়ারি প্রবৃদ্ধি তুলনা <span>চলতি vs গত মাস</span></div>
-      <div style="padding:16px;overflow-x:auto">
-        <div style="min-width:${Math.max(data.length*80,400)}px">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:11px">
-            <span style="width:12px;height:12px;background:var(--green);border-radius:2px;display:inline-block"></span> চলতি মাস
-            <span style="width:12px;height:12px;background:var(--border);border-radius:2px;display:inline-block;margin-left:8px"></span> গত মাস
-          </div>
-          <div style="display:flex;align-items:flex-end;gap:6px;height:160px;padding:0 8px">
-            ${[...data].sort((a,b)=>b.current_month_rev-a.current_month_rev).map((c,i)=>{
-              const maxM=Math.max(...data.map(x=>Math.max(x.current_month_rev,x.last_month_rev)),1);
-              return `<div style="flex:1;display:flex;align-items:flex-end;gap:2px;cursor:pointer" onclick="viewDetail('${c.slug}')">
-                <div style="flex:1;background:var(--border);border-radius:3px 3px 0 0;height:${Math.max((c.last_month_rev/maxM*150),2)}px"></div>
-                <div style="flex:1;background:${c.current_month_rev>=c.last_month_rev?'var(--green)':'var(--red)'};border-radius:3px 3px 0 0;height:${Math.max((c.current_month_rev/maxM*150),2)}px"></div>
-              </div>`;
-            }).join('')}
-          </div>
-          <div style="height:1px;background:var(--border);margin:0 8px"></div>
-          <div style="display:flex;gap:6px;padding:6px 8px 0">
-            ${[...data].sort((a,b)=>b.current_month_rev-a.current_month_rev).map(c=>`
-            <div style="flex:1;text-align:center">
-              <div style="font-size:9px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.name_bn.replace('হর্টিকালচার সেন্টার, ','')}</div>
-              <div style="font-size:9px;font-weight:700;color:${c.growth_rate>=0?'var(--green)':'var(--red)'}">${c.growth_rate>=0?'▲':'▼'}${Math.abs(c.growth_rate).toFixed(0)}%</div>
-            </div>`).join('')}
-          </div>
-        </div>
-      </div>
+      <div class="tw"><table>
+        <thead><tr>
+          <th>Center</th>
+          <th>Cat</th>
+          <th style="color:var(--purple)">অর্থবছরের লক্ষ্যমাত্রা</th>
+          <th style="color:var(--blue)">চলতি মাসের লক্ষ্যমাত্রা</th>
+          <th style="color:var(--green)">চলতি মাসের অর্জন</th>
+          <th>অগ্রগতি</th>
+        </tr></thead>
+        <tbody>
+          ${[...data].sort((a,b)=>{
+            const ap=a.monthly_prod_target>0?a.monthly_prod_achieved/a.monthly_prod_target:0;
+            const bp=b.monthly_prod_target>0?b.monthly_prod_achieved/b.monthly_prod_target:0;
+            return bp-ap;
+          }).map(c=>{
+            const pct=c.monthly_prod_target>0?Math.min(Math.round(c.monthly_prod_achieved/c.monthly_prod_target*100),200):null;
+            const color=pct===null?'var(--muted)':pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)';
+            return `<tr>
+              <td><div style="font-weight:600;font-size:13px">${c.name_bn}</div><div style="font-size:11px;color:var(--muted)">${c.district||''}</div></td>
+              <td><span style="font-size:11px;padding:2px 6px;border-radius:5px;font-weight:700;background:${c.category==='A'?'#1e1b4b':c.category==='B'?'#052e16':'#431407'};color:${c.category==='A'?'#a5b4fc':c.category==='B'?'#4ade80':'#fb923c'}">${c.category}</span></td>
+              <td style="color:var(--purple);font-weight:600">${c.annual_prod_target>0?fmtN(c.annual_prod_target)+'টি':'<span style="color:var(--muted);font-style:italic">নির্ধারিত নেই</span>'}</td>
+              <td style="color:var(--blue);font-weight:600">${c.monthly_prod_target>0?fmtN(c.monthly_prod_target)+'টি':'<span style="color:var(--muted);font-style:italic">—</span>'}</td>
+              <td style="color:var(--green);font-weight:600">${fmtN(c.monthly_prod_achieved)}টি</td>
+              <td style="min-width:140px">
+                ${pct!==null?`
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="flex:1;height:6px;background:var(--border);border-radius:3px">
+                    <div style="height:6px;width:${Math.min(pct,100)}%;background:${color};border-radius:3px"></div>
+                  </div>
+                  <span style="font-size:12px;font-weight:700;color:${color};min-width:36px">${pct}%</span>
+                </div>`:'<span style="font-size:11px;color:var(--muted);font-style:italic">লক্ষ্যমাত্রা নেই</span>'}
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>
     </div>
 
     <!-- Ranking Table -->
