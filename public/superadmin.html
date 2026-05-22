@@ -685,73 +685,79 @@ function renderDetailTab(tab){
         </div></div>
       </div>`;
   }else if(tab==='dTarget'){
-    const targets=d.targets||[];
     const months=['','জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
-    const years=[...new Set(targets.map(t=>t.target_year))].filter(Boolean).sort((a,b)=>b-a);
-    const curYear=years[0]||new Date().getFullYear();
-    const prodAchieved=parseInt(d.production?.summary?.total_produced||0);
-    const salesAchieved=parseFloat(d.sales?.summary?.total_revenue||0);
+    const curFY=new Date().getMonth()>=6?new Date().getFullYear()+1:new Date().getFullYear();
 
-    const renderFY=(fy)=>{
-      const fyT=targets.filter(t=>t.target_year==fy);
-      const prodT=fyT.filter(t=>t.target_type==='production');
-      const salesT=fyT.filter(t=>t.target_type==='sales');
-      const tProd=prodT.reduce((s,t)=>s+parseInt(t.target_quantity||0),0);
-      const tSales=salesT.reduce((s,t)=>s+parseFloat(t.target_amount||0),0);
-      const pp=tProd>0?Math.min(Math.round(prodAchieved/tProd*100),100):0;
-      const sp=tSales>0?Math.min(Math.round(salesAchieved/tSales*100),100):0;
-      const pc=(p)=>p>=70?'var(--green)':p>=40?'var(--amber)':'var(--red)';
-      return `
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-        <div class="card" style="border-left:3px solid var(--purple)">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-size:11px;color:var(--muted);margin-bottom:4px">🌱 উৎপাদন</div>
-              <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--purple)">${fmtN(tProd)}টি</b> | অর্জন: <b style="color:var(--text)">${fmtN(prodAchieved)}টি</b></div>
+    const loadFY=async(fy)=>{
+      document.getElementById('fyContent').innerHTML='<div class="loading-center"><div class="spinner"></div></div>';
+      try{
+        const r=await fetch(`${API}/center/${currentSlug}/targets?fy=${fy}`,{headers:{Authorization:'Bearer '+token}});
+        const data=await r.json();
+        if(!data.success){document.getElementById('fyContent').innerHTML=`<div class="empty">${data.error||'Error'}</div>`;return;}
+        const {targets,prod_achieved,sales_achieved}=data;
+        const prodT=targets.filter(t=>t.target_type==='production');
+        const salesT=targets.filter(t=>t.target_type==='sales');
+        const tProd=prodT.reduce((s,t)=>s+parseInt(t.target_quantity||0),0);
+        const tSales=salesT.reduce((s,t)=>s+parseFloat(t.target_amount||0),0);
+        const pp=tProd>0?Math.min(Math.round(prod_achieved/tProd*100),100):0;
+        const sp=tSales>0?Math.min(Math.round(sales_achieved/tSales*100),100):0;
+        const pc=(p)=>p>=70?'var(--green)':p>=40?'var(--amber)':'var(--red)';
+        document.getElementById('fyContent').innerHTML=`
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+          <div class="card" style="border-left:3px solid var(--purple)">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:11px;color:var(--muted);margin-bottom:4px">🌱 উৎপাদন</div>
+                <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--purple)">${fmtN(tProd)}টি</b> | অর্জন: <b style="color:var(--text)">${fmtN(prod_achieved)}টি</b></div>
+              </div>
+              <div style="font-size:26px;font-weight:700;color:${pc(pp)}">${pp}%</div>
             </div>
-            <div style="font-size:24px;font-weight:700;color:${pc(pp)}">${pp}%</div>
+            <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px">
+              <div style="height:5px;width:${pp}%;background:${pc(pp)};border-radius:3px"></div>
+            </div>
           </div>
-          <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px">
-            <div style="height:5px;width:${pp}%;background:${pc(pp)};border-radius:3px"></div>
+          <div class="card" style="border-left:3px solid var(--green)">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-size:11px;color:var(--muted);margin-bottom:4px">💰 বিক্রয়</div>
+                <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--green)">৳${fmt(tSales)}</b> | অর্জন: <b style="color:var(--text)">৳${fmt(sales_achieved)}</b></div>
+              </div>
+              <div style="font-size:26px;font-weight:700;color:${pc(sp)}">${sp}%</div>
+            </div>
+            <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px">
+              <div style="height:5px;width:${sp}%;background:${pc(sp)};border-radius:3px"></div>
+            </div>
           </div>
         </div>
-        <div class="card" style="border-left:3px solid var(--green)">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-size:11px;color:var(--muted);margin-bottom:4px">💰 বিক্রয়</div>
-              <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--green)">৳${fmt(tSales)}</b> | অর্জন: <b style="color:var(--text)">৳${fmt(salesAchieved)}</b></div>
-            </div>
-            <div style="font-size:24px;font-weight:700;color:${pc(sp)}">${sp}%</div>
-          </div>
-          <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px">
-            <div style="height:5px;width:${sp}%;background:${pc(sp)};border-radius:3px"></div>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-head">📅 মাসিভিত্তিক লক্ষ্যমাত্রা</div>
-        ${fyT.length?`<div class="tw"><table>
-          <thead><tr><th>সময়কাল</th><th>ধরন</th><th>লক্ষ্য (পরিমাণ)</th><th>লক্ষ্য (৳)</th><th>মন্তব্য</th></tr></thead>
-          <tbody>${fyT.map(t=>`<tr>
-            <td style="font-weight:500">${t.target_month?months[t.target_month]+' '+t.target_year:'অর্থবছর মোট '+(parseInt(t.target_year)-1)+'-'+t.target_year}</td>
-            <td><span class="pill ${t.target_type==='production'?'active':'paid'}">${t.target_type==='production'?'উৎপাদন':'বিক্রয়'}</span></td>
-            <td style="color:var(--purple);font-weight:600">${fmtN(t.target_quantity)}টি</td>
-            <td style="color:var(--green);font-weight:600">৳${fmt(t.target_amount)}</td>
-            <td style="color:var(--muted)">${t.remarks||'—'}</td>
-          </tr>`).join('')}</tbody>
-        </table></div>`:'<div class="empty" style="padding:20px">এই অর্থবছরে কোনো লক্ষ্যমাত্রা নেই</div>'}
-      </div>`;
+        <div class="card">
+          <div class="card-head">📅 মাসিভিত্তিক লক্ষ্যমাত্রা</div>
+          ${targets.length?`<div class="tw"><table>
+            <thead><tr><th>সময়কাল</th><th>ধরন</th><th>লক্ষ্য (পরিমাণ)</th><th>লক্ষ্য (৳)</th><th>মন্তব্য</th></tr></thead>
+            <tbody>${targets.map(t=>`<tr>
+              <td style="font-weight:500">${t.target_month?months[t.target_month]+' '+t.target_year:'অর্থবছর মোট '+(parseInt(t.target_year)-1)+'-'+t.target_year}</td>
+              <td><span class="pill ${t.target_type==='production'?'active':'paid'}">${t.target_type==='production'?'উৎপাদন':'বিক্রয়'}</span></td>
+              <td style="color:var(--purple);font-weight:600">${fmtN(t.target_quantity)}টি</td>
+              <td style="color:var(--green);font-weight:600">৳${fmt(t.target_amount)}</td>
+              <td style="color:var(--muted)">${t.remarks||'—'}</td>
+            </tr>`).join('')}</tbody>
+          </table></div>`:'<div class="empty" style="padding:20px">এই অর্থবছরে কোনো লক্ষ্যমাত্রা নেই</div>'}
+        </div>`;
+      }catch(e){document.getElementById('fyContent').innerHTML=`<div class="empty">লোড হয়নি।</div>`;}
     };
 
-    window._rfY=renderFY;
+    // FY options: চলতি + আগের ২ বছর
+    const fyOpts=[curFY,curFY-1,curFY-2];
     el.innerHTML=`
       <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
-        <select id="fySelect" onchange="document.getElementById('fyContent').innerHTML=window._rfY(this.value)"
+        <select id="fySelect" onchange="window._loadFY(parseInt(this.value))"
           style="background:var(--card);border:1px solid var(--border);color:var(--text);padding:7px 14px;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer">
-          ${years.length?years.map(y=>`<option value="${y}">FY ${parseInt(y)-1}-${y}</option>`).join(''):`<option value="${new Date().getFullYear()}">FY ${new Date().getFullYear()-1}-${new Date().getFullYear()}</option>`}
+          ${fyOpts.map(y=>`<option value="${y}">FY ${y-1}-${y}</option>`).join('')}
         </select>
       </div>
-      <div id="fyContent">${renderFY(curYear)}</div>`;
+      <div id="fyContent"><div class="loading-center"><div class="spinner"></div></div></div>`;
+
+    window._loadFY=loadFY;
+    loadFY(curFY);
   }
 }
 

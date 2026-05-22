@@ -331,4 +331,55 @@ router.put('/admins/:id/assignments', saAuth, directorOnly, async (req, res) => 
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
+// ===== CENTER FY TARGETS =====
+router.get('/center/:slug/targets', saAuth, async (req, res) => {
+    if (req.saUser.role !== 'director' && req.saUser.assignedCenters?.length > 0) {
+        if (!req.saUser.assignedCenters.includes(req.params.slug))
+            return res.status(403).json({ success: false, message: 'অনুমতি নেই।' });
+    }
+    try {
+        const tenants = await getTenants();
+        const tenant = tenants[req.params.slug];
+        if (!tenant) return res.status(404).json({ success: false, message: 'Center পাওয়া যায়নি।' });
+
+        const fy = parseInt(req.query.fy) || new Date().getFullYear();
+        const fyStart = fy - 1; // FY শুরু: জুলাই (fyStart)
+        const fyEnd = fy;       // FY শেষ: জুন (fyEnd)
+
+        // FY-র targets: (fyStart বছরের Jul-Dec) + (fyEnd বছরের Jan-Jun) + Annual
+        const [targets, prodAchieved, salesAchieved] = await Promise.all([
+            queryTenant(tenant.db_url,
+                `SELECT target_type, target_month, target_year, target_quantity, target_amount, remarks
+                 FROM targets
+                 WHERE (target_year=$1 AND (target_month IS NULL OR target_month BETWEEN 7 AND 12))
+                    OR (target_year=$2 AND (target_month IS NULL OR target_month BETWEEN 1 AND 6))
+                 ORDER BY target_type, target_month NULLS FIRST`,
+                [fyStart, fyEnd]
+            ),
+            queryTenant(tenant.db_url,
+                `SELECT COALESCE(SUM(available_quantity),0) AS total
+                 FROM production_batches
+                 WHERE (EXTRACT(YEAR FROM sowing_date)=$1 AND EXTRACT(MONTH FROM sowing_date)>=7)
+                    OR (EXTRACT(YEAR FROM sowing_date)=$2 AND EXTRACT(MONTH FROM sowing_date)<=6)`,
+                [fyStart, fyEnd]
+            ),
+            queryTenant(tenant.db_url,
+                `SELECT COALESCE(SUM(total_amount),0) AS total
+                 FROM sales
+                 WHERE (EXTRACT(YEAR FROM sale_date)=$1 AND EXTRACT(MONTH FROM sale_date)>=7)
+                    OR (EXTRACT(YEAR FROM sale_date)=$2 AND EXTRACT(MONTH FROM sale_date)<=6)`,
+                [fyStart, fyEnd]
+            ),
+        ]);
+
+        res.json({
+            success: true,
+            fy: `${fyStart}-${fyEnd}`,
+            targets,
+            prod_achieved: parseInt(prodAchieved[0]?.total || 0),
+            sales_achieved: parseFloat(salesAchieved[0]?.total || 0),
+        });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
 module.exports = router;
