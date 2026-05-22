@@ -72,8 +72,53 @@ body{font-family:'Noto Serif Bengali','Segoe UI',system-ui,sans-serif;background
 .topbar-right{display:flex;align-items:center;gap:8px}
 .refresh-btn{background:var(--card);color:var(--text);border:1px solid var(--border);padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:4px;font-family:inherit}
 .refresh-btn:hover{border-color:var(--accent)}
+.hamburger{display:none;background:none;border:none;color:var(--text);font-size:22px;cursor:pointer;padding:4px;margin-right:8px}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99}
+.sidebar-overlay.open{display:block}
 
 .main-content{flex:1;overflow-y:auto;padding:24px}
+@media(max-width:768px){
+  .hamburger{display:flex;align-items:center}
+  .sidebar{position:fixed;left:-280px;top:0;z-index:100;height:100vh;transition:left .25s;width:260px}
+  .sidebar.open{left:0}
+  .sidebar-overlay.open{display:block}
+  .main-content{padding:12px}
+  .topbar{padding:0 12px}
+  .topbar-title{font-size:14px}
+  .kpi-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .kpi{padding:12px}
+  .kpi-value{font-size:20px}
+  .kpi-label{font-size:13px}
+  .h-card{flex-wrap:wrap;gap:8px;padding:10px 12px}
+  .h-card-name{font-size:13px}
+  .h-card-stats{flex-wrap:wrap;gap:8px}
+  .h-stat-v{font-size:13px}
+  .center-list{gap:6px}
+  .detail-tabs{flex-wrap:wrap;gap:4px}
+  .dtab{padding:6px 10px;font-size:12px}
+  .card-head{flex-wrap:wrap;gap:8px;font-size:13px}
+  .tw{overflow-x:auto}
+  table{font-size:12px}
+  th,td{padding:7px 8px;white-space:nowrap}
+  .compare-row{flex-wrap:wrap;gap:8px}
+  .score-ring svg{width:48px;height:48px}
+  #compareResults .card>[style*="grid-template-columns:repeat(3"]{grid-template-columns:repeat(2,1fr)!important}
+  #compareResults .card>[style*="grid-template-columns:repeat(2"]{grid-template-columns:1fr!important}
+  [style*="display:grid;grid-template-columns:1fr 1fr"]{grid-template-columns:1fr!important}
+  [style*="display:grid;grid-template-columns:repeat(2,1fr)"]{grid-template-columns:1fr!important}
+  [style*="display:grid;grid-template-columns:repeat(3,1fr)"]{grid-template-columns:1fr!important}
+  [style*="display:grid;grid-template-columns:repeat(4,1fr)"]{grid-template-columns:repeat(2,1fr)!important}
+  .refresh-btn span{display:none}
+  #topbarAdminInfo{display:none!important}
+  .fg-row{grid-template-columns:1fr!important}
+  .modal-box{width:96%!important;padding:16px!important}
+}
+@media(max-width:480px){
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .kpi-value{font-size:18px}
+  .h-card-stats{display:none}
+  .h-btn.primary{padding:6px 10px;font-size:12px}
+}
 
 /* KPI */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:24px}
@@ -207,6 +252,7 @@ tr:hover td{background:#1a2438}
 </div>
 
 <!-- APP -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 <div class="app" id="saApp">
   <div class="app-layout">
 
@@ -278,7 +324,10 @@ tr:hover td{background:#1a2438}
     <!-- MAIN -->
     <div class="main">
       <div class="topbar">
-        <div class="topbar-title" id="topbarTitle">Overview</div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <button class="hamburger" onclick="toggleSidebar()"><i class="ti ti-menu-2"></i></button>
+          <div class="topbar-title" id="topbarTitle">Overview</div>
+        </div>
         <div class="topbar-right">
           <div id="topbarAdminInfo" style="text-align:right;margin-right:12px;display:none">
             <div style="font-size:12px;font-weight:600;color:var(--text)" id="topbarAdminName"></div>
@@ -450,7 +499,17 @@ function updateBadges(){
   });
 }
 
+function toggleSidebar(){
+  document.getElementById('saApp').querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+
 function navTo(view,btn){
+  // Mobile-এ sidebar বন্ধ করো
+  if(window.innerWidth<=768){
+    document.getElementById('saApp').querySelector('.sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('open');
+  }
   document.querySelectorAll('.nav-item').forEach(b=>{
     b.classList.remove('active');
   });
