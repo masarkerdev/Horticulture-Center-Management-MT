@@ -633,10 +633,10 @@ function renderDetailTab(tab){
         <div class="tw"><table><thead><tr><th>চারা</th><th>জাত</th><th>বিক্রিত</th><th>রাজস্ব</th><th>স্টক</th></tr></thead>
         <tbody>${d.top_seedlings.map(s=>`<tr><td>${s.name_bn}</td><td style="color:var(--muted)">${s.variety||'—'}</td><td style="color:var(--purple);font-weight:600">${fmtN(s.total_sold)}</td><td style="color:var(--green);font-weight:600">৳${fmt(s.revenue)}</td><td>${fmtN(s.current_stock)}</td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">বিক্রয় নেই</td></tr>'}</tbody></table></div>
       </div>
-      <div class="card"><div class="card-head">🧾 সাম্প্রতিক চালান</div>
+      ${userRole!=='director'?`<div class="card"><div class="card-head">🧾 সাম্প্রতিক চালান</div>
         <div class="tw"><table><thead><tr><th>চালান #</th><th>গ্রাহক</th><th>তারিখ</th><th>পরিমাণ</th><th>অবস্থা</th></tr></thead>
         <tbody>${s.recent.map(r=>`<tr><td style="font-family:monospace">${r.invoice_no}</td><td>${r.customer_name||'—'}</td><td>${r.sale_date?.toString().slice(0,10)||'—'}</td><td style="color:var(--green);font-weight:600">৳${fmt(r.total_amount)}</td><td><span class="pill ${r.payment_status==='paid'?'paid':'due'}">${r.payment_status==='paid'?'পরিশোধিত':'বকেয়া'}</span></td></tr>`).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:16px">Data নেই</td></tr>'}</tbody></table></div>
-      </div>`;
+      </div>`:''}`;
   }else if(tab==='dProd'){
     const p=d.production;const maxProd=Math.max(...p.by_type.map(t=>parseInt(t.total_qty)),1);
     el.innerHTML=`
