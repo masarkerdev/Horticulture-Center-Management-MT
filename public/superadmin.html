@@ -13,11 +13,11 @@
 :root{
   --bg:#0d1117;--sidebar:#090d12;--card:#131920;--border:#1a2232;
   --text:#d1dae8;--muted:#546478;--sub:#3a4a5c;
-  --green:#48bb78;--blue:#60a5fa;--purple:#a78bfa;
-  --amber:#f6ad55;--red:#f87171;--teal:#34d399;
+  --green:#4ade80;--blue:#60a5fa;--purple:#c084fc;
+  --amber:#fbbf24;--red:#f87171;--teal:#2dd4bf;
   --accent:#2d6a4f;--catA:#7c8cff;--catB:#34d399;--catC:#f6ad55;
 }
-body{font-family:'Hind Siliguri','Anek Bangla','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+body{font-family:'Hind Siliguri','Anek Bangla','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px}
 
 /* LOGIN */
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;background:radial-gradient(ellipse at 60% 0%,#1e1b4b,#0f172a 60%)}
@@ -79,7 +79,7 @@ body{font-family:'Hind Siliguri','Anek Bangla','Segoe UI',system-ui,sans-serif;b
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:24px}
 .kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
 .kpi-label{font-size:10px;color:var(--muted);margin-bottom:6px;display:flex;align-items:center;gap:5px}
-.kpi-value{font-size:22px;font-weight:700}
+.kpi-value{font-size:26px;font-weight:700}
 .kpi.green .kpi-value{color:var(--green)}.kpi.blue .kpi-value{color:var(--blue)}
 .kpi.purple .kpi-value{color:var(--purple)}.kpi.amber .kpi-value{color:var(--amber)}.kpi.teal .kpi-value{color:var(--teal)}
 .kpi-sub{font-size:10px;color:var(--sub);margin-top:4px}
@@ -96,12 +96,12 @@ body{font-family:'Hind Siliguri','Anek Bangla','Segoe UI',system-ui,sans-serif;b
 .h-card-rank.catB{background:#0a1f16;color:var(--catB)}
 .h-card-rank.catC{background:#1f1608;color:var(--catC)}
 .h-card-info{flex:1;min-width:0}
-.h-card-name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-card-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .h-card-sub{font-size:11px;color:var(--muted);margin-top:2px}
 .h-card-stats{display:flex;gap:20px;flex-shrink:0}
 .h-stat{text-align:center}
-.h-stat-v{font-size:14px;font-weight:700}
-.h-stat-l{font-size:10px;color:var(--muted);margin-top:1px}
+.h-stat-v{font-size:16px;font-weight:700}
+.h-stat-l{font-size:11px;color:var(--muted);margin-top:2px}
 .h-card-actions{display:flex;gap:6px;flex-shrink:0}
 .h-btn{padding:7px 14px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;border:1px solid var(--border);background:transparent;color:var(--muted);display:flex;align-items:center;gap:4px;transition:.15s}
 .h-btn:hover{border-color:var(--accent);color:var(--purple)}
@@ -122,7 +122,7 @@ body{font-family:'Hind Siliguri','Anek Bangla','Segoe UI',system-ui,sans-serif;b
 .dtab{padding:8px 16px;background:var(--border);border:none;color:var(--muted);border-radius:8px;cursor:pointer;font-size:13px;font-family:inherit;transition:.2s}
 .dtab.active{background:var(--accent);color:#fff}
 .card{background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:14px;overflow:hidden}
-.card-head{padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.card-head{padding:12px 16px;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
 .card-head span{font-size:12px;color:var(--muted);font-weight:400}
 .card-body{padding:16px}
 .tw{overflow-x:auto}
