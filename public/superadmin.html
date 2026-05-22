@@ -692,7 +692,7 @@ function renderDetailTab(tab){
     const lTA=async(fy)=>{
       document.getElementById('saTargetResults').innerHTML='<div class="lt">লোড হচ্ছে...</div>';
       try{
-        const r=await fetch(`${API}/center/${currentDetailSlug}/targets?fy=${fy}`,{headers:{Authorization:'Bearer '+token}});
+        const r=await fetch(`${API}/center/${currentDetailSlug}/targets?fy=${fy}&_t=${Date.now()}`,{headers:{Authorization:'Bearer '+token,'Cache-Control':'no-cache'}});
         const data=await r.json();
         if(!data.success){document.getElementById('saTargetResults').innerHTML=`<div class="lt">${data.error||'Error'}</div>`;return;}
         const {targets,prod_achieved,sales_achieved}=data;
