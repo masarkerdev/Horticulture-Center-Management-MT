@@ -375,6 +375,8 @@ router.get('/center/:slug/targets', saAuth, async (req, res) => {
 
         res.set('Cache-Control','no-store');
         res.json({
+            success: true,
+            fy: `${fyStart}-${fyEnd}`,
             targets,
             prod_achieved: parseInt(prodAchieved[0]?.total || 0),
             sales_achieved: parseFloat(salesAchieved[0]?.total || 0),
