@@ -537,7 +537,7 @@ function hCard(c){
       <div class="h-stat"><div class="h-stat-v" style="color:var(--blue)">৳${fmtK(c.today_revenue)}</div><div class="h-stat-l">আজ</div></div>
       <div class="h-stat">
         <div class="tl-dot tl-${c.traffic_light}" style="margin:0 auto 3px"></div>
-        <div class="h-stat-l">${c.perf_score}</div>
+        <div class="h-stat-l">${toBn(c.perf_score)}</div>
       </div>
     </div>
     <div class="h-card-actions">
@@ -651,7 +651,7 @@ function renderDetailTab(tab){
     el.innerHTML=`
       <div class="kpi-grid">
         <div class="kpi purple"><div class="kpi-label">মোট উৎপাদিত</div><div class="kpi-value">${fmtN(p.summary.total_produced)}</div><div class="kpi-sub">${p.summary.total_batches} ব্যাচ</div></div>
-        <div class="kpi green"><div class="kpi-label">সফল</div><div class="kpi-value">${fmtN(p.summary.total_success)}</div><div class="kpi-sub">গড় ${parseFloat(p.summary.avg_success).toFixed(1)}%</div></div>
+        <div class="kpi green"><div class="kpi-label">সফল</div><div class="kpi-value">${fmtN(p.summary.total_success)}</div><div class="kpi-sub">গড় ${toBn(parseFloat(p.summary.avg_success).toFixed(1))}%</div></div>
         <div class="kpi red"><div class="kpi-label">ব্যর্থ</div><div class="kpi-value">${fmtN(p.summary.total_failed)}</div></div>
         <div class="kpi amber"><div class="kpi-label">পাওয়া যাচ্ছে</div><div class="kpi-value">${fmtN(p.summary.total_available)}</div></div>
       </div>
@@ -725,10 +725,10 @@ function renderDetailTab(tab){
                     লক্ষ্য: <b style="color:var(--purple)">${fmtN(tProd)}টি</b> | অর্জন: <b style="color:var(--text)">${fmtN(prod_achieved)}টি</b>
                   </div>
                 </div>
-                <div style="font-size:26px;font-weight:700;color:${pc(pp)}">${pp}%</div>
+                <div style="font-size:26px;font-weight:700;color:${pc(pp)}">${toBn(pp)}%</div>
               </div>
               <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px">
-                <div style="height:5px;width:${pp}%;background:${pc(pp)};border-radius:3px;transition:.5s"></div>
+                <div style="height:5px;width:${toBn(pp)}%;background:${pc(pp)};border-radius:3px;transition:.5s"></div>
               </div>
             </div>
             <div class="card" style="border-left:3px solid var(--green)">
@@ -739,10 +739,10 @@ function renderDetailTab(tab){
                     লক্ষ্য: <b style="color:var(--green)">৳${fmt(tSales)}</b> | অর্জন: <b style="color:var(--text)">৳${fmt(sales_achieved)}</b>
                   </div>
                 </div>
-                <div style="font-size:26px;font-weight:700;color:${pc(sp)}">${sp}%</div>
+                <div style="font-size:26px;font-weight:700;color:${pc(sp)}">${toBn(sp)}%</div>
               </div>
               <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px">
-                <div style="height:5px;width:${sp}%;background:${pc(sp)};border-radius:3px;transition:.5s"></div>
+                <div style="height:5px;width:${toBn(sp)}%;background:${pc(sp)};border-radius:3px;transition:.5s"></div>
               </div>
             </div>
           </div>
@@ -780,17 +780,17 @@ function renderDetailTab(tab){
             <div style="display:flex;justify-content:space-between;align-items:center">
               <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">🌱 উৎপাদন</div>
               <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--purple)">${fmtN(tProd)}টি</b> | অর্জন: <b style="color:var(--text)">${fmtN(prod_achieved)}টি</b></div></div>
-              <div style="font-size:26px;font-weight:700;color:${pc(pp)}">${pp}%</div>
+              <div style="font-size:26px;font-weight:700;color:${pc(pp)}">${toBn(pp)}%</div>
             </div>
-            <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px"><div style="height:5px;width:${pp}%;background:${pc(pp)};border-radius:3px;transition:.5s"></div></div>
+            <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px"><div style="height:5px;width:${toBn(pp)}%;background:${pc(pp)};border-radius:3px;transition:.5s"></div></div>
           </div>
           <div class="card" style="border-left:3px solid var(--green)">
             <div style="display:flex;justify-content:space-between;align-items:center">
               <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">💰 বিক্রয়</div>
               <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--green)">৳${fmt(tSales)}</b> | অর্জন: <b style="color:var(--text)">৳${fmt(sales_achieved)}</b></div></div>
-              <div style="font-size:26px;font-weight:700;color:${pc(sp)}">${sp}%</div>
+              <div style="font-size:26px;font-weight:700;color:${pc(sp)}">${toBn(sp)}%</div>
             </div>
-            <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px"><div style="height:5px;width:${sp}%;background:${pc(sp)};border-radius:3px;transition:.5s"></div></div>
+            <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px"><div style="height:5px;width:${toBn(sp)}%;background:${pc(sp)};border-radius:3px;transition:.5s"></div></div>
           </div>
         </div>
         <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px">মাসিভিত্তিক লক্ষ্যমাত্রা</div>
@@ -928,7 +928,7 @@ function renderDistrictSummaryView(el){
           <div style="font-size:11px;color:var(--muted);margin-top:2px">মোট স্টক</div>
         </div>
         <div style="background:var(--card);padding:14px;text-align:center">
-          <div style="font-size:18px;font-weight:700;color:${scoreColor(avgScore)}">${avgScore}</div>
+          <div style="font-size:18px;font-weight:700;color:${scoreColor(avgScore)}">${toBn(avgScore)}</div>
           <div style="font-size:11px;color:var(--muted);margin-top:2px">গড় Score</div>
         </div>
       </div>
@@ -1016,7 +1016,7 @@ function renderTargetSummaryView(el){
     <div class="kpi-grid" style="margin-bottom:16px">
       <div class="kpi purple"><div class="kpi-label">অর্থবছরের মোট লক্ষ্যমাত্রা</div><div class="kpi-value">${fmtN(totalAnnual)}টি</div><div class="kpi-sub">FY ${curFY}-${curFY+1}</div></div>
       <div class="kpi blue"><div class="kpi-label">চলতি মাসের লক্ষ্যমাত্রা</div><div class="kpi-value">${fmtN(totalMonthlyTarget)}টি</div><div class="kpi-sub">${months[curMonth]}</div></div>
-      <div class="kpi ${overallPct>=70?'green':overallPct>=40?'amber':'red'}"><div class="kpi-label">চলতি মাসের অর্জন</div><div class="kpi-value">${fmtN(totalMonthlyAchieved)}টি</div><div class="kpi-sub">${overallPct}% অগ্রগতি</div></div>
+      <div class="kpi ${overallPct>=70?'green':overallPct>=40?'amber':'red'}"><div class="kpi-label">চলতি মাসের অর্জন</div><div class="kpi-value">${fmtN(totalMonthlyAchieved)}টি</div><div class="kpi-sub">${toBn(overallPct)}% অগ্রগতি</div></div>
       <div class="kpi teal"><div class="kpi-label">লক্ষ্যমাত্রা অনুযায়ী (≥70%)</div><div class="kpi-value">${centersOnTrack}</div><div class="kpi-sub">${ok.length}টি center-এর মধ্যে</div></div>
     </div>
     <div class="card">
@@ -1038,7 +1038,7 @@ function renderTargetSummaryView(el){
             <td style="color:var(--purple);font-weight:600">${c.annual_prod_target>0?fmtN(c.annual_prod_target)+'টি':'<span style="color:var(--muted);font-style:italic">নেই</span>'}</td>
             <td style="color:var(--blue);font-weight:600">${c.monthly_prod_target>0?fmtN(c.monthly_prod_target)+'টি':'<span style="color:var(--muted)">—</span>'}</td>
             <td style="color:var(--green);font-weight:600">${fmtN(c.monthly_prod_achieved)}টি</td>
-            <td style="min-width:130px">${pct!==null?`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:6px;background:var(--border);border-radius:3px"><div style="height:6px;width:${Math.min(pct,100)}%;background:${col};border-radius:3px"></div></div><span style="font-size:12px;font-weight:700;color:${col};min-width:36px">${pct}%</span></div>`:'<span style="font-size:11px;color:var(--muted);font-style:italic">লক্ষ্যমাত্রা নেই</span>'}</td>
+            <td style="min-width:130px">${pct!==null?`<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:6px;background:var(--border);border-radius:3px"><div style="height:6px;width:${Math.min(pct,100)}%;background:${col};border-radius:3px"></div></div><span style="font-size:12px;font-weight:700;color:${col};min-width:36px">${toBn(pct)}%</span></div>`:'<span style="font-size:11px;color:var(--muted);font-style:italic">লক্ষ্যমাত্রা নেই</span>'}</td>
             <td><span class="pill ${c.traffic_light==='green'?'on':c.traffic_light==='yellow'?'paid':'due'}">${c.traffic_light==='green'?'ভালো':c.traffic_light==='yellow'?'মাঝারি':'দুর্বল'}</span></td>
           </tr>`;
         }).join('')}</tbody>
@@ -1134,7 +1134,7 @@ function renderCompareTable(data){
           <div class="score-ring"><svg width="52" height="52" viewBox="0 0 60 60">
             <circle cx="30" cy="30" r="25" fill="none" stroke="#1e293b" stroke-width="6"/>
             <circle cx="30" cy="30" r="25" fill="none" stroke="${scoreColor(c.perf_score)}" stroke-width="6" stroke-dasharray="${(c.perf_score/100*157).toFixed(1)} 157" stroke-linecap="round" transform="rotate(-90 30 30)"/>
-          </svg><div class="score-text"><div class="score-num" style="color:${scoreColor(c.perf_score)};font-size:13px">${c.perf_score}</div><div class="score-lbl" style="font-size:9px">/100</div></div></div>
+          </svg><div class="score-text"><div class="score-num" style="color:${scoreColor(c.perf_score)};font-size:13px">${toBn(c.perf_score)}</div><div class="score-lbl" style="font-size:9px">/ ১০০</div></div></div>
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name_bn}</div>
             <div style="font-size:11px;color:var(--muted);margin-top:2px">${c.district||''} • <span style="color:${c.category==='A'?'var(--catA)':c.category==='B'?'var(--catB)':'var(--catC)'}">${c.category}</span></div>
@@ -1145,7 +1145,7 @@ function renderCompareTable(data){
               <div style="font-size:9px;color:var(--muted);margin-top:1px">বিক্রয়</div>
             </div>
             <div style="text-align:center">
-              <div class="${c.growth_rate>=0?'growth-up':'growth-dn'}" style="font-size:12px">${c.growth_rate>=0?'▲':'▼'}${Math.abs(c.growth_rate).toFixed(1)}%</div>
+              <div class="${c.growth_rate>=0?'growth-up':'growth-dn'}" style="font-size:12px">${c.growth_rate>=0?'▲':'▼'}${toBn(Math.abs(c.growth_rate).toFixed(1))}%</div>
               <div style="font-size:9px;color:var(--muted);margin-top:1px">প্রবৃদ্ধি</div>
             </div>
             <div style="text-align:center">
@@ -1191,7 +1191,7 @@ function renderCompareTable(data){
                   <div style="flex:1;height:6px;background:var(--border);border-radius:3px">
                     <div style="height:6px;width:${Math.min(pct,100)}%;background:${color};border-radius:3px"></div>
                   </div>
-                  <span style="font-size:12px;font-weight:700;color:${color};min-width:36px">${pct}%</span>
+                  <span style="font-size:12px;font-weight:700;color:${color};min-width:36px">${toBn(pct)}%</span>
                 </div>`:'<span style="font-size:11px;color:var(--muted);font-style:italic">লক্ষ্যমাত্রা নেই</span>'}
               </td>
             </tr>`;
@@ -1294,11 +1294,11 @@ window._exportPDF=()=>{
       <td>${c.category}</td>
       <td>${c.district||'—'}</td>
       <td>৳${c.total_revenue.toLocaleString()}</td>
-      <td>${c.growth_rate>=0?'▲':'▼'}${Math.abs(c.growth_rate).toFixed(1)}%</td>
+      <td>${c.growth_rate>=0?'▲':'▼'}${toBn(Math.abs(c.growth_rate).toFixed(1))}%</td>
       <td>${c.total_produced.toLocaleString()}</td>
       <td>${c.total_stock.toLocaleString()}</td>
-      <td>${c.target_achieved!==null?c.target_achieved.toFixed(1)+'%':'—'}</td>
-      <td><b>${c.perf_score}</b>/100</td>
+      <td>${c.target_achieved!==null?c.target_achieved.toFixed(1))+'%':'—'}</td>
+      <td><b>${toBn(c.perf_score)}</b>/১০০</td>
       <td>${c.traffic_light==='green'?'✓ ভালো':c.traffic_light==='yellow'?'~ মাঝারি':'✗ দুর্বল'}</td>
     </tr>`).join('');
 
@@ -1566,9 +1566,10 @@ async function saveAssignments(){
 
 // ── HELPERS ──
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
-function fmt(n){return parseFloat(n||0).toLocaleString('bn-BD',{maximumFractionDigits:0});}
-function fmtN(n){return parseInt(n||0).toLocaleString('bn-BD');}
-function fmtK(n){const v=parseFloat(n||0);if(v>=100000)return(v/100000).toFixed(1)+'L';if(v>=1000)return(v/1000).toFixed(1)+'K';return v.toFixed(0);}
+function toBn(n){return String(n).replace(/[0-9]/g,d=>'০১২৩৪৫৬৭৮৯'[d]);}
+function fmt(n){return toBn(parseInt(parseFloat(n||0)).toLocaleString('en-IN'));}
+function fmtN(n){return toBn(parseInt(n||0).toLocaleString('en-IN'));}
+function fmtK(n){const v=parseFloat(n||0);if(v>=100000)return toBn((v/100000).toFixed(1))+'L';if(v>=1000)return toBn((v/1000).toFixed(1))+'K';return toBn(Math.round(v));}
 function scoreColor(s){return s>=70?'#4ade80':s>=45?'#fbbf24':'#f87171';}
 function tlLabel(t){return t==='green'?'ভালো':t==='yellow'?'সতর্ক':'সমস্যা';}
 function tlBorderColor(t){return t==='green'?'#16a34a':t==='yellow'?'#d97706':'#dc2626';}
