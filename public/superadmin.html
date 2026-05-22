@@ -947,7 +947,7 @@ function renderCompareTable(data){
     <!-- Performance Leaderboard -->
     <div class="card" style="margin-bottom:14px">
       <div class="card-head">🏆 Performance Leaderboard <span>Score অনুযায়ী rank</span></div>
-      <div style="padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
+      <div style="padding:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
         ${ranked.map((c,i)=>`
         <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.15s" onclick="viewDetail('${c.slug}')" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
           <div style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;background:${i===0?'#f59e0b':i===1?'#94a3b8':i===2?'#b45309':'#334155'};color:${i<3?'#000':'#94a3b8'}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':'#'+(i+1)}</div>
