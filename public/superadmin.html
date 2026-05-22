@@ -691,7 +691,7 @@ function renderDetailTab(tab){
     const loadFY=async(fy)=>{
       document.getElementById('fyContent').innerHTML='<div class="loading-center"><div class="spinner"></div></div>';
       try{
-        const r=await fetch(`${API}/center/${currentSlug}/targets?fy=${fy}`,{headers:{Authorization:'Bearer '+token}});
+        const r=await fetch(`${API}/center/${currentDetailSlug}/targets?fy=${fy}`,{headers:{Authorization:'Bearer '+token}});
         const data=await r.json();
         if(!data.success){document.getElementById('fyContent').innerHTML=`<div class="empty">${data.error||'Error'}</div>`;return;}
         const {targets,prod_achieved,sales_achieved}=data;
