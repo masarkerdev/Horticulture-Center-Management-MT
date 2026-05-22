@@ -796,7 +796,7 @@ function renderDetailTab(tab){
                 <div style="font-size:26px;font-weight:700;color:${pc(pp)}">${toBn(pp)}%</div>
               </div>
               <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px">
-                <div style="height:5px;width:${toBn(pp)}%;background:${pc(pp)};border-radius:3px;transition:.5s"></div>
+                <div style="height:5px;width:${pp}%;background:${pc(pp)};border-radius:3px;transition:.5s"></div>
               </div>
             </div>
             <div class="card" style="border-left:3px solid var(--green)">
@@ -810,7 +810,7 @@ function renderDetailTab(tab){
                 <div style="font-size:26px;font-weight:700;color:${pc(sp)}">${toBn(sp)}%</div>
               </div>
               <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px">
-                <div style="height:5px;width:${toBn(sp)}%;background:${pc(sp)};border-radius:3px;transition:.5s"></div>
+                <div style="height:5px;width:${sp}%;background:${pc(sp)};border-radius:3px;transition:.5s"></div>
               </div>
             </div>
           </div>
@@ -846,19 +846,29 @@ function renderDetailTab(tab){
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
           <div class="card" style="border-left:3px solid var(--purple)">
             <div style="display:flex;justify-content:space-between;align-items:center">
-              <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">🌱 উৎপাদন</div>
-              <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--purple)">${fmtN(tProd)}টি</b> | অর্জন: <b style="color:var(--text)">${fmtN(prod_achieved)}টি</b></div></div>
-              <div style="font-size:26px;font-weight:700;color:${pc(pp)}">${toBn(pp)}%</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--purple);margin-bottom:6px">🌱 উৎপাদন</div>
+                <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--text)">${fmtN(tProd)}টি</b></div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px">অর্জন: <b style="color:var(--green)">${fmtN(prod_achieved)}টি</b></div>
+              </div>
+              <div style="font-size:32px;font-weight:700;color:${pc(pp)}">${toBn(pp)}%</div>
             </div>
-            <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px"><div style="height:5px;width:${toBn(pp)}%;background:${pc(pp)};border-radius:3px;transition:.5s"></div></div>
+            <div style="margin-top:12px;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+              <div style="height:6px;width:${pp}%;background:${pc(pp)};border-radius:3px;transition:.5s"></div>
+            </div>
           </div>
           <div class="card" style="border-left:3px solid var(--green)">
             <div style="display:flex;justify-content:space-between;align-items:center">
-              <div><div style="font-size:11px;color:var(--muted);margin-bottom:4px">💰 বিক্রয়</div>
-              <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--green)">৳${fmt(tSales)}</b> | অর্জন: <b style="color:var(--text)">৳${fmt(sales_achieved)}</b></div></div>
-              <div style="font-size:26px;font-weight:700;color:${pc(sp)}">${toBn(sp)}%</div>
+              <div>
+                <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:6px">💰 বিক্রয়</div>
+                <div style="font-size:12px;color:var(--muted)">লক্ষ্য: <b style="color:var(--text)">৳${fmt(tSales)}</b></div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px">অর্জন: <b style="color:var(--green)">৳${fmt(sales_achieved)}</b></div>
+              </div>
+              <div style="font-size:32px;font-weight:700;color:${pc(sp)}">${toBn(sp)}%</div>
             </div>
-            <div style="margin-top:8px;height:5px;background:var(--border);border-radius:3px"><div style="height:5px;width:${toBn(sp)}%;background:${pc(sp)};border-radius:3px;transition:.5s"></div></div>
+            <div style="margin-top:12px;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+              <div style="height:6px;width:${sp}%;background:${pc(sp)};border-radius:3px;transition:.5s"></div>
+            </div>
           </div>
         </div>
         <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px">মাসিভিত্তিক লক্ষ্যমাত্রা</div>
