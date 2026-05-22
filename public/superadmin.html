@@ -959,11 +959,20 @@ function renderCompareTable(data){
             <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name_bn}</div>
             <div style="font-size:11px;color:var(--muted);margin-top:2px">${c.district||''} • <span style="color:${c.category==='A'?'var(--catA)':c.category==='B'?'var(--catB)':'var(--catC)'}">${c.category}</span></div>
             <div style="display:flex;gap:10px;margin-top:6px">
-              <div style="font-size:11px;color:var(--green);font-weight:600">৳${fmtK(c.total_revenue)}</div>
-              <div style="font-size:11px;color:var(--muted)">|</div>
-              <div class="${c.growth_rate>=0?'growth-up':'growth-dn'}" style="font-size:11px">${c.growth_rate>=0?'▲':'▼'}${Math.abs(c.growth_rate).toFixed(1)}%</div>
-              <div style="font-size:11px;color:var(--muted)">|</div>
-              <div class="tl-dot tl-${c.traffic_light}" style="margin-top:2px"></div>
+              <div style="text-align:center">
+                <div style="font-size:11px;color:var(--green);font-weight:600">৳${fmtK(c.total_revenue)}</div>
+                <div style="font-size:9px;color:var(--muted);margin-top:1px">বিক্রয়</div>
+              </div>
+              <div style="color:var(--muted);font-size:11px;align-self:center">|</div>
+              <div style="text-align:center">
+                <div class="${c.growth_rate>=0?'growth-up':'growth-dn'}" style="font-size:11px">${c.growth_rate>=0?'▲':'▼'}${Math.abs(c.growth_rate).toFixed(1)}%</div>
+                <div style="font-size:9px;color:var(--muted);margin-top:1px">প্রবৃদ্ধি</div>
+              </div>
+              <div style="color:var(--muted);font-size:11px;align-self:center">|</div>
+              <div style="text-align:center">
+                <div class="tl-dot tl-${c.traffic_light}" style="margin:0 auto 2px"></div>
+                <div style="font-size:9px;color:var(--muted)">${tlLabel(c.traffic_light)}</div>
+              </div>
             </div>
           </div>
         </div>`).join('')}
