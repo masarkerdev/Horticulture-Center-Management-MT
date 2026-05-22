@@ -913,6 +913,14 @@ function renderCompareView(el){
           ✕ Reset
         </button>
         <span id="compareCount" style="font-size:12px;color:var(--muted);margin-left:auto">${ok.length}টি center</span>
+        <button onclick="window._exportCSV()"
+          style="background:var(--accent);border:none;color:#fff;padding:6px 14px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px">
+          <i class="ti ti-file-spreadsheet"></i> Excel
+        </button>
+        <button onclick="window._exportPDF()"
+          style="background:#c084fc22;border:1px solid #c084fc44;color:#c084fc;padding:6px 14px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px">
+          <i class="ti ti-file-type-pdf"></i> PDF
+        </button>
       </div>
     </div>
     <div id="compareResults"></div>`;
@@ -1094,6 +1102,78 @@ window._sortRanking=(type,btn)=>{
     b.style.background='var(--card)';b.style.color='var(--muted)';
   });
   btn.style.background='var(--accent)';btn.style.color='#fff';
+};
+
+// ── EXPORT FUNCTIONS ──
+window._exportCSV=()=>{
+  const data=window._rankData;
+  if(!data||!data.length){showToast('কোনো data নেই।');return;}
+  const headers=['Center','Category','জেলা','বিভাগ','মোট বিক্রয় (৳)','চলতি মাস (৳)','গত মাস (৳)','প্রবৃদ্ধি (%)','মোট উৎপাদন','মোট স্টক','লক্ষ্য অর্জন (%)','Performance Score','অবস্থা'];
+  const rows=data.map(c=>[
+    c.name_bn,c.category,c.district||'',c.division||'',
+    c.total_revenue.toFixed(0),c.current_month_rev.toFixed(0),c.last_month_rev.toFixed(0),
+    c.growth_rate.toFixed(1),c.total_produced,c.total_stock,
+    c.target_achieved!==null?c.target_achieved.toFixed(1):'N/A',
+    c.perf_score,
+    c.traffic_light==='green'?'ভালো':c.traffic_light==='yellow'?'মাঝারি':'দুর্বল'
+  ]);
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const bom='\uFEFF';
+  const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`HortNet-BD_Report_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();URL.revokeObjectURL(url);
+  showToast('Excel (CSV) download হচ্ছে...');
+};
+
+window._exportPDF=()=>{
+  const data=window._rankData;
+  if(!data||!data.length){showToast('কোনো data নেই।');return;}
+  const rows=data.map((c,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td><b>${c.name_bn}</b></td>
+      <td>${c.category}</td>
+      <td>${c.district||'—'}</td>
+      <td>৳${c.total_revenue.toLocaleString()}</td>
+      <td>${c.growth_rate>=0?'▲':'▼'}${Math.abs(c.growth_rate).toFixed(1)}%</td>
+      <td>${c.total_produced.toLocaleString()}</td>
+      <td>${c.total_stock.toLocaleString()}</td>
+      <td>${c.target_achieved!==null?c.target_achieved.toFixed(1)+'%':'—'}</td>
+      <td><b>${c.perf_score}</b>/100</td>
+      <td>${c.traffic_light==='green'?'✓ ভালো':c.traffic_light==='yellow'?'~ মাঝারি':'✗ দুর্বল'}</td>
+    </tr>`).join('');
+
+  const html=`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <title>HortNet-BD তুলনামূলক রিপোর্ট</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap');
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{font-family:'Hind Siliguri',sans-serif;font-size:12px;color:#1a1a1a;padding:20px}
+      h1{font-size:18px;color:#1a4731;margin-bottom:4px}
+      .sub{color:#666;font-size:11px;margin-bottom:16px}
+      table{width:100%;border-collapse:collapse;margin-top:8px}
+      th{background:#1a4731;color:#fff;padding:8px;text-align:left;font-size:11px}
+      td{padding:7px 8px;border-bottom:1px solid #e5e7eb;font-size:11px}
+      tr:nth-child(even) td{background:#f9fafb}
+      .footer{margin-top:16px;font-size:10px;color:#999;border-top:1px solid #eee;padding-top:8px}
+    </style>
+  </head><body>
+    <h1>🌿 HortNet-BD — তুলনামূলক রিপোর্ট</h1>
+    <div class="sub">তৈরির তারিখ: ${new Date().toLocaleDateString('bn-BD')} | মোট center: ${data.length}টি</div>
+    <table>
+      <thead><tr><th>#</th><th>Center</th><th>Cat</th><th>জেলা</th><th>মোট বিক্রয়</th><th>প্রবৃদ্ধি</th><th>উৎপাদন</th><th>স্টক</th><th>লক্ষ্য %</th><th>Score</th><th>অবস্থা</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="footer">কৃষি সম্প্রসারণ অধিদপ্তর — হর্টিকালচার উইং | HortNet-BD Management System</div>
+  </body></html>`;
+
+  const win=window.open('','_blank');
+  win.document.write(html);
+  win.document.close();
+  setTimeout(()=>{win.print();},500);
 };
 
 // ── MODAL ──
