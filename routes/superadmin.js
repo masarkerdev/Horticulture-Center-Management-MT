@@ -86,6 +86,9 @@ router.get('/tenants', saAuth, async (req, res) => {
 // ===== ALL CENTER STATS =====
 router.get('/stats-all', saAuth, async (req, res) => {
     try {
+        // force=true হলে cache clear করো
+        if (req.query.force === 'true') clearCache();
+
         const tenants = await getTenants();
         let tenantEntries = Object.entries(tenants);
 

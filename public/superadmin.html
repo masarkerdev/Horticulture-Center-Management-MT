@@ -495,8 +495,13 @@ async function loadCenters(){
   try{const r=await fetch(API+'/tenants',{headers:{Authorization:'Bearer '+token}});const d=await r.json();if(d.success)centers=d.data;}catch{}
 }
 
-async function loadAllStats(){
-  try{const r=await fetch(API+'/stats-all',{headers:{Authorization:'Bearer '+token}});const d=await r.json();if(d.success){allStats=d.data;updateBadges();}}catch{}
+async function loadAllStats(force=false){
+  try{
+    const url=force?`${API}/stats-all?force=true`:API+'/stats-all';
+    const r=await fetch(url,{headers:{Authorization:'Bearer '+token}});
+    const d=await r.json();
+    if(d.success){allStats=d.data;updateBadges();}
+  }catch{}
 }
 
 function updateBadges(){
@@ -1439,7 +1444,11 @@ async function saveCenter(){
     if(id){const cur=centers.find(c=>c.id==id);res=await fetch(`${API}/tenants/${id}`,{method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({...data,db_url:data.db_url||cur?.db_url||'',active:cur?.active??true})});}
     else{if(!data.db_url||!document.getElementById('fSlug').value.trim())return showToast('Slug ও DB URL দিন।');res=await fetch(`${API}/tenants`,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({slug:document.getElementById('fSlug').value.trim().toLowerCase(),...data})});}
     const d=await res.json();if(!d.success)return showToast(d.message||d.error);
-    showToast(d.message);closeModal();await loadAll();renderView(currentView);
+    showToast(d.message);closeModal();
+    await loadCenters();
+    await loadAllStats(true); // force cache clear
+    updateBadges();
+    renderView(currentView);
   }catch{showToast('সমস্যা হয়েছে।');}
 }
 
