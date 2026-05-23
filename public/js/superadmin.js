@@ -175,9 +175,9 @@ function renderOverview(el){
     <div class="kpi-grid">
       <div class="kpi green"><div class="kpi-label">মোট বিক্রয়</div><div class="kpi-value">৳${fmt(totalRev)}</div><div class="kpi-sub">${invoices} চালান</div></div>
       <div class="kpi blue"><div class="kpi-label">আজকের বিক্রয়</div><div class="kpi-value">৳${fmt(todayRev)}</div></div>
-      <div class="kpi purple"><div class="kpi-label">মোট উৎপাদন</div><div class="kpi-value">${fmtN(totalProd)}</div></div>
-      <div class="kpi amber"><div class="kpi-label">মোট স্টক</div><div class="kpi-value">${fmtN(totalStock)}</div></div>
-      <div class="kpi teal"><div class="kpi-label">সক্রিয় Center</div><div class="kpi-value">${ok.length}</div></div>
+      <div class="kpi purple"><div class="kpi-label">মোট উৎপাদন</div><div class="kpi-value">${fmtN(totalProd)}</div><div class="kpi-sub">টি চারা/কলম</div></div>
+      <div class="kpi amber"><div class="kpi-label">মোট স্টক</div><div class="kpi-value">${fmtN(totalStock)}</div><div class="kpi-sub">টি চারা/কলম</div></div>
+      <div class="kpi teal"><div class="kpi-label">সক্রিয় Center</div><div class="kpi-value">${toBn(ok.length)}</div></div>
     </div>
     ${['A','B','C'].map(cat=>{
       if(!catGroups[cat]?.length) return '';
@@ -199,8 +199,8 @@ function renderCategoryView(el,cat){
   el.innerHTML=`
     <div class="kpi-grid">
       <div class="kpi green"><div class="kpi-label">মোট বিক্রয়</div><div class="kpi-value">৳${fmt(filtered.reduce((s,c)=>s+c.total_revenue,0))}</div></div>
-      <div class="kpi purple"><div class="kpi-label">মোট উৎপাদন</div><div class="kpi-value">${fmtN(filtered.reduce((s,c)=>s+c.total_produced,0))}</div></div>
-      <div class="kpi amber"><div class="kpi-label">মোট স্টক</div><div class="kpi-value">${fmtN(filtered.reduce((s,c)=>s+c.total_stock,0))}</div></div>
+      <div class="kpi purple"><div class="kpi-label">মোট উৎপাদন</div><div class="kpi-value">${fmtN(filtered.reduce((s,c)=>s+c.total_produced,0))}</div><div class="kpi-sub">টি চারা/কলম</div></div>
+      <div class="kpi amber"><div class="kpi-label">মোট স্টক</div><div class="kpi-value">${fmtN(filtered.reduce((s,c)=>s+c.total_stock,0))}</div><div class="kpi-sub">টি চারা/কলম</div></div>
       <div class="kpi teal"><div class="kpi-label">Center সংখ্যা</div><div class="kpi-value">${filtered.length}</div></div>
     </div>
     <div class="center-list">${filtered.map(c=>hCard(c)).join('')}</div>`;
