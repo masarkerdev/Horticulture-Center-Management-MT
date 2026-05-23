@@ -1647,7 +1647,13 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 function toBn(n){return String(n).replace(/[0-9]/g,d=>'০১২৩৪৫৬৭৮৯'[d]);}
 function fmt(n){return toBn(parseInt(parseFloat(n||0)).toLocaleString('en-IN'));}
 function fmtN(n){return toBn(parseInt(n||0).toLocaleString('en-IN'));}
-function fmtK(n){const v=parseFloat(n||0);if(v>=100000)return toBn((v/100000).toFixed(1))+'L';if(v>=1000)return toBn((v/1000).toFixed(1))+'K';return toBn(Math.round(v));}
+function fmtK(n){
+  const v=parseFloat(n||0);
+  if(v>=10000000) return toBn((v/10000000).toFixed(1))+' কোটি';
+  if(v>=100000)   return toBn((v/100000).toFixed(1))+' লাখ';
+  if(v>=1000)     return toBn((v/1000).toFixed(1))+' হাজার';
+  return toBn(Math.round(v));
+}
 function scoreColor(s){return s>=70?'#4ade80':s>=45?'#fbbf24':'#f87171';}
 function tlLabel(t){return t==='green'?'ভালো':t==='yellow'?'সতর্ক':'সমস্যা';}
 function tlBorderColor(t){return t==='green'?'#16a34a':t==='yellow'?'#d97706':'#dc2626';}
