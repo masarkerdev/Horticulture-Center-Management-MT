@@ -100,14 +100,29 @@ body{font-family:var(--fb);background:var(--bg);color:var(--tp);font-size:15px;-
 .dli{display:flex;align-items:center;gap:8px;font-size:12px;color:#5a5a52;}
 .dld{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 
-/* TABLE — horizontal scroll always */
-.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;border:1px solid var(--bd);}
+/* TABLE — horizontal scroll */
+.tw{
+  display:block;
+  width:100%;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  border-radius:10px;
+  border:1px solid var(--bd);
+}
 .tw table{border-radius:10px;overflow:hidden;}
-table{width:100%;border-collapse:collapse;min-width:500px;}
+table{width:100%;border-collapse:collapse;min-width:600px;}
 thead th{font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:0.05em;padding:10px 12px;border-bottom:1px solid var(--bd);text-align:left;background:var(--gr50);white-space:nowrap;}
-tbody td{padding:10px 12px;border-bottom:1px solid var(--bd);font-size:13px;}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--bd);font-size:13px;white-space:nowrap;}
 tbody tr:last-child td{border-bottom:none;}
 tbody tr:hover td{background:var(--gr50);}
+
+/* Table wrapper inside card — no double border */
+.card .tw{border:none;border-radius:0;margin:0 -18px -18px;width:calc(100% + 36px);}
+
+/* Prevent page overflow */
+body{overflow-x:hidden;}
+.mn{overflow-x:hidden;}
+.ct{overflow-x:hidden;}
 
 /* BADGES */
 .b{display:inline-flex;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;}
@@ -199,7 +214,8 @@ select.fc{appearance:auto;}
   .mo{align-items:flex-end;padding:0;}
   .md{border-radius:20px 20px 0 0;width:100%;max-width:100%;max-height:95vh;padding:20px;}
   /* Table — horizontal scroll */
-  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .tw{display:block;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .card .tw{margin:0 -14px -14px;width:calc(100% + 28px);}
   table{min-width:480px;font-size:12px;}
   thead th{padding:8px 10px;font-size:10px;}
   tbody td{padding:8px 10px;}
@@ -227,6 +243,7 @@ select.fc{appearance:auto;}
   .card{padding:12px;}
   .md{padding:16px;}
   table{min-width:360px;}
+  .card .tw{margin:0 -12px -12px;width:calc(100% + 24px);}
   thead th{font-size:9px;padding:7px 8px;}
   tbody td{padding:7px 8px;font-size:11px;}
   .sg{gap:8px;}
