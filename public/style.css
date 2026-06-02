@@ -112,8 +112,6 @@ tbody tr:hover td{background:var(--gr50);}
 
 /* Prevent page overflow */
 body{overflow-x:hidden;}
-.mn{overflow-x:hidden;}
-.ct{overflow-x:hidden;}
 
 /* BADGES */
 .b{display:inline-flex;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;}
