@@ -208,7 +208,23 @@ router.post('/mother-plants', authenticate, canProduce, async (req, res) => {
 // ============================================================
 // STOCK ROUTES — মোট স্টক FY filter নেই, Ledger FY filter আছে
 // ============================================================
-router.get ('/stock',            authenticate, getStockSummary);
+router.get ('/stock', authenticate, async (req, res) => {
+    try {
+        const [stockData, obData] = await Promise.all([
+            db.query(`SELECT * FROM stock_summary ORDER BY name_bn`),
+            db.query(`SELECT seedling_id, COALESCE(SUM(quantity),0) AS total_opening
+                      FROM stock_transactions WHERE txn_type='opening_balance'
+                      GROUP BY seedling_id`)
+        ]);
+        const obMap = {};
+        obData.rows.forEach(r => { obMap[r.seedling_id] = parseInt(r.total_opening || 0); });
+        const data = stockData.rows.map(s => ({
+            ...s,
+            opening_balance: obMap[s.id] || 0
+        }));
+        res.json({ success: true, data });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
 router.get ('/stock/ledger',     authenticate, fyMiddleware, async (req, res) => {
     try {
         const { fyStart, fyEnd } = req;
