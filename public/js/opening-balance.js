@@ -4,6 +4,7 @@
 
 let obAllData = [];
 let _obReady = false;
+let obMap = {}; // seedling_id → total opening balance
 
 function injectOBPage() {
     if (!document.getElementById('nav-ob')) {
@@ -104,6 +105,7 @@ async function lOB() {
 
         if (stats.success) {
             const d = stats.data;
+            obMap = d.ob_map || {};
             document.getElementById('obWOpening').textContent = (d.total_opening || 0).toLocaleString() + 'টি';
             document.getElementById('obWCurrent').textContent = (d.current_stock || 0).toLocaleString() + 'টি';
             document.getElementById('obWTotal').textContent = (d.total_stock || 0).toLocaleString() + 'টি';
@@ -138,14 +140,22 @@ function renderOBTable(data) {
       <thead><tr>
         <th>চারার নাম</th>
         <th>জাত</th>
+        <th style="text-align:center;color:var(--b600)">প্রারম্ভিক স্টক</th>
         <th style="text-align:center">বর্তমান স্টক</th>
-        <th style="text-align:center;color:var(--g600)">যোগ করুন</th>
+        <th style="text-align:center;color:var(--g600)">পরিমাণ</th>
         <th style="text-align:center">কার্যক্রম</th>
       </tr></thead>
       <tbody>
-        ${data.map(s => `<tr id="obRow-${s.id}">
+        ${data.map(s => {
+          const obQty = obMap[s.id] || 0;
+          return `<tr id="obRow-${s.id}">
           <td><strong>${s.name_bn}</strong></td>
           <td style="color:var(--tm);font-size:12px">${s.variety || '—'}</td>
+          <td style="text-align:center">
+            <span id="obOp-${s.id}" style="font-weight:600;color:${obQty > 0 ? 'var(--b600)' : 'var(--tm)'}">
+              ${obQty > 0 ? obQty + 'টি' : '—'}
+            </span>
+          </td>
           <td style="text-align:center">
             <span id="obCur-${s.id}" style="font-weight:600;
               color:${s.current_stock > 0 ? 'var(--g600)' : 'var(--tm)'}">
@@ -155,16 +165,20 @@ function renderOBTable(data) {
           <td style="text-align:center;padding:8px">
             <input type="number" id="obQty-${s.id}"
               placeholder="পরিমাণ" min="1" class="fc"
-              style="width:120px;min-height:38px;text-align:center;font-size:14px"
+              style="width:110px;min-height:38px;text-align:center;font-size:14px"
               onkeydown="if(event.key==='Enter') saveOBRow(${s.id},'${s.name_bn}')">
           </td>
           <td style="text-align:center">
-            <button class="btn btns btnp" onclick="saveOBRow(${s.id},'${s.name_bn}')"
-              id="obBtn-${s.id}">
-              <i class="ti ti-device-floppy"></i> সেইভ
-            </button>
+            <div style="display:flex;gap:4px;justify-content:center">
+              <button class="btn btns btnp" onclick="saveOBRow(${s.id},'${s.name_bn}')"
+                id="obBtn-${s.id}" title="যোগ করুন">
+                <i class="ti ti-device-floppy"></i> সেইভ
+              </button>
+              ${obQty > 0 ? `<button class="btn btns btne" onclick="editOBRow(${s.id},'${s.name_bn}',${obQty})"
+                title="সম্পাদনা"><i class="ti ti-edit"></i></button>` : ''}
+            </div>
           </td>
-        </tr>`).join('')}
+        </tr>`;}).join('')}
       </tbody>
     </table></div>`;
 }
@@ -212,7 +226,45 @@ async function saveOBRow(seedlingId, name) {
                 setTimeout(() => row.style.background = '', 2000);
             }
 
-            // Widgets refresh
+            // Edit opening balance row
+async function editOBRow(seedlingId, name, currentOb) {
+    const newQty = prompt(`"${name}" এর প্রারম্ভিক স্টক সম্পাদনা\nবর্তমান: ${currentOb}টি\nনতুন মোট পরিমাণ দিন:`, currentOb);
+    if (newQty === null) return; // cancel
+    const qty = parseInt(newQty);
+    if (!qty || qty < 0) { toast('সঠিক পরিমাণ দিন', 1); return; }
+
+    // Difference calculate করো
+    const diff = qty - currentOb;
+    if (diff === 0) { toast('কোনো পরিবর্তন নেই', 1); return; }
+
+    try {
+        const r = await fetch('/api/stock/adjustment', {
+            method: 'POST',
+            cache: 'no-store',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TK },
+            body: JSON.stringify({
+                seedling_id: seedlingId,
+                quantity: Math.abs(diff),
+                direction: diff > 0 ? '+' : '-',
+                notes: 'প্রারম্ভিক স্টক সংশোধন'
+            })
+        });
+        const d = await r.json();
+        if (d.success) {
+            toast(`"${name}" আপডেট হয়েছে ✅`);
+            const opEl = document.getElementById('obOp-' + seedlingId);
+            const curEl = document.getElementById('obCur-' + seedlingId);
+            if (opEl) { opEl.textContent = qty + 'টি'; opEl.style.color = 'var(--b600)'; }
+            if (curEl) { curEl.textContent = d.new_balance + 'টি'; curEl.style.color = 'var(--g600)'; }
+            obMap[seedlingId] = qty;
+            const seed = obAllData.find(s => s.id === seedlingId);
+            if (seed) seed.current_stock = d.new_balance;
+            refreshOBWidgets();
+        } else toast(d.error || 'সমস্যা', 1);
+    } catch(e) { toast('সার্ভার সমস্যা', 1); }
+}
+
+// Widgets refresh
             refreshOBWidgets();
         } else {
             toast(d.error || 'সমস্যা', 1);
@@ -225,6 +277,44 @@ async function saveOBRow(seedlingId, name) {
     }
 }
 
+// Edit opening balance row
+async function editOBRow(seedlingId, name, currentOb) {
+    const newQty = prompt(`"${name}" এর প্রারম্ভিক স্টক সম্পাদনা\nবর্তমান: ${currentOb}টি\nনতুন মোট পরিমাণ দিন:`, currentOb);
+    if (newQty === null) return; // cancel
+    const qty = parseInt(newQty);
+    if (!qty || qty < 0) { toast('সঠিক পরিমাণ দিন', 1); return; }
+
+    // Difference calculate করো
+    const diff = qty - currentOb;
+    if (diff === 0) { toast('কোনো পরিবর্তন নেই', 1); return; }
+
+    try {
+        const r = await fetch('/api/stock/adjustment', {
+            method: 'POST',
+            cache: 'no-store',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TK },
+            body: JSON.stringify({
+                seedling_id: seedlingId,
+                quantity: Math.abs(diff),
+                direction: diff > 0 ? '+' : '-',
+                notes: 'প্রারম্ভিক স্টক সংশোধন'
+            })
+        });
+        const d = await r.json();
+        if (d.success) {
+            toast(`"${name}" আপডেট হয়েছে ✅`);
+            const opEl = document.getElementById('obOp-' + seedlingId);
+            const curEl = document.getElementById('obCur-' + seedlingId);
+            if (opEl) { opEl.textContent = qty + 'টি'; opEl.style.color = 'var(--b600)'; }
+            if (curEl) { curEl.textContent = d.new_balance + 'টি'; curEl.style.color = 'var(--g600)'; }
+            obMap[seedlingId] = qty;
+            const seed = obAllData.find(s => s.id === seedlingId);
+            if (seed) seed.current_stock = d.new_balance;
+            refreshOBWidgets();
+        } else toast(d.error || 'সমস্যা', 1);
+    } catch(e) { toast('সার্ভার সমস্যা', 1); }
+}
+
 // Widgets refresh
 async function refreshOBWidgets() {
     try {
@@ -235,6 +325,7 @@ async function refreshOBWidgets() {
 
         if (stats.success) {
             const d = stats.data;
+            obMap = d.ob_map || {};
             document.getElementById('obWOpening').textContent = (d.total_opening || 0).toLocaleString() + 'টি';
             document.getElementById('obWCurrent').textContent = (d.current_stock || 0).toLocaleString() + 'টি';
             document.getElementById('obWTotal').textContent = (d.total_stock || 0).toLocaleString() + 'টি';
