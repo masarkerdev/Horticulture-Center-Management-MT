@@ -653,6 +653,25 @@ router.post('/auth/verify-otp', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
+// Opening Balance Stats
+router.get('/stock/opening-balance/stats', authenticate, async (req, res) => {
+    try {
+        const [obStats, totalStock] = await Promise.all([
+            db.query(`SELECT COALESCE(SUM(quantity),0) AS total_opening
+                      FROM stock_transactions WHERE txn_type='opening_balance'`),
+            db.query(`SELECT COALESCE(SUM(current_stock),0) AS total_current
+                      FROM seedlings WHERE is_active=TRUE`)
+        ]);
+        const totalOpening = parseInt(obStats.rows[0].total_opening || 0);
+        const totalCurrent = parseInt(totalStock.rows[0].total_current || 0);
+        res.json({ success: true, data: {
+            total_opening: totalOpening,
+            current_stock: totalCurrent,
+            total_stock: totalCurrent
+        }});
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
 router.post('/stock/opening-balance', authenticate, adminOnly, async (req, res) => {
     const { entries } = req.body; // [{seedling_id, quantity, notes}]
     if (!entries || !entries.length)
