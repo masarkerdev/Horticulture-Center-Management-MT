@@ -630,4 +630,54 @@ router.post('/auth/verify-otp', async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
+router.post('/stock/opening-balance', authenticate, adminOnly, async (req, res) => {
+    const { entries } = req.body; // [{seedling_id, quantity, notes}]
+    if (!entries || !entries.length)
+        return res.status(400).json({ success: false, message: 'কোনো data নেই।' });
+
+    const client = await db.pool.connect();
+    try {
+        await client.query('BEGIN');
+        let updated = 0;
+        const results = [];
+
+        for (const entry of entries) {
+            if (!entry.seedling_id || !entry.quantity || parseInt(entry.quantity) <= 0) continue;
+
+            const stockResult = await client.query(
+                'SELECT current_stock, name_bn FROM seedlings WHERE id=$1', [entry.seedling_id]
+            );
+            if (!stockResult.rows.length) continue;
+
+            const currentStock = parseInt(stockResult.rows[0].current_stock);
+            const addQty = parseInt(entry.quantity);
+            const newBalance = currentStock + addQty;
+
+            await client.query(
+                `INSERT INTO stock_transactions
+                 (seedling_id, txn_type, quantity, direction, balance_after, notes, created_by)
+                 VALUES ($1,'opening_balance',$2,'+',$3,$4,$5)`,
+                [entry.seedling_id, addQty, newBalance,
+                 entry.notes || 'প্রারম্ভিক স্টক এন্ট্রি', req.user.id]
+            );
+
+            await client.query(
+                'UPDATE seedlings SET current_stock=$1 WHERE id=$2',
+                [newBalance, entry.seedling_id]
+            );
+
+            results.push({ name: stockResult.rows[0].name_bn, added: addQty, total: newBalance });
+            updated++;
+        }
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: `${updated}টি চারার স্টক যোগ হয়েছে।`, data: results });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        res.status(500).json({ success: false, error: err.message });
+    } finally {
+        client.release();
+    }
+});
+
 module.exports = router;
