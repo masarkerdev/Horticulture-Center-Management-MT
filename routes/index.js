@@ -148,10 +148,19 @@ router.get('/production', authenticate, fyMiddleware, async (req, res) => {
     try {
         const { fyStart, fyEnd } = req;
         const result = await db.query(
-            `SELECT pb.*, s.name_bn AS seedling_name, s.variety, s.seedling_code
+            `SELECT pb.*,
+                    s.name_bn AS seedling_bn,
+                    s.variety AS seedling_variety,
+                    s.seedling_code
              FROM production_batches pb
              LEFT JOIN seedlings s ON pb.seedling_id=s.id
-             WHERE pb.sowing_date BETWEEN $1 AND $2
+             WHERE (
+                (pb.sowing_date IS NOT NULL AND pb.sowing_date BETWEEN $1 AND $2)
+                OR
+                (pb.sowing_date IS NULL AND pb.propagation_date IS NOT NULL AND pb.propagation_date BETWEEN $1 AND $2)
+                OR
+                (pb.sowing_date IS NULL AND pb.propagation_date IS NULL AND DATE(pb.created_at) BETWEEN $1 AND $2)
+             )
              ORDER BY pb.created_at DESC`,
             [fyStart, fyEnd]
         );
@@ -362,7 +371,21 @@ router.delete('/mother-plants/:id', authenticate, adminOrManager, async (req, re
 router.get('/reports/production', authenticate, fyMiddleware, async (req, res) => {
     const { fyStart, fyEnd } = req;
     try {
-        const result = await db.query(`SELECT pb.batch_code, s.name_bn, pb.production_type, pb.produced_quantity, pb.success_quantity, pb.failed_quantity, COALESCE(pb.success_percent,pb.germination_percent) AS success_rate, pb.available_quantity, pb.status, pb.created_at FROM production_batches pb LEFT JOIN seedlings s ON pb.seedling_id=s.id WHERE pb.sowing_date BETWEEN $1 AND $2 ORDER BY pb.created_at DESC`, [fyStart, fyEnd]);
+        const result = await db.query(
+            `SELECT pb.batch_code, s.name_bn, pb.production_type,
+                    pb.produced_quantity, pb.success_quantity, pb.failed_quantity,
+                    COALESCE(pb.success_percent,pb.germination_percent) AS success_rate,
+                    pb.available_quantity, pb.status, pb.created_at
+             FROM production_batches pb
+             LEFT JOIN seedlings s ON pb.seedling_id=s.id
+             WHERE (
+                (pb.sowing_date IS NOT NULL AND pb.sowing_date BETWEEN $1 AND $2)
+                OR (pb.sowing_date IS NULL AND pb.propagation_date IS NOT NULL AND pb.propagation_date BETWEEN $1 AND $2)
+                OR (pb.sowing_date IS NULL AND pb.propagation_date IS NULL AND DATE(pb.created_at) BETWEEN $1 AND $2)
+             )
+             ORDER BY pb.created_at DESC`,
+            [fyStart, fyEnd]
+        );
         res.json({ success: true, data: result.rows });
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
