@@ -26,30 +26,38 @@ function injectOBPage() {
         pg.innerHTML = `
         <div style="max-width:860px">
           <!-- Widgets -->
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px" id="obWidgets">
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px" id="obWidgets">
             <div class="sc">
               <div class="si" style="background:var(--b50)">
                 <i class="ti ti-database-import" style="color:var(--b600);font-size:18px"></i>
               </div>
               <div class="sl">মোট প্রারম্ভিক স্টক</div>
               <div class="sv" id="obWOpening" style="color:var(--b600)">—</div>
-              <div class="ss2">পূর্বের মোট এন্ট্রি</div>
+              <div class="ss2">App চালু পূর্বের এন্ট্রি</div>
+            </div>
+            <div class="sc">
+              <div class="si" style="background:var(--a50)">
+                <i class="ti ti-history" style="color:var(--a400);font-size:18px"></i>
+              </div>
+              <div class="sl">পূর্ববর্তী অর্থবছরের স্টক</div>
+              <div class="sv" id="obWPrevFY" style="color:var(--a400)">—</div>
+              <div class="ss2" id="obWPrevFYLabel">আগের FY নেট স্টক</div>
             </div>
             <div class="sc">
               <div class="si" style="background:var(--g50)">
-                <i class="ti ti-stack-2" style="color:var(--g600);font-size:18px"></i>
+                <i class="ti ti-plant" style="color:var(--g600);font-size:18px"></i>
               </div>
-              <div class="sl">বর্তমান স্টক</div>
-              <div class="sv" id="obWCurrent" style="color:var(--g600)">—</div>
-              <div class="ss2">সব চারা/কলম</div>
+              <div class="sl">চলতি অর্থবছরের স্টক</div>
+              <div class="sv" id="obWCurFY" style="color:var(--g600)">—</div>
+              <div class="ss2" id="obWCurFYLabel">চলতি FY নেট স্টক</div>
             </div>
             <div class="sc">
               <div class="si" style="background:var(--t50)">
-                <i class="ti ti-chart-bar" style="color:var(--t600);font-size:18px"></i>
+                <i class="ti ti-stack-2" style="color:var(--t600);font-size:18px"></i>
               </div>
               <div class="sl">মোট স্টক</div>
               <div class="sv" id="obWTotal" style="color:var(--t600)">—</div>
-              <div class="ss2">প্রারম্ভিক + নতুন</div>
+              <div class="ss2">সব মিলিয়ে বর্তমান</div>
             </div>
           </div>
 
@@ -107,8 +115,14 @@ async function lOB() {
             const d = stats.data;
             obMap = d.ob_map || {};
             document.getElementById('obWOpening').textContent = (d.total_opening || 0).toLocaleString() + 'টি';
-            document.getElementById('obWCurrent').textContent = (d.current_stock || 0).toLocaleString() + 'টি';
+            document.getElementById('obWPrevFY').textContent = (d.prev_fy_stock || 0).toLocaleString() + 'টি';
+            document.getElementById('obWCurFY').textContent = (d.cur_fy_stock || 0).toLocaleString() + 'টি';
             document.getElementById('obWTotal').textContent = (d.total_stock || 0).toLocaleString() + 'টি';
+            if (d.fy) {
+                const parts = d.fy.split('-');
+                document.getElementById('obWPrevFYLabel').textContent = `FY ${parseInt(parts[0])-1}-${parts[0]} নেট স্টক`;
+                document.getElementById('obWCurFYLabel').textContent = `FY ${d.fy} নেট স্টক`;
+            }
         }
 
         // Seedlings load
@@ -327,7 +341,8 @@ async function refreshOBWidgets() {
             const d = stats.data;
             obMap = d.ob_map || {};
             document.getElementById('obWOpening').textContent = (d.total_opening || 0).toLocaleString() + 'টি';
-            document.getElementById('obWCurrent').textContent = (d.current_stock || 0).toLocaleString() + 'টি';
+            document.getElementById('obWPrevFY').textContent = (d.prev_fy_stock || 0).toLocaleString() + 'টি';
+            document.getElementById('obWCurFY').textContent = (d.cur_fy_stock || 0).toLocaleString() + 'টি';
             document.getElementById('obWTotal').textContent = (d.total_stock || 0).toLocaleString() + 'টি';
         }
     } catch(e) {}

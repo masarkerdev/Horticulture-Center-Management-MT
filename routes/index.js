@@ -656,25 +656,70 @@ router.post('/auth/verify-otp', async (req, res) => {
 // Opening Balance Stats
 router.get('/stock/opening-balance/stats', authenticate, async (req, res) => {
     try {
-        const [obStats, totalStock, perSeedling] = await Promise.all([
-            db.query(`SELECT COALESCE(SUM(quantity),0) AS total_opening
+        const now = new Date();
+        const curFY = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+        const fyStart = `${curFY}-07-01`;
+        const fyEnd   = `${curFY+1}-06-30`;
+
+        const [obStats, perSeedling, prevFYProd, prevFYSales, prevFYDmg,
+               curFYProd, curFYSales, curFYDmg, totalStock] = await Promise.all([
+
+            // মোট প্রারম্ভিক স্টক
+            db.query(`SELECT COALESCE(SUM(quantity),0) AS total
                       FROM stock_transactions WHERE txn_type='opening_balance'`),
-            db.query(`SELECT COALESCE(SUM(current_stock),0) AS total_current
-                      FROM seedlings WHERE is_active=TRUE`),
+
+            // Per seedling opening balance
             db.query(`SELECT seedling_id, SUM(quantity) AS total_qty
                       FROM stock_transactions WHERE txn_type='opening_balance'
-                      GROUP BY seedling_id`)
+                      GROUP BY seedling_id`),
+
+            // পূর্ববর্তী FY উৎপাদন
+            db.query(`SELECT COALESCE(SUM(produced_quantity),0) AS total
+                      FROM production_batches
+                      WHERE COALESCE(sowing_date, propagation_date, created_at::date) < $1`, [fyStart]),
+
+            // পূর্ববর্তী FY বিক্রয়
+            db.query(`SELECT COALESCE(SUM(si.quantity),0) AS total
+                      FROM sales_items si JOIN sales s ON si.sale_id=s.id
+                      WHERE s.sale_date < $1`, [fyStart]),
+
+            // পূর্ববর্তী FY ক্ষতি
+            db.query(`SELECT COALESCE(SUM(quantity),0) AS total
+                      FROM damages WHERE damage_date < $1`, [fyStart]),
+
+            // চলতি FY উৎপাদন
+            db.query(`SELECT COALESCE(SUM(produced_quantity),0) AS total
+                      FROM production_batches
+                      WHERE COALESCE(sowing_date, propagation_date, created_at::date) BETWEEN $1 AND $2`,
+                      [fyStart, fyEnd]),
+
+            // চলতি FY বিক্রয়
+            db.query(`SELECT COALESCE(SUM(si.quantity),0) AS total
+                      FROM sales_items si JOIN sales s ON si.sale_id=s.id
+                      WHERE s.sale_date BETWEEN $1 AND $2`, [fyStart, fyEnd]),
+
+            // চলতি FY ক্ষতি
+            db.query(`SELECT COALESCE(SUM(quantity),0) AS total
+                      FROM damages WHERE damage_date BETWEEN $1 AND $2`, [fyStart, fyEnd]),
+
+            // মোট বর্তমান স্টক
+            db.query(`SELECT COALESCE(SUM(current_stock),0) AS total
+                      FROM seedlings WHERE is_active=TRUE`)
         ]);
-        const totalOpening = parseInt(obStats.rows[0].total_opening || 0);
-        const totalCurrent = parseInt(totalStock.rows[0].total_current || 0);
-        // per seedling map
+
         const obMap = {};
         perSeedling.rows.forEach(r => { obMap[r.seedling_id] = parseInt(r.total_qty || 0); });
+
+        const prevNet = parseInt(prevFYProd.rows[0].total) - parseInt(prevFYSales.rows[0].total) - parseInt(prevFYDmg.rows[0].total);
+        const curNet  = parseInt(curFYProd.rows[0].total) - parseInt(curFYSales.rows[0].total) - parseInt(curFYDmg.rows[0].total);
+
         res.json({ success: true, data: {
-            total_opening: totalOpening,
-            current_stock: totalCurrent,
-            total_stock: totalCurrent,
-            ob_map: obMap
+            total_opening:  parseInt(obStats.rows[0].total || 0),
+            prev_fy_stock:  Math.max(0, prevNet),
+            cur_fy_stock:   Math.max(0, curNet),
+            total_stock:    parseInt(totalStock.rows[0].total || 0),
+            ob_map: obMap,
+            fy: `${curFY}-${curFY+1}`
         }});
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
