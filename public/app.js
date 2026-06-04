@@ -1148,20 +1148,22 @@ function filterStk() {
 function renderStkTable(data) {
   document.getElementById("sTblB").innerHTML = data.length
     ? data
-        .map(
-          (s) => `<tr>
+        .map((s) => {
+          const totalIn = (s.opening_balance || 0) + (s.total_produced || 0);
+          return `<tr>
         <td><strong>${s.name_bn}</strong>${s.variety ? `<br><span style="font-size:12px;color:var(--tm)">${s.variety}</span>` : ""}</td>
-        <td style="color:var(--b600);font-weight:600">${s.opening_balance > 0 ? "+" + toBnNum(s.opening_balance) : '<span style="color:var(--tm)">—</span>'}</td>
-        <td style="color:var(--g600)">+${toBnNum(s.total_in)}</td>
+        <td style="color:var(--b600);font-weight:600">${s.opening_balance > 0 ? toBnNum(s.opening_balance) : '<span style="color:var(--tm)">—</span>'}</td>
+        <td style="color:var(--g600)">+${toBnNum(s.total_produced || 0)}</td>
+        <td style="color:var(--g600);font-weight:600">+${toBnNum(totalIn)}</td>
         <td style="color:var(--c400)">-${toBnNum(s.total_sale || 0)}</td>
         <td style="color:var(--a400)">-${toBnNum(s.total_damage || 0)}</td>
-        <td><strong style="${s.is_low_stock ? "color:var(--c400)" : ""}">${toBnNum(s.current_stock)}</strong></td>
+        <td><strong style="${s.is_low_stock ? "color:var(--c400)" : "color:var(--g600)"}">${toBnNum(s.current_stock)}</strong></td>
         <td>${toBnMoney(s.current_stock * s.unit_price)}</td>
         <td>${s.is_low_stock ? '<span class="b br">সংকটজনক</span>' : '<span class="b bg">ভালো</span>'}</td>
-      </tr>`,
-        )
+      </tr>`;
+        })
         .join("")
-    : '<tr><td colspan="8" class="lt">কোনো ফলাফল নেই</td></tr>';
+    : '<tr><td colspan="9" class="lt">কোনো ফলাফল নেই</td></tr>';
 }
 
 // ===== DAMAGE =====
