@@ -210,17 +210,21 @@ router.post('/mother-plants', authenticate, canProduce, async (req, res) => {
 // ============================================================
 router.get ('/stock', authenticate, async (req, res) => {
     try {
-        const [stockData, obData] = await Promise.all([
+        const [stockData, obData, prodData] = await Promise.all([
             db.query(`SELECT * FROM stock_summary ORDER BY name_bn`),
             db.query(`SELECT seedling_id, COALESCE(SUM(quantity),0) AS total_opening
                       FROM stock_transactions WHERE txn_type='opening_balance'
+                      GROUP BY seedling_id`),
+            db.query(`SELECT seedling_id, COALESCE(SUM(produced_quantity),0) AS total_produced
+                      FROM production_batches WHERE seedling_id IS NOT NULL
                       GROUP BY seedling_id`)
         ]);
-        const obMap = {};
-        obData.rows.forEach(r => { obMap[r.seedling_id] = parseInt(r.total_opening || 0); });
+        const obMap = {}; obData.rows.forEach(r => { obMap[r.seedling_id] = parseInt(r.total_opening||0); });
+        const prodMap = {}; prodData.rows.forEach(r => { prodMap[r.seedling_id] = parseInt(r.total_produced||0); });
         const data = stockData.rows.map(s => ({
             ...s,
-            opening_balance: obMap[s.id] || 0
+            opening_balance:  obMap[s.id] || 0,
+            total_produced:   prodMap[s.id] || 0,
         }));
         res.json({ success: true, data });
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
@@ -267,13 +271,28 @@ router.put ('/sales/:id',     authenticate, canSell, async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 router.delete('/sales/:id', authenticate, adminOrManager, async (req, res) => {
+    const client = await db.pool.connect();
     try {
-        const item = await db.query('SELECT * FROM sales WHERE id=$1', [req.params.id]);
-        if (item.rows.length) await db.query('INSERT INTO recycle_bin (table_name,record_id,record_data,module,item_name,deleted_by) VALUES ($1,$2,$3,$4,$5,$6)', ['sales',req.params.id,JSON.stringify(item.rows[0]),'বিক্রয়',item.rows[0].invoice_no,req.user.id]);
-        await db.query('DELETE FROM sales_items WHERE sale_id=$1', [req.params.id]);
-        await db.query('DELETE FROM sales WHERE id=$1', [req.params.id]);
+        await client.query('BEGIN');
+        const item = await client.query('SELECT * FROM sales WHERE id=$1', [req.params.id]);
+        if (!item.rows.length) { await client.query('ROLLBACK'); return res.status(404).json({ success: false, message: 'পাওয়া যায়নি।' }); }
+        // Recycle bin
+        await client.query('INSERT INTO recycle_bin (table_name,record_id,record_data,module,item_name,deleted_by) VALUES ($1,$2,$3,$4,$5,$6)', ['sales',req.params.id,JSON.stringify(item.rows[0]),'বিক্রয়',item.rows[0].invoice_no,req.user.id]);
+        // Stock restore — sold items ফিরিয়ে দাও
+        const saleItems = await client.query('SELECT seedling_id, quantity FROM sales_items WHERE sale_id=$1', [req.params.id]);
+        for (const si of saleItems.rows) {
+            if (si.seedling_id && si.quantity > 0) {
+                await client.query('UPDATE seedlings SET current_stock=current_stock+$1 WHERE id=$2', [si.quantity, si.seedling_id]);
+            }
+        }
+        // stock_transactions মুছো
+        await client.query("DELETE FROM stock_transactions WHERE reference_type='sale' AND reference_id=$1", [req.params.id]);
+        await client.query('DELETE FROM sales_items WHERE sale_id=$1', [req.params.id]);
+        await client.query('DELETE FROM sales WHERE id=$1', [req.params.id]);
+        await client.query('COMMIT');
         res.json({ success: true, message: 'বিক্রয় Recycle Bin-এ পাঠানো হয়েছে।' });
-    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+    } catch (err) { await client.query('ROLLBACK'); res.status(500).json({ success: false, error: err.message }); }
+    finally { client.release(); }
 });
 
 // ============================================================
@@ -303,16 +322,26 @@ router.put('/damages/:id', authenticate, adminOrManager, async (req, res) => {
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 router.delete('/damages/:id', authenticate, adminOrManager, async (req, res) => {
+    const client = await db.pool.connect();
     try {
-        const item = await db.query('SELECT * FROM damages WHERE id=$1', [req.params.id]);
+        await client.query('BEGIN');
+        const item = await client.query('SELECT * FROM damages WHERE id=$1', [req.params.id]);
         if (item.rows.length) {
-            await db.query('INSERT INTO recycle_bin (table_name,record_id,record_data,module,item_name,deleted_by) VALUES ($1,$2,$3,$4,$5,$6)', ['damages',req.params.id,JSON.stringify(item.rows[0]),'ক্ষতি/নষ্ট','ক্ষতি #'+req.params.id,req.user.id]);
+            await client.query('INSERT INTO recycle_bin (table_name,record_id,record_data,module,item_name,deleted_by) VALUES ($1,$2,$3,$4,$5,$6)',
+                ['damages',req.params.id,JSON.stringify(item.rows[0]),'ক্ষতি/নষ্ট','ক্ষতি #'+req.params.id,req.user.id]);
             const qty = parseInt(item.rows[0].quantity)||0;
-            if (item.rows[0].seedling_id && qty>0) await db.query('UPDATE seedlings SET current_stock=current_stock+$1 WHERE id=$2', [qty,item.rows[0].seedling_id]);
+            // Stock restore
+            if (item.rows[0].seedling_id && qty>0) {
+                await client.query('UPDATE seedlings SET current_stock=current_stock+$1 WHERE id=$2', [qty, item.rows[0].seedling_id]);
+            }
+            // stock_transactions মুছো
+            await client.query("DELETE FROM stock_transactions WHERE reference_type='damage' AND reference_id=$1", [req.params.id]);
         }
-        await db.query('DELETE FROM damages WHERE id=$1', [req.params.id]);
+        await client.query('DELETE FROM damages WHERE id=$1', [req.params.id]);
+        await client.query('COMMIT');
         res.json({ success: true, message: 'ক্ষতি রিপোর্ট Recycle Bin-এ পাঠানো হয়েছে।' });
-    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+    } catch (err) { await client.query('ROLLBACK'); res.status(500).json({ success: false, error: err.message }); }
+    finally { client.release(); }
 });
 
 // ============================================================
