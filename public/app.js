@@ -1151,6 +1151,7 @@ function renderStkTable(data) {
         .map(
           (s) => `<tr>
         <td><strong>${s.name_bn}</strong>${s.variety ? `<br><span style="font-size:12px;color:var(--tm)">${s.variety}</span>` : ""}</td>
+        <td style="color:var(--b600);font-weight:600">${s.opening_balance > 0 ? "+" + toBnNum(s.opening_balance) : '<span style="color:var(--tm)">—</span>'}</td>
         <td style="color:var(--g600)">+${toBnNum(s.total_in)}</td>
         <td style="color:var(--c400)">-${toBnNum(s.total_sale || 0)}</td>
         <td style="color:var(--a400)">-${toBnNum(s.total_damage || 0)}</td>
@@ -1160,7 +1161,7 @@ function renderStkTable(data) {
       </tr>`,
         )
         .join("")
-    : '<tr><td colspan="7" class="lt">কোনো ফলাফল নেই</td></tr>';
+    : '<tr><td colspan="8" class="lt">কোনো ফলাফল নেই</td></tr>';
 }
 
 // ===== DAMAGE =====
