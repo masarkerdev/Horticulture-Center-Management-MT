@@ -210,21 +210,42 @@ router.post('/mother-plants', authenticate, canProduce, async (req, res) => {
 // ============================================================
 router.get ('/stock', authenticate, async (req, res) => {
     try {
-        const [stockData, obData, prodData] = await Promise.all([
+        const [stockData, obData, prodData, saleData, dmgData] = await Promise.all([
             db.query(`SELECT * FROM stock_summary ORDER BY name_bn`),
+
+            // প্রারম্ভিক স্টক — stock_transactions থেকে
             db.query(`SELECT seedling_id, COALESCE(SUM(quantity),0) AS total_opening
                       FROM stock_transactions WHERE txn_type='opening_balance'
                       GROUP BY seedling_id`),
+
+            // মোট উৎপাদিত — production_batches থেকে সরাসরি
             db.query(`SELECT seedling_id, COALESCE(SUM(produced_quantity),0) AS total_produced
                       FROM production_batches WHERE seedling_id IS NOT NULL
+                      GROUP BY seedling_id`),
+
+            // মোট বিক্রয় — sales_items থেকে সরাসরি (delete হলে এখান থেকেও যাবে)
+            db.query(`SELECT si.seedling_id, COALESCE(SUM(si.quantity),0) AS total_sale
+                      FROM sales_items si
+                      JOIN sales s ON si.sale_id = s.id
+                      GROUP BY si.seedling_id`),
+
+            // মোট ক্ষতি — damages থেকে সরাসরি (delete হলে এখান থেকেও যাবে)
+            db.query(`SELECT seedling_id, COALESCE(SUM(quantity),0) AS total_damage
+                      FROM damages
                       GROUP BY seedling_id`)
         ]);
-        const obMap = {}; obData.rows.forEach(r => { obMap[r.seedling_id] = parseInt(r.total_opening||0); });
-        const prodMap = {}; prodData.rows.forEach(r => { prodMap[r.seedling_id] = parseInt(r.total_produced||0); });
+
+        const obMap   = {}; obData.rows.forEach(r   => { obMap[r.seedling_id]   = parseInt(r.total_opening  || 0); });
+        const prodMap = {}; prodData.rows.forEach(r  => { prodMap[r.seedling_id] = parseInt(r.total_produced || 0); });
+        const saleMap = {}; saleData.rows.forEach(r  => { saleMap[r.seedling_id] = parseInt(r.total_sale     || 0); });
+        const dmgMap  = {}; dmgData.rows.forEach(r   => { dmgMap[r.seedling_id]  = parseInt(r.total_damage   || 0); });
+
         const data = stockData.rows.map(s => ({
             ...s,
-            opening_balance:  obMap[s.id] || 0,
-            total_produced:   prodMap[s.id] || 0,
+            opening_balance: obMap[s.id]   || 0,
+            total_produced:  prodMap[s.id]  || 0,
+            total_sale:      saleMap[s.id]  || 0,
+            total_damage:    dmgMap[s.id]   || 0,
         }));
         res.json({ success: true, data });
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
@@ -767,6 +788,47 @@ router.get('/stock/opening-balance/stats', authenticate, async (req, res) => {
             fy: `${curFY}-${curFY+1}`
         }});
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+// Opening Balance Update (edit)
+router.put('/stock/opening-balance/:seedlingId', authenticate, adminOnly, async (req, res) => {
+    const { seedlingId } = req.params;
+    const { new_qty } = req.body; // নতুন মোট পরিমাণ
+    if (new_qty === undefined || new_qty === null || isNaN(parseInt(new_qty))) {
+        return res.status(400).json({ success: false, message: 'পরিমাণ দিন।' });
+    }
+    const newQty = Math.max(0, parseInt(new_qty));
+    const client = await db.pool.connect();
+    try {
+        await client.query('BEGIN');
+        // পুরানো opening balance sum
+        const oldResult = await client.query(
+            `SELECT COALESCE(SUM(quantity),0) AS old_qty FROM stock_transactions
+             WHERE txn_type='opening_balance' AND seedling_id=$1`, [seedlingId]);
+        const oldQty = parseInt(oldResult.rows[0].old_qty || 0);
+        const diff = newQty - oldQty;
+        // পুরানো opening_balance transactions মুছো
+        await client.query(`DELETE FROM stock_transactions WHERE txn_type='opening_balance' AND seedling_id=$1`, [seedlingId]);
+        // নতুন transaction তৈরি করো (newQty > 0 হলে)
+        if (newQty > 0) {
+            const stockResult = await client.query('SELECT current_stock FROM seedlings WHERE id=$1', [seedlingId]);
+            const currentStock = parseInt(stockResult.rows[0]?.current_stock || 0);
+            await client.query(
+                `INSERT INTO stock_transactions (seedling_id, txn_type, quantity, direction, balance_after, notes, created_by)
+                 VALUES ($1,'opening_balance',$2,'+',$3,'প্রারম্ভিক স্টক (সংশোধিত)',$4)`,
+                [seedlingId, newQty, currentStock, req.user.id]);
+        }
+        // current_stock adjust করো
+        if (diff !== 0) {
+            await client.query(
+                `UPDATE seedlings SET current_stock=GREATEST(0, current_stock+$1) WHERE id=$2`,
+                [diff, seedlingId]);
+        }
+        const updated = await client.query('SELECT current_stock FROM seedlings WHERE id=$1', [seedlingId]);
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'প্রারম্ভিক স্টক আপডেট হয়েছে।', new_balance: updated.rows[0].current_stock, new_opening: newQty });
+    } catch (err) { await client.query('ROLLBACK'); res.status(500).json({ success: false, error: err.message }); }
+    finally { client.release(); }
 });
 
 router.post('/stock/opening-balance', authenticate, adminOnly, async (req, res) => {

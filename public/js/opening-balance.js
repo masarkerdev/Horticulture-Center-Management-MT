@@ -297,34 +297,28 @@ function openOBEdit(seedlingId, name, currentOb, totalStock) {
     setTimeout(() => document.getElementById('obEditQty').focus(), 100);
 }
 
-// Save Edit
+// Save Edit — proper opening balance update
 async function saveOBEdit() {
     const seedlingId = parseInt(document.getElementById('obEditId').value);
-    const oldQty = parseInt(document.getElementById('obEditOldQty').value || 0);
     const newQty = parseInt(document.getElementById('obEditQty').value);
-
-    // 0 allow করো
-    if (isNaN(newQty) || newQty < 0) { toast('সঠিক পরিমাণ দিন (০ বা তার বেশি)', 1); return; }
-    if (newQty === oldQty) { document.getElementById('mOBEdit').classList.remove('open'); return; }
-
-    const diff = newQty - oldQty;
     const name = document.getElementById('obEditName').textContent;
 
+    if (isNaN(newQty) || newQty < 0) { toast('সঠিক পরিমাণ দিন (০ বা তার বেশি)', 1); return; }
+
+    const oldQty = parseInt(document.getElementById('obEditOldQty').value || 0);
+    if (newQty === oldQty) { document.getElementById('mOBEdit').classList.remove('open'); return; }
+
     try {
-        const r = await fetch('/api/stock/adjustment', {
-            method: 'POST', cache: 'no-store',
+        const r = await fetch('/api/stock/opening-balance/' + seedlingId, {
+            method: 'PUT', cache: 'no-store',
             headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TK },
-            body: JSON.stringify({
-                seedling_id: seedlingId,
-                quantity: Math.abs(diff),
-                direction: diff > 0 ? '+' : '-',
-                notes: 'প্রারম্ভিক স্টক সংশোধন'
-            })
+            body: JSON.stringify({ new_qty: newQty })
         });
         const d = await r.json();
         if (d.success) {
-            toast(`"${name}" সংশোধন হয়েছে ✅`);
+            toast(`"${name}" আপডেট হয়েছে ✅`);
             document.getElementById('mOBEdit').classList.remove('open');
+            // UI update
             obMap[seedlingId] = newQty;
             const opEl = document.getElementById('obOp-' + seedlingId);
             const curEl = document.getElementById('obCur-' + seedlingId);
