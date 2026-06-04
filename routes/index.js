@@ -914,4 +914,53 @@ router.post('/stock/opening-balance', authenticate, adminOnly, async (req, res) 
     }
 });
 
+// ============================================================
+// EMPLOYEE ROUTES — কর্মচারী তালিকা
+// ============================================================
+router.get('/employees-info', authenticate, async (req, res) => {
+    try {
+        const result = await db.query(
+            `SELECT e.*, u.name AS created_by_name
+             FROM employees e
+             LEFT JOIN users u ON e.created_by = u.id
+             ORDER BY e.designation, e.name_bn`
+        );
+        res.json({ success: true, data: result.rows });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+router.post('/employees-info', authenticate, adminOnly, async (req, res) => {
+    const { name_bn, name_en, designation, employee_id, join_date, nid, mobile, address, notes } = req.body;
+    if (!name_bn || !designation) return res.status(400).json({ success: false, message: 'নাম ও পদবি দিন।' });
+    try {
+        const result = await db.query(
+            `INSERT INTO employees (name_bn, name_en, designation, employee_id, join_date, nid, mobile, address, notes, created_by)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+            [name_bn, name_en||null, designation, employee_id||null, join_date||null, nid||null, mobile||null, address||null, notes||null, req.user.id]
+        );
+        res.json({ success: true, message: 'কর্মচারী যোগ হয়েছে।', data: result.rows[0] });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+router.put('/employees-info/:id', authenticate, adminOnly, async (req, res) => {
+    const { name_bn, name_en, designation, employee_id, join_date, nid, mobile, address, status, notes } = req.body;
+    try {
+        const result = await db.query(
+            `UPDATE employees SET name_bn=$1, name_en=$2, designation=$3, employee_id=$4,
+             join_date=$5, nid=$6, mobile=$7, address=$8, status=$9, notes=$10, updated_at=NOW()
+             WHERE id=$11 RETURNING *`,
+            [name_bn, name_en||null, designation, employee_id||null, join_date||null, nid||null, mobile||null, address||null, status||'active', notes||null, req.params.id]
+        );
+        if (!result.rows.length) return res.status(404).json({ success: false, message: 'পাওয়া যায়নি।' });
+        res.json({ success: true, message: 'আপডেট হয়েছে।', data: result.rows[0] });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
+router.delete('/employees-info/:id', authenticate, adminOnly, async (req, res) => {
+    try {
+        await db.query('DELETE FROM employees WHERE id=$1', [req.params.id]);
+        res.json({ success: true, message: 'কর্মচারী মুছে ফেলা হয়েছে।' });
+    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+});
+
 module.exports = router;
