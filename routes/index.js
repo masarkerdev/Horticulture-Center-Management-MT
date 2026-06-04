@@ -62,7 +62,7 @@ router.get('/dashboard/stats', authenticate, fyMiddleware, async (req, res) => {
             // Today — FY filter নেই
             today_revenue:  parseFloat(todaySales.rows[0].today_revenue || 0),
             today_invoices: parseInt(todaySales.rows[0].today_invoices || 0),
-            today_production: 0,
+            today_production: parseInt(prod.rows[0].total_produced || 0),
             // FY-ভিত্তিক stats
             monthly_revenue:  parseFloat(sales.rows[0].total_revenue || 0),
             total_invoices:   parseInt(sales.rows[0].total_invoices || 0),
@@ -173,17 +173,50 @@ router.post('/production/asexual', authenticate, canProduce, createAsexualBatch)
 router.post('/production/:id/update', authenticate, canProduce, async (req, res) => {
     const { id } = req.params;
     const fields = req.body;
+    const client = await db.pool.connect();
     try {
+        await client.query('BEGIN');
+
+        // পুরানো batch data নাও
+        const oldBatch = await client.query('SELECT * FROM production_batches WHERE id=$1', [id]);
+        if (!oldBatch.rows.length) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ success: false, message: 'ব্যাচ পাওয়া যায়নি।' });
+        }
+        const old = oldBatch.rows[0];
+
         const setClauses = []; const values = []; let idx = 1;
         const allowed = ['produced_quantity','success_quantity','failed_quantity','seed_source','seed_quantity','sowing_date','germination_date','germination_percent','propagation_date','success_percent','remarks','status','available_quantity'];
         for (const key of allowed) {
             if (fields[key] !== undefined) { setClauses.push(`${key} = $${idx++}`); values.push(fields[key]); }
         }
-        if (setClauses.length === 0) return res.json({ success: true, message: 'কিছু পরিবর্তন নেই।' });
+        if (setClauses.length === 0) {
+            await client.query('ROLLBACK');
+            return res.json({ success: true, message: 'কিছু পরিবর্তন নেই।' });
+        }
         values.push(id);
-        const result = await db.query(`UPDATE production_batches SET ${setClauses.join(', ')} WHERE id = $${idx} RETURNING *`, values);
+        const result = await client.query(
+            `UPDATE production_batches SET ${setClauses.join(', ')} WHERE id = $${idx} RETURNING *`,
+            values
+        );
+
+        // ✅ produced_quantity পরিবর্তন হলে current_stock sync করো
+        const newProduced = parseInt(fields.produced_quantity);
+        const oldProduced = parseInt(old.produced_quantity || 0);
+        if (!isNaN(newProduced) && newProduced !== oldProduced && old.seedling_id) {
+            const diff = newProduced - oldProduced;
+            await client.query(
+                'UPDATE seedlings SET current_stock = GREATEST(0, current_stock + $1) WHERE id = $2',
+                [diff, old.seedling_id]
+            );
+        }
+
+        await client.query('COMMIT');
         res.json({ success: true, message: 'ব্যাচ আপডেট হয়েছে।', data: result.rows[0] });
-    } catch (err) { res.status(500).json({ success: false, error: err.message }); }
+    } catch (err) {
+        await client.query('ROLLBACK');
+        res.status(500).json({ success: false, error: err.message });
+    } finally { client.release(); }
 });
 
 // ============================================================
