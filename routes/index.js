@@ -47,7 +47,18 @@ router.get('/dashboard/stats', authenticate, fyMiddleware, async (req, res) => {
         const [sales, todaySales, prod, stock, damages, lowStock, recentSales] = await Promise.all([
             db.query(`SELECT COUNT(*) AS total_invoices, COALESCE(SUM(total_amount),0) AS total_revenue, COALESCE(SUM(CASE WHEN payment_status='due' THEN total_amount ELSE 0 END),0) AS due_amount FROM sales WHERE sale_date BETWEEN $1 AND $2`, [fyStart, fyEnd]),
             db.query(`SELECT COALESCE(SUM(total_amount),0) AS today_revenue, COUNT(*) AS today_invoices FROM sales WHERE sale_date=CURRENT_DATE`),
-            db.query(`SELECT COUNT(*) AS total_batches, COALESCE(SUM(produced_quantity),0) AS total_produced, COALESCE(SUM(success_quantity),0) AS total_success, COALESCE(SUM(failed_quantity),0) AS total_failed, COALESCE(AVG(CASE WHEN success_percent>0 THEN success_percent END),0) AS avg_success, COUNT(CASE WHEN status='active' THEN 1 END) AS active_batches FROM production_batches WHERE sowing_date BETWEEN $1 AND $2`, [fyStart, fyEnd]),
+            db.query(`SELECT COUNT(*) AS total_batches,
+                      COALESCE(SUM(CASE WHEN production_type='seed' THEN produced_quantity ELSE COALESCE(success_quantity,produced_quantity) END),0) AS total_produced,
+                      COALESCE(SUM(success_quantity),0) AS total_success,
+                      COALESCE(SUM(failed_quantity),0) AS total_failed,
+                      COALESCE(AVG(CASE WHEN success_percent>0 THEN success_percent END),0) AS avg_success,
+                      COUNT(CASE WHEN status='active' THEN 1 END) AS active_batches
+                      FROM production_batches
+                      WHERE (
+                          (sowing_date IS NOT NULL AND sowing_date BETWEEN $1 AND $2)
+                          OR (sowing_date IS NULL AND propagation_date IS NOT NULL AND propagation_date BETWEEN $1 AND $2)
+                          OR (sowing_date IS NULL AND propagation_date IS NULL AND DATE(created_at) BETWEEN $1 AND $2)
+                      )`, [fyStart, fyEnd]),
             db.query(`SELECT COUNT(*) AS total_species, COALESCE(SUM(current_stock),0) AS total_stock, COALESCE(SUM(current_stock*unit_price),0) AS stock_value FROM seedlings WHERE is_active=TRUE`),
             db.query(`SELECT COALESCE(SUM(quantity),0) AS total_damaged FROM damages WHERE damage_date BETWEEN $1 AND $2`, [fyStart, fyEnd]),
             db.query(`SELECT s.name_bn, s.seedling_code, s.current_stock, s.min_stock_alert FROM seedlings s WHERE s.is_active=TRUE AND s.current_stock<=s.min_stock_alert ORDER BY s.current_stock ASC LIMIT 5`),
