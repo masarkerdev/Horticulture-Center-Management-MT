@@ -243,54 +243,45 @@ router.post('/mother-plants', authenticate, canProduce, async (req, res) => {
 // ============================================================
 router.get ('/stock', authenticate, async (req, res) => {
     try {
-        const [stockData, obData, prodData, saleData, dmgData] = await Promise.all([
-            // seedlings থেকে সরাসরি — id নিশ্চিত থাকবে
-            db.query(`
-                SELECT s.id, s.name_bn, s.variety, s.seedling_code, s.unit_price,
-                       s.category_id, s.current_stock, s.min_stock_alert,
-                       c.name_bn AS category_bn,
-                       CASE WHEN s.current_stock <= COALESCE(s.min_stock_alert,0) THEN true ELSE false END AS is_low_stock
-                FROM seedlings s
-                LEFT JOIN categories c ON s.category_id = c.id
-                WHERE s.is_active = true
-                ORDER BY s.name_bn
-            `),
+        const result = await db.query(`
+            SELECT
+                s.id, s.name_bn, s.variety, s.seedling_code,
+                s.unit_price, s.category_id, s.current_stock, s.min_stock_alert,
+                c.name_bn AS category_bn,
+                CASE WHEN s.current_stock <= COALESCE(s.min_stock_alert, 0)
+                     THEN true ELSE false END AS is_low_stock,
 
-            // প্রারম্ভিক স্টক
-            db.query(`SELECT seedling_id, COALESCE(SUM(quantity),0) AS total_opening
-                      FROM stock_transactions WHERE txn_type='opening_balance'
-                      GROUP BY seedling_id`),
+                COALESCE((
+                    SELECT SUM(t.quantity)
+                    FROM stock_transactions t
+                    WHERE t.seedling_id = s.id AND t.txn_type = 'opening_balance'
+                ), 0) AS opening_balance,
 
-            // মোট উৎপাদিত
-            db.query(`SELECT seedling_id, COALESCE(SUM(produced_quantity),0) AS total_produced
-                      FROM production_batches WHERE seedling_id IS NOT NULL
-                      GROUP BY seedling_id`),
+                COALESCE((
+                    SELECT SUM(pb.produced_quantity)
+                    FROM production_batches pb
+                    WHERE pb.seedling_id = s.id
+                ), 0) AS total_produced,
 
-            // মোট বিক্রয়
-            db.query(`SELECT si.seedling_id, COALESCE(SUM(si.quantity),0) AS total_sale
-                      FROM sales_items si
-                      JOIN sales s ON si.sale_id = s.id
-                      GROUP BY si.seedling_id`),
+                COALESCE((
+                    SELECT SUM(si.quantity)
+                    FROM sales_items si
+                    JOIN sales sl ON si.sale_id = sl.id
+                    WHERE si.seedling_id = s.id
+                ), 0) AS total_sale,
 
-            // মোট ক্ষতি
-            db.query(`SELECT seedling_id, COALESCE(SUM(quantity),0) AS total_damage
-                      FROM damages
-                      GROUP BY seedling_id`)
-        ]);
+                COALESCE((
+                    SELECT SUM(d.quantity)
+                    FROM damages d
+                    WHERE d.seedling_id = s.id
+                ), 0) AS total_damage
 
-        const obMap   = {}; obData.rows.forEach(r   => { obMap[+r.seedling_id]   = parseInt(r.total_opening  || 0); });
-        const prodMap = {}; prodData.rows.forEach(r  => { prodMap[+r.seedling_id] = parseInt(r.total_produced || 0); });
-        const saleMap = {}; saleData.rows.forEach(r  => { saleMap[+r.seedling_id] = parseInt(r.total_sale     || 0); });
-        const dmgMap  = {}; dmgData.rows.forEach(r   => { dmgMap[+r.seedling_id]  = parseInt(r.total_damage   || 0); });
-
-        const data = stockData.rows.map(s => ({
-            ...s,
-            opening_balance: obMap[+s.id]  || 0,
-            total_produced:  prodMap[+s.id] || 0,
-            total_sale:      saleMap[+s.id] || 0,
-            total_damage:    dmgMap[+s.id]  || 0,
-        }));
-        res.json({ success: true, data });
+            FROM seedlings s
+            LEFT JOIN categories c ON s.category_id = c.id
+            WHERE s.is_active = true
+            ORDER BY s.name_bn
+        `);
+        res.json({ success: true, data: result.rows });
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 router.get ('/stock/ledger',     authenticate, fyMiddleware, async (req, res) => {
