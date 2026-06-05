@@ -278,17 +278,17 @@ router.get ('/stock', authenticate, async (req, res) => {
                       GROUP BY seedling_id`)
         ]);
 
-        const obMap   = {}; obData.rows.forEach(r   => { obMap[r.seedling_id]   = parseInt(r.total_opening  || 0); });
-        const prodMap = {}; prodData.rows.forEach(r  => { prodMap[r.seedling_id] = parseInt(r.total_produced || 0); });
-        const saleMap = {}; saleData.rows.forEach(r  => { saleMap[r.seedling_id] = parseInt(r.total_sale     || 0); });
-        const dmgMap  = {}; dmgData.rows.forEach(r   => { dmgMap[r.seedling_id]  = parseInt(r.total_damage   || 0); });
+        const obMap   = {}; obData.rows.forEach(r   => { obMap[+r.seedling_id]   = parseInt(r.total_opening  || 0); });
+        const prodMap = {}; prodData.rows.forEach(r  => { prodMap[+r.seedling_id] = parseInt(r.total_produced || 0); });
+        const saleMap = {}; saleData.rows.forEach(r  => { saleMap[+r.seedling_id] = parseInt(r.total_sale     || 0); });
+        const dmgMap  = {}; dmgData.rows.forEach(r   => { dmgMap[+r.seedling_id]  = parseInt(r.total_damage   || 0); });
 
         const data = stockData.rows.map(s => ({
             ...s,
-            opening_balance: obMap[s.id]  || 0,
-            total_produced:  prodMap[s.id] || 0,
-            total_sale:      saleMap[s.id] || 0,
-            total_damage:    dmgMap[s.id]  || 0,
+            opening_balance: obMap[+s.id]  || 0,
+            total_produced:  prodMap[+s.id] || 0,
+            total_sale:      saleMap[+s.id] || 0,
+            total_damage:    dmgMap[+s.id]  || 0,
         }));
         res.json({ success: true, data });
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
