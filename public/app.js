@@ -1995,23 +1995,26 @@ async function lBatch(isRetry = false) {
 function editBatch(b) {
   document.getElementById("pMt").value = b.production_type || "seed";
   togP();
-  document.getElementById("pSd").value = b.seedling_id || "";
-  if (b.production_type === "seed") {
-    document.getElementById("pSrc").value = b.seed_source || "";
-    document.getElementById("pSQ").value = b.seed_quantity || 0;
-    document.getElementById("pSw").value = fmtDateInput(b.sowing_date); // ✅ তারিখ সঠিক ফরমেটে
-    document.getElementById("pPQ").value = b.produced_quantity || 0;
-  } else {
-    document.getElementById("pMP").value = b.mother_plant_id || "";
-    document.getElementById("pPD").value = fmtDateInput(b.propagation_date); // ✅ তারিখ সঠিক ফরমেটে
-    document.getElementById("pAQ").value = b.produced_quantity || 0;
-    document.getElementById("pSu").value = b.success_quantity || 0;
-  }
-  document.getElementById("pRm").value = b.remarks || "";
-  document.getElementById("mProd").dataset.editId = b.id; // ✅ ID সেট করুন
-  document.querySelector("#mProd .mh h3").textContent =
-    `ব্যাচ সম্পাদনা — ${b.batch_code}`;
-  oM("mProd");
+  // Modal খোলো — কিন্তু loadDD শেষ হওয়ার পর values set করো
+  document.getElementById("mProd").classList.add("open");
+  loadDD().then(() => {
+    document.getElementById("pSd").value = b.seedling_id || "";
+    if (b.production_type === "seed") {
+      document.getElementById("pSrc").value = b.seed_source || "";
+      document.getElementById("pSQ").value = b.seed_quantity || 0;
+      document.getElementById("pSw").value = fmtDateInput(b.sowing_date);
+      document.getElementById("pPQ").value = b.produced_quantity || 0;
+    } else {
+      document.getElementById("pMP").value = b.mother_plant_id || "";
+      document.getElementById("pPD").value = fmtDateInput(b.propagation_date);
+      document.getElementById("pAQ").value = b.produced_quantity || 0;
+      document.getElementById("pSu").value = b.success_quantity || 0;
+    }
+    document.getElementById("pRm").value = b.remarks || "";
+    document.getElementById("mProd").dataset.editId = b.id;
+    document.querySelector("#mProd .mh h3").textContent =
+      `ব্যাচ সম্পাদনা — ${b.batch_code}`;
+  });
 }
 
 // EDIT SALE

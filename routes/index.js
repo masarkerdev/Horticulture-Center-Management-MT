@@ -151,9 +151,12 @@ router.get('/production', authenticate, fyMiddleware, async (req, res) => {
             `SELECT pb.*,
                     s.name_bn AS seedling_bn,
                     s.variety AS seedling_variety,
-                    s.seedling_code
+                    s.seedling_code,
+                    mp.variety AS mother_variety,
+                    mp.mp_code
              FROM production_batches pb
              LEFT JOIN seedlings s ON pb.seedling_id=s.id
+             LEFT JOIN mother_plants mp ON pb.mother_plant_id=mp.id
              WHERE (
                 (pb.sowing_date IS NOT NULL AND pb.sowing_date BETWEEN $1 AND $2)
                 OR
@@ -255,26 +258,31 @@ router.get ('/stock', authenticate, async (req, res) => {
                     SELECT SUM(t.quantity)
                     FROM stock_transactions t
                     WHERE t.seedling_id = s.id AND t.txn_type = 'opening_balance'
-                ), 0) AS opening_balance,
+                ), 0)::int AS opening_balance,
 
                 COALESCE((
-                    SELECT SUM(pb.produced_quantity)
+                    SELECT SUM(
+                        CASE WHEN pb.production_type = 'seed'
+                             THEN pb.produced_quantity
+                             ELSE COALESCE(pb.success_quantity, pb.produced_quantity)
+                        END
+                    )
                     FROM production_batches pb
                     WHERE pb.seedling_id = s.id
-                ), 0) AS total_produced,
+                ), 0)::int AS total_produced,
 
                 COALESCE((
                     SELECT SUM(si.quantity)
                     FROM sales_items si
                     JOIN sales sl ON si.sale_id = sl.id
                     WHERE si.seedling_id = s.id
-                ), 0) AS total_sale,
+                ), 0)::int AS total_sale,
 
                 COALESCE((
                     SELECT SUM(d.quantity)
                     FROM damages d
                     WHERE d.seedling_id = s.id
-                ), 0) AS total_damage
+                ), 0)::int AS total_damage
 
             FROM seedlings s
             LEFT JOIN categories c ON s.category_id = c.id
