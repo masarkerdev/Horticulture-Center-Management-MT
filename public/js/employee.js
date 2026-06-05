@@ -81,9 +81,9 @@ function injectEmpPage() {
             <div class="tw">
               <table>
                 <thead><tr>
-                  <th>#</th><th>নাম</th><th>যোগদান</th><th>মোবাইল</th><th>NID</th><th>ঠিকানা</th><th>অবস্থা</th><th>কার্যক্রম</th>
+                  <th>#</th><th>নাম</th><th>শ্রমিকের ধরন</th><th>যোগদান</th><th>মোবাইল</th><th>NID</th><th>ঠিকানা</th><th>অবস্থা</th><th>কার্যক্রম</th>
                 </tr></thead>
-                <tbody id="empTempTbl"><tr><td colspan="8" class="lt">লোড হচ্ছে...</td></tr></tbody>
+                <tbody id="empTempTbl"><tr><td colspan="9" class="lt">লোড হচ্ছে...</td></tr></tbody>
               </table>
             </div>
           </div>
@@ -131,7 +131,14 @@ function injectEmpPage() {
                 <label>ঠিকানা</label>
                 <textarea id="empAddr" class="fc" rows="2" placeholder="স্থায়ী ঠিকানা"></textarea>
               </div>
-              <div class="fg" style="grid-column:1/-1">
+              <div class="fg" id="empWorkerTypeBox">
+                <label>শ্রমিকের ধরন</label>
+                <select id="empWorkerType" class="fc">
+                  <option value="নিয়মিত">নিয়মিত শ্রমিক</option>
+                  <option value="অনিয়মিত">অনিয়মিত শ্রমিক</option>
+                </select>
+              </div>
+              <div class="fg">
                 <label>অবস্থা</label>
                 <select id="empStatus" class="fc">
                   <option value="active">কর্মরত</option>
@@ -261,6 +268,7 @@ function renderTempTable(data, isAdmin) {
     el.innerHTML = data.map((e, i) => `<tr>
       <td style="color:var(--tm)">${toBnNum(i+1)}</td>
       <td><strong>${e.name_bn}</strong>${e.name_en ? `<br><span style="font-size:11px;color:var(--tm)">${e.name_en}</span>` : ''}</td>
+      <td><span class="b ${e.worker_type === 'নিয়মিত' ? 'bg' : 'ba'}" style="font-size:11px">${e.worker_type || '—'}</span></td>
       <td>${e.join_date ? fmtDMY(e.join_date) : '—'}</td>
       <td>${e.mobile || '—'}</td>
       <td style="color:var(--tm)">${e.nid || '—'}</td>
@@ -286,15 +294,19 @@ function openEmpModal(type = 'permanent') {
 
     // পদবি dropdown — type অনুযায়ী
     const desigSel = document.getElementById('empDesig');
+    const workerTypeBox = document.getElementById('empWorkerTypeBox');
     if (type === 'permanent') {
         desigSel.innerHTML = `<option value="">-- পদ নির্বাচন করুন --</option>${PERM_DESIG_OPTIONS}`;
         document.getElementById('empDesigBox').style.display = '';
         document.getElementById('empId2').closest('.fg').style.display = '';
+        if (workerTypeBox) workerTypeBox.style.display = 'none';
     } else {
         desigSel.innerHTML = TEMP_DESIG_OPTIONS;
         desigSel.value = 'সাময়িক শ্রমিক';
         document.getElementById('empDesigBox').style.display = 'none';
         document.getElementById('empId2').closest('.fg').style.display = 'none';
+        if (workerTypeBox) workerTypeBox.style.display = '';
+        document.getElementById('empWorkerType').value = 'নিয়মিত';
     }
     document.getElementById('mEmp').classList.add('open');
 }
@@ -314,6 +326,9 @@ function editEmp(e) {
     document.getElementById('empAddr').value    = e.address || '';
     document.getElementById('empStatus').value  = e.status || 'active';
     document.getElementById('empNotes').value   = e.notes || '';
+    if (type === 'temporary') {
+        document.getElementById('empWorkerType').value = e.worker_type || 'নিয়মিত';
+    }
 }
 
 async function saveEmp() {
@@ -324,6 +339,7 @@ async function saveEmp() {
         name_en:     document.getElementById('empNE').value.trim(),
         designation: type === 'temporary' ? 'সাময়িক শ্রমিক' : document.getElementById('empDesig').value,
         staff_type:  type,
+        worker_type: type === 'temporary' ? document.getElementById('empWorkerType').value : null,
         employee_id: document.getElementById('empId2').value.trim(),
         join_date:   document.getElementById('empJoin').value,
         nid:         document.getElementById('empNid').value.trim(),

@@ -930,26 +930,26 @@ router.get('/employees-info', authenticate, async (req, res) => {
 });
 
 router.post('/employees-info', authenticate, adminOnly, async (req, res) => {
-    const { name_bn, name_en, designation, staff_type, employee_id, join_date, nid, mobile, address, notes } = req.body;
+    const { name_bn, name_en, designation, staff_type, worker_type, employee_id, join_date, nid, mobile, address, notes } = req.body;
     if (!name_bn || !designation) return res.status(400).json({ success: false, message: 'নাম ও পদবি দিন।' });
     try {
         const result = await db.query(
-            `INSERT INTO employees (name_bn, name_en, designation, staff_type, employee_id, join_date, nid, mobile, address, notes, created_by)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
-            [name_bn, name_en||null, designation, staff_type||'permanent', employee_id||null, join_date||null, nid||null, mobile||null, address||null, notes||null, req.user.id]
+            `INSERT INTO employees (name_bn, name_en, designation, staff_type, worker_type, employee_id, join_date, nid, mobile, address, notes, created_by)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
+            [name_bn, name_en||null, designation, staff_type||'permanent', worker_type||null, employee_id||null, join_date||null, nid||null, mobile||null, address||null, notes||null, req.user.id]
         );
         res.json({ success: true, message: 'কর্মচারী যোগ হয়েছে।', data: result.rows[0] });
     } catch (err) { res.status(500).json({ success: false, error: err.message }); }
 });
 
 router.put('/employees-info/:id', authenticate, adminOnly, async (req, res) => {
-    const { name_bn, name_en, designation, employee_id, join_date, nid, mobile, address, status, notes } = req.body;
+    const { name_bn, name_en, designation, staff_type, worker_type, employee_id, join_date, nid, mobile, address, status, notes } = req.body;
     try {
         const result = await db.query(
-            `UPDATE employees SET name_bn=$1, name_en=$2, designation=$3, employee_id=$4,
-             join_date=$5, nid=$6, mobile=$7, address=$8, status=$9, notes=$10, updated_at=NOW()
-             WHERE id=$11 RETURNING *`,
-            [name_bn, name_en||null, designation, employee_id||null, join_date||null, nid||null, mobile||null, address||null, status||'active', notes||null, req.params.id]
+            `UPDATE employees SET name_bn=$1, name_en=$2, designation=$3, staff_type=$4, worker_type=$5,
+             employee_id=$6, join_date=$7, nid=$8, mobile=$9, address=$10, status=$11, notes=$12, updated_at=NOW()
+             WHERE id=$13 RETURNING *`,
+            [name_bn, name_en||null, designation, staff_type||'permanent', worker_type||null, employee_id||null, join_date||null, nid||null, mobile||null, address||null, status||'active', notes||null, req.params.id]
         );
         if (!result.rows.length) return res.status(404).json({ success: false, message: 'পাওয়া যায়নি।' });
         res.json({ success: true, message: 'আপডেট হয়েছে।', data: result.rows[0] });
