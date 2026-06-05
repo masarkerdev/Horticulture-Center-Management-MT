@@ -2,22 +2,59 @@
 // EMPLOYEE — জনবল তালিকা
 // ============================================================
 
-// মঞ্জুরিকৃত স্থায়ী পদ ও সংখ্যা
-const SANCTIONED_POSTS = [
-    { designation: 'উদ্যানতত্ত্ববিদ',                          sanctioned: 1 },
-    { designation: 'উপসহকারী উদ্যান কর্মকর্তা',               sanctioned: 3 },
-    { designation: 'স্টোর কিপার',                               sanctioned: 1 },
-    { designation: 'উচ্চমান সহকারী কাম হিসাবরক্ষক',           sanctioned: 1 },
-    { designation: 'অফিস সহকারী কাম কম্পিউটার মুদ্রাক্ষরিক', sanctioned: 1 },
-    { designation: 'কুক',                                        sanctioned: 1 },
-    { designation: 'ড্রাইভার',                                   sanctioned: 1 },
-    { designation: 'ফার্মলেবার',                                 sanctioned: 8 },
-    { designation: 'এমএলএসএস',                                  sanctioned: 1 },
-    { designation: 'গার্ড',                                      sanctioned: 3 },
-];
+// তিনটি ক্যাটাগরির মঞ্জুরিকৃত পদ
+const SANCTIONED_BY_CATEGORY = {
+    'A': [
+        { designation: 'উপপরিচালক',                                  sanctioned: 1 },
+        { designation: 'উদ্যানতত্ত্ববিদ',                            sanctioned: 1 },
+        { designation: 'উপসহকারী উদ্যান কর্মকর্তা',                 sanctioned: 4 },
+        { designation: 'স্টোর কিপার',                                sanctioned: 1 },
+        { designation: 'উচ্চমান সহকারী কাম হিসাবরক্ষক',            sanctioned: 1 },
+        { designation: 'অফিস সহকারী কাম কম্পিউটার মুদ্রাক্ষরিক',  sanctioned: 1 },
+        { designation: 'কুক',                                         sanctioned: 1 },
+        { designation: 'ড্রাইভার',                                    sanctioned: 1 },
+        { designation: 'ট্রাক্টর/পাওয়ার টিলার ড্রাইভার',           sanctioned: 1 },
+        { designation: 'ফার্মলেবার',                                  sanctioned: 16 },
+        { designation: 'এমএলএসএস',                                   sanctioned: 1 },
+        { designation: 'গার্ড',                                       sanctioned: 4 },
+    ],
+    'B': [
+        { designation: 'উদ্যানতত্ত্ববিদ',                            sanctioned: 1 },
+        { designation: 'উপসহকারী উদ্যান কর্মকর্তা',                 sanctioned: 3 },
+        { designation: 'স্টোর কিপার',                                sanctioned: 1 },
+        { designation: 'উচ্চমান সহকারী কাম হিসাবরক্ষক',            sanctioned: 1 },
+        { designation: 'অফিস সহকারী কাম কম্পিউটার মুদ্রাক্ষরিক',  sanctioned: 1 },
+        { designation: 'কুক',                                         sanctioned: 1 },
+        { designation: 'ড্রাইভার',                                    sanctioned: 1 },
+        { designation: 'ফার্মলেবার',                                  sanctioned: 8 },
+        { designation: 'এমএলএসএস',                                   sanctioned: 1 },
+        { designation: 'গার্ড',                                       sanctioned: 3 },
+    ],
+    'C': [
+        { designation: 'নার্সারি তত্ত্বাবধায়ক',                     sanctioned: 1 },
+        { designation: 'উপসহকারী উদ্যান কর্মকর্তা',                 sanctioned: 2 },
+        { designation: 'অফিস সহকারী কাম কম্পিউটার মুদ্রাক্ষরিক',  sanctioned: 1 },
+        { designation: 'ফার্মলেবার',                                  sanctioned: 5 },
+        { designation: 'এমএলএসএস',                                   sanctioned: 1 },
+        { designation: 'গার্ড',                                       sanctioned: 2 },
+    ],
+};
 
-const PERM_DESIG_OPTIONS  = SANCTIONED_POSTS.map(p => `<option value="${p.designation}">${p.designation}</option>`).join('');
-const TEMP_DESIG_OPTIONS  = `<option value="সাময়িক শ্রমিক">সাময়িক শ্রমিক</option>`;
+// বর্তমান ক্যাটাগরি settings থেকে নাও
+function getCenterCategory() {
+    const cfg = JSON.parse(localStorage.getItem('hc_cfg') || '{}');
+    return cfg.center_category || 'B'; // default B
+}
+
+function getSanctionedPosts() {
+    return SANCTIONED_BY_CATEGORY[getCenterCategory()] || SANCTIONED_BY_CATEGORY['B'];
+}
+
+function getDesigOptions() {
+    return getSanctionedPosts().map(p => `<option value="${p.designation}">${p.designation}</option>`).join('');
+}
+
+const TEMP_DESIG_OPTIONS = `<option value="সাময়িক শ্রমিক">সাময়িক শ্রমিক</option>`;
 
 let _empReady = false;
 
@@ -208,6 +245,7 @@ async function lEmp() {
 // ===== Summary Cards =====
 function renderEmpCards(perm, temp) {
     const el = document.getElementById('empCards'); if (!el) return;
+    const SANCTIONED_POSTS = getSanctionedPosts();
     const totalSanctioned = SANCTIONED_POSTS.reduce((s, p) => s + p.sanctioned, 0);
     const activePerm  = perm.filter(e => e.status === 'active').length;
     const vacancy     = totalSanctioned - activePerm;
@@ -222,6 +260,8 @@ function renderEmpCards(perm, temp) {
 // ===== Post Summary (স্থায়ী) =====
 function renderPostSummary(permStaff) {
     const el = document.getElementById('postSummary'); if (!el) return;
+    const SANCTIONED_POSTS = getSanctionedPosts();
+    const cat = getCenterCategory();
     const rows = SANCTIONED_POSTS.map(post => {
         const actual  = permStaff.filter(e => e.designation === post.designation && e.status === 'active').length;
         const vacancy = post.sanctioned - actual;
@@ -238,7 +278,7 @@ function renderPostSummary(permStaff) {
           </div>
         </div>`;
     });
-    el.innerHTML = `<div style="font-size:12px;font-weight:600;color:var(--tm);margin-bottom:8px">পদভিত্তিক অবস্থান</div>${rows.join('')}`;
+    el.innerHTML = `<div style="font-size:12px;font-weight:600;color:var(--tm);margin-bottom:8px">পদভিত্তিক অবস্থান — <span style="color:var(--g600)">ক্যাটাগরী-${cat}</span></div>${rows.join('')}`;
 }
 
 // ===== স্থায়ী কর্মচারী Table =====
@@ -296,7 +336,7 @@ function openEmpModal(type = 'permanent') {
     const desigSel = document.getElementById('empDesig');
     const workerTypeBox = document.getElementById('empWorkerTypeBox');
     if (type === 'permanent') {
-        desigSel.innerHTML = `<option value="">-- পদ নির্বাচন করুন --</option>${PERM_DESIG_OPTIONS}`;
+        desigSel.innerHTML = `<option value="">-- পদ নির্বাচন করুন --</option>${getDesigOptions()}`;
         document.getElementById('empDesigBox').style.display = '';
         document.getElementById('empId2').closest('.fg').style.display = '';
         if (workerTypeBox) workerTypeBox.style.display = 'none';

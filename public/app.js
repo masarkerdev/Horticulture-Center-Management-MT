@@ -2305,10 +2305,9 @@ function saveSettings() {
     low_stock: +document.getElementById("cfgLS").value || 20,
     currency: document.getElementById("cfgCur").value,
     language: document.getElementById("cfgLng").value,
+    center_category: document.getElementById("cfgCenterCat").value,
   };
   localStorage.setItem("hc_cfg", JSON.stringify(cfg));
-
-  // ✅ Sidebar Logo তাৎক্ষণিক আপডেট করুন
   applySiteConfig(cfg);
   toast("সেটিংস সংরক্ষণ হয়েছে ✅");
 }
@@ -2831,6 +2830,8 @@ async function testConn() {
 // Load saved settings on startup
 (function () {
   const c = JSON.parse(localStorage.getItem("hc_cfg") || "{}");
+  if (c.center_category)
+    document.getElementById("cfgCenterCat").value = c.center_category;
   if (c.name_bn) document.getElementById("cfgNB").value = c.name_bn;
   if (c.name_en) document.getElementById("cfgNE").value = c.name_en;
   if (c.low_stock) document.getElementById("cfgLS").value = c.low_stock;
