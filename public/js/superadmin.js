@@ -24,6 +24,28 @@ const SANCTIONED = {
   C: {'নার্সারি তত্ত্বাবধায়ক':1,'উপসহকারী কৃষি কর্মকর্তা':2,'অফিস সহকারী':1,'ফার্মলেবার':5,'এমএলএসএস':1,'গার্ড':2}
 };
 
+// ── SEARCH ──
+let searchQuery = '';
+
+function onSearch(val) {
+  searchQuery = val.trim().toLowerCase();
+  if (['overview','catA','catB','catC','compare','targetSummary','districtSummary'].includes(currentView)) {
+    renderView(currentView);
+  }
+}
+
+function filterStats(data) {
+  if (!searchQuery) return data;
+  return data.filter(c =>
+    c.name_bn?.toLowerCase().includes(searchQuery) ||
+    c.name_en?.toLowerCase().includes(searchQuery) ||
+    c.district?.toLowerCase().includes(searchQuery) ||
+    c.division?.toLowerCase().includes(searchQuery) ||
+    c.location?.toLowerCase().includes(searchQuery) ||
+    c.slug?.toLowerCase().includes(searchQuery)
+  );
+}
+
 if (token) showApp();
 
 function decodeToken(t) {
@@ -227,7 +249,7 @@ function renderView(view) {
 }
 
 function renderOverview(el) {
-  const ok = allStats.filter((c) => c.status === "ok");
+  const ok = filterStats(allStats.filter((c) => c.status === "ok"));
   const totalRev = ok.reduce((s, c) => s + c.total_revenue, 0);
   const todayRev = ok.reduce((s, c) => s + c.today_revenue, 0);
   const totalProd = ok.reduce((s, c) => s + c.total_produced, 0);
@@ -262,7 +284,7 @@ function renderOverview(el) {
 }
 
 function renderCategoryView(el, cat) {
-  const filtered = allStats.filter((c) => c.status === "ok" && c.category === cat);
+  const filtered = filterStats(allStats.filter((c) => c.status === "ok" && c.category === cat));
   if (!filtered.length) {
     el.innerHTML = '<div class="empty"><i class="ti ti-building-off"></i>এই category-তে কোনো center নেই।</div>';
     return;
@@ -672,7 +694,7 @@ function renderDetailTab(tab) {
 }
 
 function renderDistrictSummaryView(el) {
-  const ok = allStats.filter((c) => c.status === "ok");
+  const ok = filterStats(allStats.filter((c) => c.status === "ok"));
   if (!ok.length) { el.innerHTML = '<div class="empty">Data নেই।</div>'; return; }
   const byDistrict = {}, byDivision = {};
   ok.forEach((c) => {
@@ -746,7 +768,7 @@ function renderDistrictSummaryView(el) {
 }
 
 function renderTargetSummaryView(el) {
-  const ok = allStats.filter((c) => c.status === "ok");
+  const ok = filterStats(allStats.filter((c) => c.status === "ok"));
   if (!ok.length) { el.innerHTML = '<div class="empty">Data নেই।</div>'; return; }
   const curFY = new Date().getMonth() >= 6 ? new Date().getFullYear() : new Date().getFullYear() - 1;
   const months = ["","জানুয়ারি","ফেব্রুয়ারি","মার্চ","এপ্রিল","মে","জুন","জুলাই","আগস্ট","সেপ্টেম্বর","অক্টোবর","নভেম্বর","ডিসেম্বর"];
@@ -782,7 +804,7 @@ function renderTargetSummaryView(el) {
 }
 
 function renderCompareView(el) {
-  const ok = allStats.filter((c) => c.status === "ok");
+  const ok = filterStats(allStats.filter((c) => c.status === "ok"));
   if (!ok.length) { el.innerHTML = '<div class="empty"><i class="ti ti-chart-off"></i>Data নেই।</div>'; return; }
   const districts = [...new Set(ok.map((c) => c.district).filter(Boolean))].sort();
   const divisions = [...new Set(ok.map((c) => c.division).filter(Boolean))].sort();
