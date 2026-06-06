@@ -668,7 +668,7 @@ body {
   font-weight: 700;
 }
 .h-stat-l {
-  font-size: 12px;
+  font-size: 12px !important;
   color: #ffffff;
   margin-top: 2px;
 }
