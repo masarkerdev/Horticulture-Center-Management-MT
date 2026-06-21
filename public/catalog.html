@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>চারা অনুসন্ধান — হর্টিকালচার সেন্টার</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --green:#16a34a;--light:#f0fdf4;--border:#d1fae5;
+      --text:#1a2e1a;--muted:#6b7280;--white:#fff;
+      --card:#fff;--bg:#f9fafb;--accent:#15803d;
+    }
+    body{font-family:'Noto Serif Bengali','Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:16px}
+
+    /* HEADER */
+    .header{background:var(--green);color:#fff;padding:20px 16px 60px;text-align:center}
+    .header-logo{font-size:40px;margin-bottom:8px}
+    .header h1{font-size:22px;font-weight:700;margin-bottom:4px}
+    .header p{font-size:14px;opacity:.85}
+
+    /* SEARCH BOX */
+    .search-wrap{max-width:640px;margin:-36px auto 0;padding:0 16px;position:relative;z-index:10}
+    .search-box{background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.12);overflow:hidden}
+    .search-tabs{display:flex;border-bottom:2px solid var(--border)}
+    .stab{flex:1;padding:14px;background:none;border:none;font-size:15px;font-family:inherit;color:var(--muted);cursor:pointer;font-weight:500;transition:.2s}
+    .stab.active{color:var(--green);border-bottom:2px solid var(--green);margin-bottom:-2px;background:var(--light)}
+    .search-input-wrap{display:flex;align-items:center;padding:12px 16px;gap:10px}
+    .search-input-wrap i{font-size:20px;color:var(--muted)}
+    .search-input-wrap input{flex:1;border:none;outline:none;font-size:16px;font-family:inherit;color:var(--text);background:transparent}
+    .search-input-wrap input::placeholder{color:#aaa}
+    .search-btn{background:var(--green);color:#fff;border:none;border-radius:10px;padding:10px 20px;font-size:15px;font-family:inherit;cursor:pointer;font-weight:600;white-space:nowrap}
+
+    /* MAIN */
+    .main{max-width:900px;margin:28px auto;padding:0 16px 40px}
+
+    /* SECTION TITLE */
+    .sec-title{font-size:16px;font-weight:600;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+
+    /* CENTER CARDS */
+    .centers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-bottom:28px}
+    .center-card{background:var(--card);border:2px solid var(--border);border-radius:14px;padding:18px;cursor:pointer;transition:.2s}
+    .center-card:hover{border-color:var(--green);box-shadow:0 4px 16px rgba(22,163,74,.15);transform:translateY(-2px)}
+    .center-card.active{border-color:var(--green);background:var(--light)}
+    .cc-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .cc-icon{width:40px;height:40px;background:var(--light);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .cc-name{font-size:15px;font-weight:600;line-height:1.3}
+    .cc-loc{font-size:13px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:4px}
+    .cc-badge{display:inline-flex;align-items:center;gap:4px;background:var(--light);color:var(--green);font-size:12px;padding:3px 8px;border-radius:20px;font-weight:600;margin-top:8px}
+
+    /* SEEDLING TABLE */
+    .seedling-wrap{background:var(--card);border:2px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:20px}
+    .sw-header{background:var(--light);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+    .sw-header h3{font-size:16px;font-weight:700;color:var(--green)}
+    .sw-header span{font-size:13px;color:var(--muted)}
+    .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--green);font-size:14px;font-weight:600;cursor:pointer;margin-bottom:14px;border:none;background:none;font-family:inherit}
+
+    table{width:100%;border-collapse:collapse}
+    th{padding:11px 14px;text-align:left;font-size:13px;color:var(--muted);font-weight:600;background:#f9fafb;border-bottom:1px solid var(--border)}
+    td{padding:12px 14px;font-size:14px;border-bottom:1px solid #f0f0f0}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:#f9fdf9}
+    .stock-ok{color:var(--green);font-weight:700}
+    .stock-low{color:#f59e0b;font-weight:700}
+    .price-tag{color:var(--accent);font-weight:700}
+
+    /* SEARCH RESULTS */
+    .result-center{margin-bottom:20px}
+    .result-center-header{background:var(--green);color:#fff;padding:12px 16px;border-radius:12px 12px 0 0;display:flex;align-items:center;gap:8px}
+    .result-center-header i{font-size:18px}
+    .result-center-header h3{font-size:15px;font-weight:600}
+    .result-center-header span{font-size:12px;opacity:.8;margin-left:auto}
+    .result-table{border:2px solid var(--border);border-top:none;border-radius:0 0 12px 12px;overflow:hidden}
+
+    /* EMPTY */
+    .empty{text-align:center;padding:48px 20px;color:var(--muted)}
+    .empty i{font-size:48px;display:block;margin-bottom:12px;opacity:.3;color:var(--green)}
+    .empty p{font-size:15px}
+
+    /* SPINNER */
+    .spinner{display:inline-block;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loading{text-align:center;padding:32px}
+
+    /* MOBILE */
+    @media(max-width:600px){
+      .header h1{font-size:18px}
+      .centers-grid{grid-template-columns:1fr 1fr}
+      .cc-name{font-size:13px}
+      th,td{padding:9px 10px;font-size:13px}
+      .sw-header h3{font-size:14px}
+    }
+    @media(max-width:400px){
+      .centers-grid{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">🌿</div>
+  <h1>হর্টিকালচার চারা অনুসন্ধান</h1>
+  <p>কৃষি সম্প্রসারণ অধিদপ্তর — বাংলাদেশ</p>
+</div>
+
+<div class="search-wrap">
+  <div class="search-box">
+    <div class="search-tabs">
+      <button class="stab active" id="tab-center" onclick="switchTab('center')">
+        <i class="ti ti-building"></i> সেন্টার অনুযায়ী
+      </button>
+      <button class="stab" id="tab-search" onclick="switchTab('search')">
+        <i class="ti ti-search"></i> চারার নাম দিয়ে
+      </button>
+    </div>
+    <div class="search-input-wrap" id="search-input-row" style="display:none">
+      <i class="ti ti-plant"></i>
+      <input type="text" id="searchInput" placeholder="চারার নাম লিখুন... যেমন: আম, কলা, পেয়ারা"
+        onkeydown="if(event.key==='Enter') doSearch()"/>
+      <button class="search-btn" onclick="doSearch()">খুঁজুন</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div id="view-centers">
+    <div class="sec-title"><i class="ti ti-building"></i> সেন্টার বেছে নিন</div>
+    <div class="centers-grid" id="centersGrid">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+  <div id="view-seedlings" style="display:none">
+    <button class="back-link" onclick="showCenters()">
+      <i class="ti ti-arrow-left"></i> সব সেন্টার দেখুন
+    </button>
+    <div id="seedlingsContent"></div>
+  </div>
+
+  <div id="view-search" style="display:none">
+    <div id="searchResults"></div>
+  </div>
+</div>
+
+<script>
+const API = '/api/public';
+let currentTab = 'center';
+
+// ── TAB SWITCH ──
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-center').classList.toggle('active', tab === 'center');
+  document.getElementById('tab-search').classList.toggle('active', tab === 'search');
+  document.getElementById('search-input-row').style.display = tab === 'search' ? 'flex' : 'none';
+  if (tab === 'center') {
+    showCenters();
+  } else {
+    document.getElementById('view-centers').style.display = 'none';
+    document.getElementById('view-seedlings').style.display = 'none';
+    document.getElementById('view-search').style.display = 'block';
+    document.getElementById('searchResults').innerHTML = `
+      <div class="empty">
+        <i class="ti ti-search"></i>
+        <p>চারার নাম লিখে "খুঁজুন" চাপুন</p>
+      </div>`;
+    setTimeout(() => document.getElementById('searchInput').focus(), 100);
+  }
+}
+
+// ── LOAD CENTERS ──
+async function loadCenters() {
+  try {
+    const r = await fetch(`${API}/centers`);
+    const d = await r.json();
+    if (!d.success || !d.data.length) {
+      document.getElementById('centersGrid').innerHTML = '<div class="empty"><i class="ti ti-building-off"></i><p>কোনো সেন্টার পাওয়া যায়নি</p></div>';
+      return;
+    }
+    const catLabel = { A: 'উপপরিচালক', B: 'উদ্যানতত্ত্ববিদ', C: 'নার্সারি তত্ত্বাবধায়ক' };
+    document.getElementById('centersGrid').innerHTML = d.data.map(c => `
+      <div class="center-card" onclick="loadSeedlings('${c.slug}', '${c.name_bn}', '${c.location||''}')">
+        <div class="cc-top">
+          <div class="cc-icon">🌳</div>
+          <div>
+            <div class="cc-name">${c.name_bn}</div>
+            <div class="cc-loc"><i class="ti ti-map-pin" style="font-size:12px"></i>${c.location || c.district || '—'}</div>
+          </div>
+        </div>
+        <div class="cc-badge">
+          <i class="ti ti-category" style="font-size:12px"></i>
+          ক্যাটাগরি-${c.category || 'B'} • ${catLabel[c.category] || 'উদ্যানতত্ত্ববিদ'}
+        </div>
+      </div>`).join('');
+  } catch {
+    document.getElementById('centersGrid').innerHTML = '<div class="empty"><i class="ti ti-wifi-off"></i><p>সংযোগ সমস্যা হয়েছে</p></div>';
+  }
+}
+
+// ── LOAD SEEDLINGS FOR A CENTER ──
+async function loadSeedlings(slug, nameBn, location) {
+  document.getElementById('view-centers').style.display = 'none';
+  document.getElementById('view-search').style.display = 'none';
+  document.getElementById('view-seedlings').style.display = 'block';
+  document.getElementById('seedlingsContent').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+  try {
+    const r = await fetch(`${API}/center/${slug}/seedlings`);
+    const d = await r.json();
+    if (!d.success) throw new Error(d.message);
+
+    if (!d.data.length) {
+      document.getElementById('seedlingsContent').innerHTML = `
+        <div class="seedling-wrap">
+          <div class="sw-header"><h3>${nameBn}</h3><span>${location}</span></div>
+          <div class="empty"><i class="ti ti-plant-off"></i><p>এই সেন্টারে বর্তমানে কোনো চারা পাওয়া যাচ্ছে না</p></div>
+        </div>`;
+      return;
+    }
+
+    // Group by category
+    const byCategory = {};
+    d.data.forEach(s => {
+      const cat = s.category_bn || 'অন্যান্য';
+      if (!byCategory[cat]) byCategory[cat] = [];
+      byCategory[cat].push(s);
+    });
+
+    const rows = Object.entries(byCategory).map(([cat, items]) => `
+      <tr style="background:#f0fdf4">
+        <td colspan="4" style="font-weight:700;color:var(--green);padding:10px 14px;font-size:13px">
+          🌿 ${cat}
+        </td>
+      </tr>
+      ${items.map(s => `<tr>
+        <td>
+          <div style="font-weight:600">${s.name_bn}</div>
+          ${s.variety ? `<div style="font-size:12px;color:var(--muted)">${s.variety}</div>` : ''}
+        </td>
+        <td style="font-family:monospace;color:var(--muted);font-size:13px">${s.seedling_code || '—'}</td>
+        <td class="${s.current_stock > 50 ? 'stock-ok' : 'stock-low'}">${toBn(s.current_stock)} টি</td>
+        <td class="price-tag">৳ ${toBn(s.unit_price)} <span style="font-size:12px;font-weight:400;color:var(--muted)">/টি</span></td>
+      </tr>`).join('')}
+    `).join('');
+
+    document.getElementById('seedlingsContent').innerHTML = `
+      <div class="seedling-wrap">
+        <div class="sw-header">
+          <h3>🌳 ${nameBn}</h3>
+          <span><i class="ti ti-map-pin" style="font-size:12px"></i> ${location}</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>চারার নাম ও জাত</th>
+              <th>কোড</th>
+              <th>পরিমাণ</th>
+              <th>মূল্য</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </div>
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;gap:8px;align-items:center">
+        <i class="ti ti-info-circle" style="font-size:18px;flex-shrink:0"></i>
+        <span>চারা কিনতে সরাসরি সেন্টারে যোগাযোগ করুন। স্টক পরিবর্তনশীল।</span>
+      </div>`;
+  } catch {
+    document.getElementById('seedlingsContent').innerHTML = '<div class="empty"><i class="ti ti-wifi-off"></i><p>তথ্য লোড হয়নি, আবার চেষ্টা করুন</p></div>';
+  }
+}
+
+// ── SEARCH ACROSS ALL CENTERS ──
+async function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+
+  const el = document.getElementById('searchResults');
+  el.innerHTML = '<div class="loading"><div class="spinner"></div><p style="margin-top:12px;color:var(--muted)">খোঁজা হচ্ছে...</p></div>';
+
+  try {
+    const r = await fetch(`${API}/search?q=${encodeURIComponent(q)}`);
+    const d = await r.json();
+
+    if (!d.success || !d.data.length) {
+      el.innerHTML = `
+        <div class="empty">
+          <i class="ti ti-plant-off"></i>
+          <p>"${q}" নামের কোনো চারা পাওয়া যায়নি</p>
+          <p style="font-size:13px;margin-top:6px">অন্য নামে চেষ্টা করুন</p>
+        </div>`;
+      return;
+    }
+
+    el.innerHTML = `
+      <div class="sec-title" style="margin-bottom:14px">
+        <i class="ti ti-search"></i>
+        "${q}" — ${toBn(d.data.length)}টি সেন্টারে পাওয়া গেছে
+      </div>
+      ${d.data.map(center => `
+        <div class="result-center">
+          <div class="result-center-header">
+            <i class="ti ti-building"></i>
+            <h3>${center.name_bn}</h3>
+            <span><i class="ti ti-map-pin" style="font-size:11px"></i> ${center.location || center.district || ''}</span>
+          </div>
+          <div class="result-table">
+            <div style="overflow-x:auto">
+              <table>
+                <thead><tr>
+                  <th>চারার নাম ও জাত</th>
+                  <th>পরিমাণ</th>
+                  <th>মূল্য</th>
+                </tr></thead>
+                <tbody>
+                  ${center.seedlings.map(s => `<tr>
+                    <td>
+                      <div style="font-weight:600">${s.name_bn}</div>
+                      ${s.variety ? `<div style="font-size:12px;color:var(--muted)">${s.variety}</div>` : ''}
+                    </td>
+                    <td class="${s.current_stock > 50 ? 'stock-ok' : 'stock-low'}">${toBn(s.current_stock)} টি</td>
+                    <td class="price-tag">৳ ${toBn(s.unit_price)} /টি</td>
+                  </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>`).join('')}
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;gap:8px;align-items:center;margin-top:8px">
+        <i class="ti ti-info-circle" style="font-size:18px;flex-shrink:0"></i>
+        <span>চারা কিনতে সরাসরি সেন্টারে যোগাযোগ করুন। স্টক পরিবর্তনশীল।</span>
+      </div>`;
+  } catch {
+    el.innerHTML = '<div class="empty"><i class="ti ti-wifi-off"></i><p>সংযোগ সমস্যা হয়েছে</p></div>';
+  }
+}
+
+// ── HELPERS ──
+function showCenters() {
+  document.getElementById('view-centers').style.display = 'block';
+  document.getElementById('view-seedlings').style.display = 'none';
+  document.getElementById('view-search').style.display = 'none';
+}
+
+function toBn(n) {
+  return String(Math.round(n||0)).replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+}
+
+// ── INIT ──
+loadCenters();
+</script>
+</body>
+</html>
