@@ -12,6 +12,7 @@ app.use(cors({ origin: "*", credentials: true }));
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
+app.use("/api/public", require("./routes/public"));
 
 // ★ Tenant middleware
 app.use(tenantMiddleware);

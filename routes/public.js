@@ -125,5 +125,3 @@ router.get("/search", async (req, res) => {
 });
 
 module.exports = router;
-
-app.use("/api/public", require("./routes/public"));
