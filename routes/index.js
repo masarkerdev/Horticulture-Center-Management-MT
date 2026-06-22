@@ -209,12 +209,10 @@ router.delete("/categories/:id", authenticate, adminOnly, async (req, res) => {
       [req.params.id],
     );
     if (parseInt(used.rows[0].count) > 0)
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "এই ক্যাটাগরিতে চারা আছে — মুছা যাবে না।",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "এই ক্যাটাগরিতে চারা আছে — মুছা যাবে না।",
+      });
     await db.query("DELETE FROM categories WHERE id=$1", [req.params.id]);
     res.json({ success: true, message: "ক্যাটাগরি মুছে ফেলা হয়েছে।" });
   } catch (err) {
@@ -437,13 +435,11 @@ router.post("/mother-plants", authenticate, canProduce, async (req, res) => {
         req.user.id,
       ],
     );
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "মাদার প্ল্যান্ট যোগ হয়েছে।",
-        data: result.rows[0],
-      });
+    res.status(201).json({
+      success: true,
+      message: "মাদার প্ল্যান্ট যোগ হয়েছে।",
+      data: result.rows[0],
+    });
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }
@@ -1197,12 +1193,10 @@ router.put("/auth/update-profile", authenticate, async (req, res) => {
         [email, req.user.id],
       );
       if (exists.rows.length)
-        return res
-          .status(400)
-          .json({
-            success: false,
-            message: "এই ইমেইল আগে থেকে ব্যবহৃত হচ্ছে।",
-          });
+        return res.status(400).json({
+          success: false,
+          message: "এই ইমেইল আগে থেকে ব্যবহৃত হচ্ছে।",
+        });
     }
     let newHash = user.password;
     if (new_password && new_password.length >= 6)
@@ -2011,7 +2005,7 @@ router.get("/notices", authenticate, async (req, res) => {
       `SELECT id, title, content, priority, created_at, expires_at
        FROM notices
        WHERE is_active = true
-         AND (expires_at IS NULL OR expires_at > NOW())
+         AND (expires_at IS NULL OR expires_at::date >= CURRENT_DATE)
        ORDER BY created_at DESC LIMIT 10`,
     );
     res.json({ success: true, data: r.rows });
