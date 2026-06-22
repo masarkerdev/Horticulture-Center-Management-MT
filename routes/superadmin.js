@@ -961,8 +961,7 @@ router.post("/center/:slug/set-target", saAuth, async (req, res) => {
           `UPDATE targets
            SET target_quantity = $1,
                target_amount   = $2,
-               notes           = $3,
-               updated_at      = NOW()
+               notes           = $3
            WHERE target_type  = $4
              AND target_year  = $5
              AND target_month = $6`,
