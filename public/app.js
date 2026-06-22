@@ -3114,7 +3114,9 @@ async function delIncome(id) {
 async function lNotices() {
   try {
     const d = await api("/notices");
+    console.log("Notices:", d); // debug
     if (!d.success || !d.data.length) return;
+
     const priColor = {
       urgent: "#f85149",
       important: "#e3b341",
@@ -3125,6 +3127,7 @@ async function lNotices() {
       important: "🟡 গুরুত্বপূর্ণ",
       normal: "🔵 সাধারণ",
     };
+
     const html = `
       <div style="margin-bottom:20px">
         <div style="font-size:13px;font-weight:700;color:var(--tm);margin-bottom:10px;display:flex;align-items:center;gap:6px">
@@ -3144,16 +3147,18 @@ async function lNotices() {
           )
           .join("")}
       </div>`;
-    // Dashboard-এর শুরুতে যোগ করো
-    const dash = document.getElementById("pg-dash");
-    if (dash) {
+
+    const target = document.getElementById("dSt");
+    if (target && target.parentNode) {
       let noticeWrap = document.getElementById("dashNotices");
       if (!noticeWrap) {
         noticeWrap = document.createElement("div");
         noticeWrap.id = "dashNotices";
-        dash.insertBefore(noticeWrap, dash.firstChild);
+        target.parentNode.insertBefore(noticeWrap, target);
       }
       noticeWrap.innerHTML = html;
     }
-  } catch {}
+  } catch (e) {
+    console.error("lNotices error:", e);
+  }
 }
