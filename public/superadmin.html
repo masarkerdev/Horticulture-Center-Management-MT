@@ -271,6 +271,113 @@
 
     <div class="toast" id="toast"></div>
 
+    <!-- লক্ষ্যমাত্রা নির্ধারণ Modal — </body> এর আগে যোগ করো -->
+    <div class="modal" id="mSetTarget">
+      <div class="modal-box" style="max-width: 500px">
+        <div class="modal-hdr">
+          <h3>🎯 লক্ষ্যমাত্রা নির্ধারণ করুন</h3>
+          <button
+            class="close-btn"
+            onclick="
+              document.getElementById('mSetTarget').classList.remove('open')
+            "
+          >
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+
+        <!-- সেন্টার -->
+        <div class="fg">
+          <label>সেন্টার বেছে নিন</label>
+          <select id="tgCenter"></select>
+        </div>
+
+        <!-- ধরন ও সময় -->
+        <div class="fg-row">
+          <div class="fg">
+            <label>লক্ষ্যমাত্রার ধরন</label>
+            <select id="tgType2">
+              <option value="production">🌱 উৎপাদন</option>
+              <option value="sales">💰 বিক্রয়</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>সময়কাল</label>
+            <select id="tgPeriod2" onchange="toggleTgPeriod2()">
+              <option value="annual">বার্ষিক (অর্থবছর)</option>
+              <option value="monthly">মাসিক</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- অর্থবছর ও মাস -->
+        <div class="fg-row">
+          <div class="fg">
+            <label>অর্থবছর</label>
+            <select id="tgFY2"></select>
+          </div>
+          <div class="fg" id="tgMonthBox2" style="display: none">
+            <label>মাস</label>
+            <select id="tgMonth2">
+              <option value="1">জানুয়ারি</option>
+              <option value="2">ফেব্রুয়ারি</option>
+              <option value="3">মার্চ</option>
+              <option value="4">এপ্রিল</option>
+              <option value="5">মে</option>
+              <option value="6">জুন</option>
+              <option value="7">জুলাই</option>
+              <option value="8">আগস্ট</option>
+              <option value="9">সেপ্টেম্বর</option>
+              <option value="10">অক্টোবর</option>
+              <option value="11">নভেম্বর</option>
+              <option value="12">ডিসেম্বর</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- লক্ষ্য পরিমাণ -->
+        <div class="fg-row">
+          <div class="fg">
+            <label>উৎপাদন লক্ষ্য (টি)</label>
+            <input type="number" id="tgQty2" placeholder="যেমন: ৫০০০" min="0" />
+          </div>
+          <div class="fg">
+            <label>বিক্রয় লক্ষ্য (৳)</label>
+            <input
+              type="number"
+              id="tgAmt2"
+              placeholder="যেমন: ১০০০০০"
+              min="0"
+            />
+          </div>
+        </div>
+
+        <!-- মন্তব্য -->
+        <div class="fg">
+          <label>মন্তব্য (ঐচ্ছিক)</label>
+          <input
+            type="text"
+            id="tgNotes2"
+            placeholder="কোনো বিশেষ নির্দেশনা থাকলে লিখুন"
+          />
+        </div>
+
+        <div class="modal-footer">
+          <button
+            class="btn-cancel"
+            onclick="
+              document.getElementById('mSetTarget').classList.remove('open')
+            "
+          >
+            বাতিল
+          </button>
+          <button class="btn-save" onclick="saveSetTarget()">
+            <i class="ti ti-check"></i> সংরক্ষণ করুন
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="/js/superadmin.js"></script>
   </body>
 </html>

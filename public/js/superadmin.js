@@ -779,6 +779,7 @@ function renderTargetSummaryView(el) {
   const overallPct = totalMonthlyTarget > 0 ? Math.round((totalMonthlyAchieved / totalMonthlyTarget) * 100) : 0;
   const centersOnTrack = ok.filter((c) => c.monthly_prod_target > 0 && c.monthly_prod_achieved / c.monthly_prod_target >= 0.7).length;
   el.innerHTML = `
+    ${setTargetBtn}
     <div class="kpi-grid" style="margin-bottom:16px">
       <div class="kpi purple"><div class="kpi-label">অর্থবছরের মোট লক্ষ্যমাত্রা</div><div class="kpi-value">${fmtN(totalAnnual)}টি</div><div class="kpi-sub">FY ${curFY}-${curFY + 1}</div></div>
       <div class="kpi blue"><div class="kpi-label">চলতি মাসের লক্ষ্যমাত্রা</div><div class="kpi-value">${fmtN(totalMonthlyTarget)}টি</div><div class="kpi-sub">${months[curMonth]}</div></div>
@@ -1178,3 +1179,90 @@ function tlLabel(t) { return t === "green" ? "ভালো" : t === "yellow" ? "
 function typeLabel(t) { return {seed:"বীজ",cutting:"কাটিং",layering:"লেয়ারিং",grafting:"গ্রাফটিং",budding:"বাডিং",tissue_culture:"টিস্যু কালচার",purchase:"ক্রয়"}[t] || t; }
 function roleLabel(r) { return {admin:"Admin",manager:"Manager",production_officer:"Production",sales_operator:"Sales",viewer:"Viewer"}[r] || r; }
 function roleColor(r) { return {admin:"#7c3aed",manager:"#0ea5e9",production_officer:"#10b981",sales_operator:"#f59e0b",viewer:"#64748b"}[r] || "#64748b"; }
+
+
+// ══════════════════════════════════════════════
+// লক্ষ্যমাত্রা নির্ধারণ — Super Admin থেকে
+// ══════════════════════════════════════════════
+
+function openSetTargetModal() {
+  const sel = document.getElementById('tgCenter');
+  if (sel) {
+    sel.innerHTML = centers.map(c =>
+      `<option value="${c.slug}">${c.name_bn}</option>`
+    ).join('');
+  }
+  const now = new Date();
+  const curFY = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+  const fySel = document.getElementById('tgFY2');
+  if (fySel) {
+    fySel.innerHTML = [curFY, curFY-1, curFY-2].map(y =>
+      `<option value="${y}">FY ${toBn(y)}-${toBn(y+1)}</option>`
+    ).join('');
+  }
+  ['tgQty2','tgAmt2','tgNotes2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const t2 = document.getElementById('tgType2');
+  const p2 = document.getElementById('tgPeriod2');
+  if (t2) t2.value = 'production';
+  if (p2) { p2.value = 'annual'; toggleTgPeriod2(); }
+  document.getElementById('mSetTarget').classList.add('open');
+}
+
+function toggleTgPeriod2() {
+  const period = document.getElementById('tgPeriod2')?.value;
+  const box = document.getElementById('tgMonthBox2');
+  if (box) box.style.display = period === 'monthly' ? 'block' : 'none';
+}
+
+async function saveSetTarget() {
+  const slug  = document.getElementById('tgCenter')?.value;
+  const type  = document.getElementById('tgType2')?.value;
+  const period= document.getElementById('tgPeriod2')?.value;
+  const fy    = +document.getElementById('tgFY2')?.value;
+  const month = period === 'annual' ? 0 : +document.getElementById('tgMonth2')?.value;
+  const year  = period === 'annual' ? fy : (month >= 7 ? fy : fy + 1);
+  const qty   = +document.getElementById('tgQty2')?.value || 0;
+  const amt   = +document.getElementById('tgAmt2')?.value || 0;
+  const notes = document.getElementById('tgNotes2')?.value || '';
+
+  if (!slug) return showToast('সেন্টার বেছে নিন।');
+  if (!qty && !amt) return showToast('পরিমাণ বা বিক্রয়ের লক্ষ্য দিন।');
+
+  const centerName = centers.find(c => c.slug === slug)?.name_bn || slug;
+  const btn = document.querySelector('#mSetTarget .btn-save');
+  if (btn) { btn.textContent = 'সংরক্ষণ হচ্ছে...'; btn.disabled = true; }
+
+  try {
+    const r = await fetch(`${API}/center/${slug}/set-target`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({
+        target_type: type,
+        target_month: month,
+        target_year: year,
+        target_quantity: qty,
+        target_amount: amt,
+        notes
+      })
+    });
+    const d = await r.json();
+    if (d.success) {
+      showToast(d.message || `✅ ${centerName}-এর লক্ষ্যমাত্রা নির্ধারণ হয়েছে`);
+      document.getElementById('mSetTarget').classList.remove('open');
+      await loadAllStats(true);
+      renderView(currentView);
+    } else {
+      showToast(d.message || d.error || 'সমস্যা হয়েছে।');
+    }
+  } catch {
+    showToast('সংযোগ সমস্যা।');
+  } finally {
+    if (btn) { btn.textContent = 'সংরক্ষণ করুন'; btn.disabled = false; }
+  }
+}
