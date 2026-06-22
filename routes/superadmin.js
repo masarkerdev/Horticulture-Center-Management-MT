@@ -1146,7 +1146,7 @@ router.post("/center/:slug/set-target", saAuth, async (req, res) => {
       await queryTenant(
         tenant.db_url,
         `UPDATE targets SET target_quantity=$1, target_amount=$2, notes=$3
-         WHERE target_type=$4 AND target_year=$5 AND target_month=$6`,
+ WHERE target_type=$4 AND target_year=$5 AND target_month=$6`,
         [
           target_quantity || 0,
           target_amount || 0,
