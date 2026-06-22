@@ -909,7 +909,7 @@ router.get("/center/:slug/employees", saAuth, async (req, res) => {
 // routes/superadmin.js এর শেষে — module.exports এর আগে
 // ══════════════════════════════════════════════════════
 
-router.post("/center/:slug/set-target", authSA, async (req, res) => {
+router.post("/center/:slug/set-target", saAuth, async (req, res) => {
   try {
     const tenants = await getTenants();
     const tenant = tenants[req.params.slug];
@@ -1010,7 +1010,7 @@ router.post("/center/:slug/set-target", authSA, async (req, res) => {
 // routes/superadmin.js এর শেষে — module.exports এর আগে
 // ══════════════════════════════════════════════════════
 
-router.post("/center/:slug/set-target", authSA, async (req, res) => {
+router.post("/center/:slug/set-target", sa, async (req, res) => {
   try {
     const tenants = await getTenants();
     const tenant = tenants[req.params.slug];
