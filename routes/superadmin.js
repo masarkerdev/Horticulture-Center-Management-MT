@@ -1006,4 +1006,105 @@ router.post("/center/:slug/set-target", authSA, async (req, res) => {
   }
 });
 
+// ══════════════════════════════════════════════════════
+// routes/superadmin.js এর শেষে — module.exports এর আগে
+// ══════════════════════════════════════════════════════
+
+router.post("/center/:slug/set-target", authSA, async (req, res) => {
+  try {
+    const tenants = await getTenants();
+    const tenant = tenants[req.params.slug];
+    if (!tenant) {
+      return res
+        .status(404)
+        .json({ success: false, message: "সেন্টার পাওয়া যায়নি।" });
+    }
+
+    const {
+      target_type,
+      target_month,
+      target_year,
+      target_quantity,
+      target_amount,
+      notes,
+    } = req.body;
+
+    if (!target_type || !target_year) {
+      return res
+        .status(400)
+        .json({ success: false, message: "লক্ষ্যমাত্রার ধরন ও বছর দিন।" });
+    }
+
+    // Center-এর নিজস্ব DB-তে connect করো
+    const pool = new Pool({
+      connectionString: tenant.db_url,
+      ssl: { rejectUnauthorized: false },
+      max: 1,
+      connectionTimeoutMillis: 8000,
+    });
+
+    try {
+      const month = target_month || 0;
+
+      // আগে দেখো এই target আছে কিনা
+      const existing = await pool.query(
+        `SELECT id FROM targets
+         WHERE target_type = $1
+           AND target_year = $2
+           AND target_month = $3
+         LIMIT 1`,
+        [target_type, target_year, month],
+      );
+
+      if (existing.rows.length > 0) {
+        // থাকলে update করো
+        await pool.query(
+          `UPDATE targets
+           SET target_quantity = $1,
+               target_amount   = $2,
+               notes           = $3,
+               updated_at      = NOW()
+           WHERE target_type  = $4
+             AND target_year  = $5
+             AND target_month = $6`,
+          [
+            target_quantity || 0,
+            target_amount || 0,
+            notes || "",
+            target_type,
+            target_year,
+            month,
+          ],
+        );
+      } else {
+        // না থাকলে insert করো
+        await pool.query(
+          `INSERT INTO targets
+             (target_type, target_month, target_year, target_quantity, target_amount, notes)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [
+            target_type,
+            month,
+            target_year,
+            target_quantity || 0,
+            target_amount || 0,
+            notes || "",
+          ],
+        );
+      }
+
+      const centerName = tenant.name_bn || req.params.slug;
+      res.json({
+        success: true,
+        message: `${centerName}-এর লক্ষ্যমাত্রা নির্ধারণ হয়েছে ✅`,
+      });
+    } finally {
+      await pool.end();
+    }
+  } catch (err) {
+    console.error("set-target error:", err.message);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 module.exports = router;
