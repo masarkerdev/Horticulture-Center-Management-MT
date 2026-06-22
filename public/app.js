@@ -253,6 +253,7 @@ function showApp() {
   ["uav", "tav"].forEach((id) => (document.getElementById(id).textContent = i));
   applyRoleSidebar(); // ✅ Role অনুযায়ী sidebar সাজান
   lDash();
+  lNotices();
   startAutoRefresh();
   startInactivityWatch();
   if (ME.role === "admin") checkAdminNotif();
@@ -3107,4 +3108,52 @@ async function delIncome(id) {
       await lIncome();
     } else toast("সমস্যা", 1);
   });
+}
+
+// নোটিশ বোর্ড — Dashboard-এ দেখাবে
+async function lNotices() {
+  try {
+    const d = await api("/notices");
+    if (!d.success || !d.data.length) return;
+    const priColor = {
+      urgent: "#f85149",
+      important: "#e3b341",
+      normal: "#58a6ff",
+    };
+    const priLabel = {
+      urgent: "🔴 জরুরি",
+      important: "🟡 গুরুত্বপূর্ণ",
+      normal: "🔵 সাধারণ",
+    };
+    const html = `
+      <div style="margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--tm);margin-bottom:10px;display:flex;align-items:center;gap:6px">
+          <i class="ti ti-speakerphone" style="color:var(--a400)"></i> নোটিশ বোর্ড
+        </div>
+        ${d.data
+          .map(
+            (n) => `
+          <div style="background:var(--gr50);border:1px solid var(--bd);border-left:4px solid ${priColor[n.priority] || priColor.normal};border-radius:10px;padding:14px 16px;margin-bottom:8px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span style="font-size:11px;color:${priColor[n.priority] || priColor.normal};font-weight:600">${priLabel[n.priority] || priLabel.normal}</span>
+              <span style="font-size:11px;color:var(--tm);margin-left:auto">${fmtDMY(n.created_at)}</span>
+            </div>
+            <div style="font-size:14px;font-weight:600;margin-bottom:4px">${n.title}</div>
+            <div style="font-size:13px;color:var(--tp);line-height:1.7;white-space:pre-line">${n.content}</div>
+          </div>`,
+          )
+          .join("")}
+      </div>`;
+    // Dashboard-এর শুরুতে যোগ করো
+    const dash = document.getElementById("pg-dash");
+    if (dash) {
+      let noticeWrap = document.getElementById("dashNotices");
+      if (!noticeWrap) {
+        noticeWrap = document.createElement("div");
+        noticeWrap.id = "dashNotices";
+        dash.insertBefore(noticeWrap, dash.firstChild);
+      }
+      noticeWrap.innerHTML = html;
+    }
+  } catch {}
 }
