@@ -778,6 +778,7 @@ function renderTargetSummaryView(el) {
   const totalMonthlyAchieved = ok.reduce((s, c) => s + (c.monthly_prod_achieved || 0), 0);
   const overallPct = totalMonthlyTarget > 0 ? Math.round((totalMonthlyAchieved / totalMonthlyTarget) * 100) : 0;
   const centersOnTrack = ok.filter((c) => c.monthly_prod_target > 0 && c.monthly_prod_achieved / c.monthly_prod_target >= 0.7).length;
+  const setTargetBtn = userRole === 'director' ? `<div style="display:flex;justify-content:flex-end;margin-bottom:16px"><button class="h-btn primary" onclick="openSetTargetModal()"><i class="ti ti-target"></i> লক্ষ্যমাত্রা নির্ধারণ</button></div>` : '';
   el.innerHTML = `
     ${setTargetBtn}
     <div class="kpi-grid" style="margin-bottom:16px">
