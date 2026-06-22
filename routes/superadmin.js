@@ -1181,4 +1181,57 @@ router.post("/center/:slug/set-target", saAuth, async (req, res) => {
   }
 });
 
+// Notice Board
+router.get("/notices", saAuth, async (req, res) => {
+  try {
+    const r = await masterDb.query(
+      `SELECT * FROM notices WHERE is_active=true ORDER BY created_at DESC LIMIT 50`,
+    );
+    res.json({ success: true, data: r.rows });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.post("/notices", saAuth, async (req, res) => {
+  try {
+    const { title, content, priority, expires_at } = req.body;
+    if (!title || !content)
+      return res
+        .status(400)
+        .json({ success: false, message: "শিরোনাম ও বিষয়বস্তু দিন।" });
+    const r = await masterDb.query(
+      `INSERT INTO notices (title, content, priority, created_by, expires_at)
+       VALUES ($1,$2,$3,$4,$5) RETURNING *`,
+      [
+        title,
+        content,
+        priority || "normal",
+        req.saUser?.email || "director",
+        expires_at || null,
+      ],
+    );
+    res.json({
+      success: true,
+      message: "নোটিশ প্রকাশিত হয়েছে ✅",
+      data: r.rows[0],
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.delete("/notices/:id", saAuth, async (req, res) => {
+  try {
+    await masterDb.query(`UPDATE notices SET is_active=false WHERE id=$1`, [
+      req.params.id,
+    ]);
+    res.json({ success: true, message: "নোটিশ মুছে ফেলা হয়েছে।" });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// end of notice board routes
+
 module.exports = router;

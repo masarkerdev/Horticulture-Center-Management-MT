@@ -153,6 +153,11 @@
                 <i class="ti ti-users-group"></i> Admin পরিচালনা
                 <span class="badge" id="badge-admins">—</span>
               </button>
+
+              <button class="nav-item" onclick="navTo('notice', this)">
+                <i class="ti ti-speakerphone"></i>
+                <span>নোটিশ বোর্ড</span>
+              </button>
             </div>
           </nav>
 
@@ -377,6 +382,63 @@
         </div>
       </div>
     </div>
+
+    <!-- notification modal -->
+
+    <div class="modal" id="mNotice">
+      <div class="modal-box" style="max-width: 520px">
+        <div class="modal-hdr">
+          <h3>📢 নতুন নোটিশ</h3>
+          <button
+            class="close-btn"
+            onclick="
+              document.getElementById('mNotice').classList.remove('open')
+            "
+          >
+            <i class="ti ti-x"></i>
+          </button>
+        </div>
+        <div class="fg">
+          <label>শিরোনাম*</label>
+          <input type="text" id="nTitle" placeholder="নোটিশের শিরোনাম" />
+        </div>
+        <div class="fg">
+          <label>বিষয়বস্তু*</label>
+          <textarea
+            id="nContent"
+            style="min-height: 120px"
+            placeholder="নোটিশের বিস্তারিত লিখুন..."
+          ></textarea>
+        </div>
+        <div class="fg-row">
+          <div class="fg">
+            <label>অগ্রাধিকার</label>
+            <select id="nPriority">
+              <option value="normal">🔵 সাধারণ</option>
+              <option value="important">🟡 গুরুত্বপূর্ণ</option>
+              <option value="urgent">🔴 জরুরি</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>মেয়াদ শেষ (ঐচ্ছিক)</label>
+            <input type="date" id="nExpiry" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            class="btn-cancel"
+            onclick="
+              document.getElementById('mNotice').classList.remove('open')
+            "
+          >
+            বাতিল
+          </button>
+          <button class="btn-save" onclick="saveNotice()">প্রকাশ করুন</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- end of notification modal -->
 
     <script src="/js/superadmin.js"></script>
   </body>
