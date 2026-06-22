@@ -229,6 +229,7 @@ function navTo(view, btn) {
     districtSummary: "🗺️ জেলাভিত্তিক সারসংক্ষেপ",
     allCenters: "⚙️ সব Center পরিচালনা",
     adminMgmt: "👥 Admin পরিচালনা",
+    notice: "📢 নোটিশ বোর্ড",
   };
   document.getElementById("topbarTitle").textContent =
     titles[view] || "Overview";
@@ -246,6 +247,7 @@ function renderView(view) {
   else if (view === "districtSummary") renderDistrictSummaryView(el);
   else if (view === "allCenters") renderAllCenters(el);
   else if (view === "adminMgmt") renderAdminMgmt(el);
+  else if (view === "notice") renderNoticeBoard(el);
 }
 
 function renderOverview(el) {
@@ -1266,4 +1268,119 @@ async function saveSetTarget() {
   } finally {
     if (btn) { btn.textContent = 'সংরক্ষণ করুন'; btn.disabled = false; }
   }
+}
+
+// ══════════════════════════════════════
+// নোটিশ বোর্ড
+// ══════════════════════════════════════
+
+async function renderNoticeBoard(el) {
+  const isDir = userRole === "director";
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-size:17px;font-weight:700">📢 নোটিশ বোর্ড</div>
+      ${isDir ? `<button class="h-btn primary" onclick="openNoticeModal()"><i class="ti ti-plus"></i> নতুন নোটিশ</button>` : ""}
+    </div>
+    <div id="noticeList"><div class="loading-center"><div class="spinner"></div></div></div>`;
+  await loadNotices();
+}
+
+async function loadNotices() {
+  const el = document.getElementById("noticeList");
+  if (!el) return;
+  try {
+    const r = await fetch(`${API}/notices`, {
+      headers: { Authorization: "Bearer " + token },
+    });
+    const d = await r.json();
+
+    if (!d.success || !d.data.length) {
+      el.innerHTML = `<div class="empty"><i class="ti ti-speakerphone"></i>কোনো নোটিশ নেই</div>`;
+      return;
+    }
+
+    const priColor = { urgent: "var(--red)", important: "var(--amber)", normal: "var(--blue)" };
+    const priLabel = { urgent: "🔴 জরুরি", important: "🟡 গুরুত্বপূর্ণ", normal: "🔵 সাধারণ" };
+    const priBg    = { urgent: "#2a0a0a", important: "#2a1a00", normal: "#0a1a2a" };
+    const priBd    = { urgent: "#5a1a14", important: "#5a3a00", normal: "#1a3a5a" };
+
+    el.innerHTML = d.data.map((n) => `
+      <div class="card" style="margin-bottom:12px;border-left:4px solid ${priColor[n.priority] || priColor.normal}">
+        <div class="card-head">
+          <div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:4px">${priLabel[n.priority] || priLabel.normal}</div>
+            <div style="font-size:17px;font-weight:700">${n.title}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+            <span style="font-size:12px;color:var(--muted)">${fmtNoticeDate(n.created_at)}</span>
+            ${userRole === "director" ? `<button class="h-btn" onclick="deleteNotice(${n.id})" style="color:var(--red);padding:6px 10px"><i class="ti ti-trash"></i></button>` : ""}
+          </div>
+        </div>
+        <div class="card-body">
+          <div style="font-size:15px;line-height:1.8;color:var(--text);white-space:pre-line">${n.content}</div>
+          ${n.expires_at ? `<div style="margin-top:12px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px"><i class="ti ti-calendar" style="font-size:13px"></i> মেয়াদ: ${fmtNoticeDate(n.expires_at)}</div>` : ""}
+          <div style="margin-top:6px;font-size:12px;color:var(--muted)"><i class="ti ti-user" style="font-size:12px"></i> প্রকাশক: ${n.created_by || "—"}</div>
+        </div>
+      </div>`).join("");
+  } catch {
+    el.innerHTML = `<div class="empty"><i class="ti ti-wifi-off"></i>লোড হয়নি</div>`;
+  }
+}
+
+function openNoticeModal() {
+  ["nTitle", "nContent"].forEach((id) => (document.getElementById(id).value = ""));
+  document.getElementById("nPriority").value = "normal";
+  document.getElementById("nExpiry").value = "";
+  document.getElementById("mNotice").classList.add("open");
+}
+
+async function saveNotice() {
+  const title   = document.getElementById("nTitle").value.trim();
+  const content = document.getElementById("nContent").value.trim();
+  const priority= document.getElementById("nPriority").value;
+  const expiry  = document.getElementById("nExpiry").value;
+
+  if (!title || !content) return showToast("শিরোনাম ও বিষয়বস্তু দিন।");
+
+  const btn = document.querySelector("#mNotice .btn-save");
+  if (btn) { btn.textContent = "প্রকাশ হচ্ছে..."; btn.disabled = true; }
+
+  try {
+    const r = await fetch(`${API}/notices`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify({ title, content, priority, expires_at: expiry || null }),
+    });
+    const d = await r.json();
+    if (d.success) {
+      showToast(d.message);
+      document.getElementById("mNotice").classList.remove("open");
+      await loadNotices();
+    } else showToast(d.message || "সমস্যা হয়েছে।");
+  } catch { showToast("সংযোগ সমস্যা।"); }
+  finally { if (btn) { btn.textContent = "প্রকাশ করুন"; btn.disabled = false; } }
+}
+
+async function deleteNotice(id) {
+  if (!confirm("এই নোটিশ মুছে ফেলবেন?")) return;
+  try {
+    const r = await fetch(`${API}/notices/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: "Bearer " + token },
+    });
+    const d = await r.json();
+    if (d.success) { showToast(d.message); await loadNotices(); }
+    else showToast(d.message || "সমস্যা।");
+  } catch { showToast("সংযোগ সমস্যা।"); }
+}
+
+function fmtNoticeDate(d) {
+  if (!d) return "—";
+  try {
+    const dt = new Date(d);
+    const day   = String(dt.getDate()).padStart(2, "0");
+    const month = String(dt.getMonth() + 1).padStart(2, "0");
+    const year  = dt.getFullYear();
+    return toBn(`${day}/${month}/${year}`);
+  } catch { return d; }
 }
