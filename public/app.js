@@ -2321,7 +2321,6 @@ function saveSettings() {
 function applySiteConfig(cfg) {
   if (!cfg) return;
   const nameBn = cfg.name_bn || "উদ্যানতত্ত্ববিদের কার্যালয়";
-  const nameEn = cfg.name_en || "Asambasti, Rangamati";
 
   // Sidebar logo আপডেট
   const logoEl = document.querySelector(".sbl h1");
