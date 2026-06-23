@@ -207,7 +207,7 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .sbl h1 {
-  font-family: var(--fd);
+  font-family: var(--fb);
   font-size: 16px;
   color: #fff;
   font-weight: 700;
@@ -235,7 +235,7 @@ body {
   border-radius: 8px;
   cursor: pointer;
   color: var(--st);
-  font-size: 14px;
+  font-size: 13px;
   margin: 1px 6px;
   transition: all 0.2s;
   min-height: 36px;
