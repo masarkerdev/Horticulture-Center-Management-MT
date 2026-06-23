@@ -117,8 +117,8 @@ body {
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
 }
 .lb h1 {
-  font-family: var(--fd);
-  font-size: 22px;
+  font-family: "Noto Sans Bengali", "Segoe UI", sans-serif;
+  font-size: 20px;
   color: var(--g800);
   margin-bottom: 4px;
 }
