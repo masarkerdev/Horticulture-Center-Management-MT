@@ -561,9 +561,10 @@ async function lDash() {
     document.getElementById("dSt").innerHTML = `
 <div class="sc"><div class="si" style="background:var(--g50)"><i class="ti ti-plant" style="color:var(--g600);font-size:18px"></i></div><div class="sl">চারার ধরন</div><div class="sv">${toBnNum(d.seedling_types)}</div><div class="ss2">প্রকার নিবন্ধিত</div></div>
 <div class="sc"><div class="si" style="background:var(--t50)"><i class="ti ti-stack-2" style="color:var(--t600);font-size:18px"></i></div><div class="sl">মোট স্টক</div><div class="sv">${toBnNum(d.total_stock)}</div><div class="ss2">টি চারা/কলম</div></div>
-<div class="sc"><div class="si" style="background:var(--a50)"><i class="ti ti-sun" style="color:var(--a400);font-size:18px"></i></div><div class="sl">মোট উৎপাদন</div><div class="sv">${toBnNum(d.today_production)}</div></div>
+<div class="sc"><div class="si" style="background:var(--a50)"><i class="ti ti-sun" style="color:var(--a400);font-size:18px"></i></div><div class="sl">মোট উৎপাদন</div><div class="sv">${toBnNum(d.today_production)}</div><div class="ss2">টি চারা/কলম</div></div>
 <div class="sc"><div class="si" style="background:var(--c50)"><i class="ti ti-receipt" style="color:var(--c400);font-size:18px"></i></div><div class="sl">আজকের বিক্রয়</div><div class="sv">${toBnMoney(d.today_revenue)}</div><div class="ss2">${toBnNum(d.today_invoices)}টি চালান</div></div>
 <div class="sc"><div class="si" style="background:var(--b50)"><i class="ti ti-coin" style="color:var(--b600);font-size:18px"></i></div><div class="sl">মোট রাজস্ব</div><div class="sv">${toBnMoney(d.monthly_revenue)}</div><div class="ss2">সর্বমোট বিক্রি</div></div>`;
+
     // Bar chart — আলাদাভাবে call করুন
     lFiscalAchievement(); // ✅ auto-refresh এও চলবে, কিন্তু "লোড হচ্ছে" দেখাবে না
     const bnMonths = {

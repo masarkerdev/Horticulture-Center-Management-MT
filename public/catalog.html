@@ -1,461 +1,1141 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="bn">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>চারা অনুসন্ধান — হর্টিকালচার সেন্টার, বাংলাদেশ</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --green:#1a6b3a;--green2:#2d8a52;--green3:#e8f5ed;--green4:#f0faf3;
-  --amber:#f59e0b;--amber2:#fef3c7;
-  --text:#1a2e1a;--muted:#5a7a5a;--light:#f5f7f5;
-  --white:#fff;--border:#c8e0cc;--card:#fff;
-  --catA:#7c3aed;--catB:#1a6b3a;--catC:#d97706;
-  --shadow:0 2px 12px rgba(26,107,58,.10);
-}
-body{font-family:'Noto Sans Bengali',sans-serif;background:var(--light);color:var(--text);min-height:100vh;font-size:15px}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>চারা অনুসন্ধান — হর্টিকালচার সেন্টার, বাংলাদেশ</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Noto+Sans+Bengali:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --green: #1a6b3a;
+        --green2: #2d8a52;
+        --green3: #e8f5ed;
+        --green4: #f0faf3;
+        --amber: #f59e0b;
+        --amber2: #fef3c7;
+        --text: #1a2e1a;
+        --muted: #5a7a5a;
+        --light: #f5f7f5;
+        --white: #fff;
+        --border: #c8e0cc;
+        --card: #fff;
+        --catA: #7c3aed;
+        --catB: #1a6b3a;
+        --catC: #d97706;
+        --shadow: 0 2px 12px rgba(26, 107, 58, 0.1);
+      }
+      body {
+        font-family: "Noto Sans Bengali", sans-serif;
+        background: var(--light);
+        color: var(--text);
+        min-height: 100vh;
+        font-size: 15px;
+      }
 
-/* ── HEADER ── */
-.header{background:var(--green);color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
-.header-inner{max-width:1100px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px}
-.header-logo{width:44px;height:44px;background:#fff;border-radius:10px;overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px}
-.header-text h1{font-family:'Noto Serif Bengali',serif;font-size:17px;font-weight:700;line-height:1.2}
-.header-text p{font-size:11px;opacity:.8;margin-top:1px}
-.header-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+      /* ── HEADER ── */
+      .header {
+        background: var(--green);
+        color: #fff;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+      .header-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .header-logo {
+        width: 44px;
+        height: 44px;
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+      }
+      .header-text h1 {
+        font-family: "Noto Serif Bengali", serif;
+        font-size: 17px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+      .header-text p {
+        font-size: 11px;
+        opacity: 0.8;
+        margin-top: 1px;
+      }
+      .header-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
-/* ── HERO ── */
-.hero{background:linear-gradient(135deg,#0f4f29 0%,#1a6b3a 50%,#2d8a52 100%);color:#fff;padding:36px 20px 80px;text-align:center;position:relative;overflow:hidden}
-.hero::before{content:'🌿';position:absolute;font-size:200px;opacity:.04;top:-20px;left:-40px;transform:rotate(-15deg);pointer-events:none}
-.hero::after{content:'🌱';position:absolute;font-size:160px;opacity:.04;bottom:-30px;right:-20px;transform:rotate(20deg);pointer-events:none}
-.hero h2{font-family:'Noto Serif Bengali',serif;font-size:26px;font-weight:700;margin-bottom:8px;position:relative}
-.hero p{font-size:14px;opacity:.85;margin-bottom:28px;position:relative}
+      /* ── HERO ── */
+      .hero {
+        background: linear-gradient(
+          135deg,
+          #0f4f29 0%,
+          #1a6b3a 50%,
+          #2d8a52 100%
+        );
+        color: #fff;
+        padding: 36px 20px 80px;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .hero::before {
+        content: "🌿";
+        position: absolute;
+        font-size: 200px;
+        opacity: 0.04;
+        top: -20px;
+        left: -40px;
+        transform: rotate(-15deg);
+        pointer-events: none;
+      }
+      .hero::after {
+        content: "🌱";
+        position: absolute;
+        font-size: 160px;
+        opacity: 0.04;
+        bottom: -30px;
+        right: -20px;
+        transform: rotate(20deg);
+        pointer-events: none;
+      }
+      .hero h2 {
+        font-family: "Noto Serif Bengali", serif;
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        position: relative;
+      }
+      .hero p {
+        font-size: 14px;
+        opacity: 0.85;
+        margin-bottom: 28px;
+        position: relative;
+      }
 
-/* ── SEARCH BOX (HERO) ── */
-.hero-search{max-width:560px;margin:0 auto;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.2);overflow:hidden;position:relative}
-.search-tabs{display:flex;border-bottom:2px solid #eee}
-.stab{flex:1;padding:13px 8px;background:none;border:none;font-size:14px;font-family:inherit;color:#999;cursor:pointer;font-weight:500;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
-.stab.active{color:var(--green);border-bottom:2px solid var(--green);margin-bottom:-2px}
-.search-row{display:flex;align-items:center;padding:10px 14px;gap:10px}
-.search-row i{font-size:20px;color:#bbb}
-.search-row input{flex:1;border:none;outline:none;font-size:15px;font-family:inherit;color:var(--text);background:transparent}
-.search-row input::placeholder{color:#bbb}
-.search-btn{background:var(--green);color:#fff;border:none;border-radius:9px;padding:9px 20px;font-size:14px;font-family:inherit;cursor:pointer;font-weight:600;white-space:nowrap;transition:.2s}
-.search-btn:hover{background:#155a30}
+      /* ── SEARCH BOX (HERO) ── */
+      .hero-search {
+        max-width: 560px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        position: relative;
+      }
+      .search-tabs {
+        display: flex;
+        border-bottom: 2px solid #eee;
+      }
+      .stab {
+        flex: 1;
+        padding: 13px 8px;
+        background: none;
+        border: none;
+        font-size: 14px;
+        font-family: inherit;
+        color: #999;
+        cursor: pointer;
+        font-weight: 500;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+      .stab.active {
+        color: var(--green);
+        border-bottom: 2px solid var(--green);
+        margin-bottom: -2px;
+      }
+      .search-row {
+        display: flex;
+        align-items: center;
+        padding: 10px 14px;
+        gap: 10px;
+      }
+      .search-row i {
+        font-size: 20px;
+        color: #bbb;
+      }
+      .search-row input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 15px;
+        font-family: inherit;
+        color: var(--text);
+        background: transparent;
+      }
+      .search-row input::placeholder {
+        color: #bbb;
+      }
+      .search-btn {
+        background: var(--green);
+        color: #fff;
+        border: none;
+        border-radius: 9px;
+        padding: 9px 20px;
+        font-size: 14px;
+        font-family: inherit;
+        cursor: pointer;
+        font-weight: 600;
+        white-space: nowrap;
+        transition: 0.2s;
+      }
+      .search-btn:hover {
+        background: #155a30;
+      }
 
-/* ── FILTER BAR ── */
-.filter-bar{max-width:1100px;margin:-32px auto 0;padding:0 20px;position:relative;z-index:10}
-.filter-card{background:#fff;border-radius:14px;box-shadow:var(--shadow);padding:16px 20px;border:1px solid var(--border);display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
-.filter-group{display:flex;flex-direction:column;gap:5px;flex:1;min-width:140px}
-.filter-group label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:4px}
-.filter-group select{border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit;color:var(--text);background:#fff;outline:none;cursor:pointer;transition:.2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7a5a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px}
-.filter-group select:focus{border-color:var(--green)}
-.filter-reset{background:var(--green3);border:1.5px solid var(--border);border-radius:8px;padding:9px 16px;font-size:13px;font-family:inherit;color:var(--muted);cursor:pointer;transition:.2s;white-space:nowrap;display:flex;align-items:center;gap:5px}
-.filter-reset:hover{background:var(--green);color:#fff;border-color:var(--green)}
-.filter-count{font-size:12px;color:var(--muted);margin-left:auto;white-space:nowrap;align-self:flex-end;padding-bottom:2px}
+      /* ── FILTER BAR ── */
+      .filter-bar {
+        max-width: 1100px;
+        margin: -32px auto 0;
+        padding: 0 20px;
+        position: relative;
+        z-index: 10;
+      }
+      .filter-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+        padding: 16px 20px;
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        flex: 1;
+        min-width: 140px;
+      }
+      .filter-group label {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .filter-group select {
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        padding: 9px 12px;
+        font-size: 14px;
+        font-family: inherit;
+        color: var(--text);
+        background: #fff;
+        outline: none;
+        cursor: pointer;
+        transition: 0.2s;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235a7a5a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        padding-right: 30px;
+      }
+      .filter-group select:focus {
+        border-color: var(--green);
+      }
+      .filter-reset {
+        background: var(--green3);
+        border: 1.5px solid var(--border);
+        border-radius: 8px;
+        padding: 9px 16px;
+        font-size: 13px;
+        font-family: inherit;
+        color: var(--muted);
+        cursor: pointer;
+        transition: 0.2s;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .filter-reset:hover {
+        background: var(--green);
+        color: #fff;
+        border-color: var(--green);
+      }
+      .filter-count {
+        font-size: 12px;
+        color: var(--muted);
+        margin-left: auto;
+        white-space: nowrap;
+        align-self: flex-end;
+        padding-bottom: 2px;
+      }
 
-/* ── MAIN ── */
-.main{max-width:1100px;margin:24px auto 48px;padding:0 20px}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.section-head h3{font-family:'Noto Serif Bengali',serif;font-size:17px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+      /* ── MAIN ── */
+      .main {
+        max-width: 1100px;
+        margin: 24px auto 48px;
+        padding: 0 20px;
+      }
+      .section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+      .section-head h3 {
+        font-family: "Noto Serif Bengali", serif;
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
 
-/* ── CENTER GRID ── */
-.centers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
-.center-card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;overflow:hidden;cursor:pointer;transition:.2s;box-shadow:var(--shadow);position:relative}
-.center-card:hover{border-color:var(--green2);box-shadow:0 6px 24px rgba(26,107,58,.15);transform:translateY(-2px)}
-.cc-stripe{height:5px;width:100%}
-.cc-stripe.catA{background:linear-gradient(90deg,var(--catA),#9d72ff)}
-.cc-stripe.catB{background:linear-gradient(90deg,var(--green),var(--green2))}
-.cc-stripe.catC{background:linear-gradient(90deg,var(--catC),#fbbf24)}
-.cc-body{padding:18px}
-.cc-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
-.cc-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.cc-icon.catA{background:#f3f0ff}
-.cc-icon.catB{background:var(--green3)}
-.cc-icon.catC{background:#fffbeb}
-.cc-info{flex:1;min-width:0}
-.cc-name{font-family:'Noto Serif Bengali',serif;font-size:15px;font-weight:700;line-height:1.3;margin-bottom:3px}
-.cc-en{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.cc-cat{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px}
-.cc-cat.catA{background:#f3f0ff;color:var(--catA)}
-.cc-cat.catB{background:var(--green3);color:var(--green)}
-.cc-cat.catC{background:#fffbeb;color:var(--catC)}
-.cc-meta{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.cc-meta-item{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
-.cc-footer{display:flex;align-items:center;gap:8px;border-top:1px solid #f0f0f0;padding-top:12px}
-.cc-btn{flex:1;background:var(--green3);border:1.5px solid var(--border);color:var(--green);border-radius:9px;padding:9px;font-size:13px;font-family:inherit;cursor:pointer;font-weight:600;transition:.2s;display:flex;align-items:center;justify-content:center;gap:5px}
-.cc-btn:hover{background:var(--green);color:#fff;border-color:var(--green)}
-.cc-btn.primary{background:var(--green);color:#fff;border-color:var(--green)}
-.cc-btn.primary:hover{background:#155a30}
+      /* ── CENTER GRID ── */
+      .centers-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 16px;
+      }
+      .center-card {
+        background: var(--card);
+        border: 1.5px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: 0.2s;
+        box-shadow: var(--shadow);
+        position: relative;
+      }
+      .center-card:hover {
+        border-color: var(--green2);
+        box-shadow: 0 6px 24px rgba(26, 107, 58, 0.15);
+        transform: translateY(-2px);
+      }
+      .cc-stripe {
+        height: 5px;
+        width: 100%;
+      }
+      .cc-stripe.catA {
+        background: linear-gradient(90deg, var(--catA), #9d72ff);
+      }
+      .cc-stripe.catB {
+        background: linear-gradient(90deg, var(--green), var(--green2));
+      }
+      .cc-stripe.catC {
+        background: linear-gradient(90deg, var(--catC), #fbbf24);
+      }
+      .cc-body {
+        padding: 18px;
+      }
+      .cc-top {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+      .cc-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+      }
+      .cc-icon.catA {
+        background: #f3f0ff;
+      }
+      .cc-icon.catB {
+        background: var(--green3);
+      }
+      .cc-icon.catC {
+        background: #fffbeb;
+      }
+      .cc-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .cc-name {
+        font-family: "Noto Serif Bengali", serif;
+        font-size: 15px;
+        font-weight: 700;
+        line-height: 1.3;
+        margin-bottom: 3px;
+      }
+      .cc-en {
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .cc-cat {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 9px;
+        border-radius: 20px;
+      }
+      .cc-cat.catA {
+        background: #f3f0ff;
+        color: var(--catA);
+      }
+      .cc-cat.catB {
+        background: var(--green3);
+        color: var(--green);
+      }
+      .cc-cat.catC {
+        background: #fffbeb;
+        color: var(--catC);
+      }
+      .cc-meta {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .cc-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .cc-footer {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-top: 1px solid #f0f0f0;
+        padding-top: 12px;
+      }
+      .cc-btn {
+        flex: 1;
+        background: var(--green3);
+        border: 1.5px solid var(--border);
+        color: var(--green);
+        border-radius: 9px;
+        padding: 9px;
+        font-size: 13px;
+        font-family: inherit;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+      }
+      .cc-btn:hover {
+        background: var(--green);
+        color: #fff;
+        border-color: var(--green);
+      }
+      .cc-btn.primary {
+        background: var(--green);
+        color: #fff;
+        border-color: var(--green);
+      }
+      .cc-btn.primary:hover {
+        background: #155a30;
+      }
 
-/* ── SEEDLING VIEW ── */
-.back-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--border);border-radius:9px;padding:9px 16px;font-size:14px;font-family:inherit;color:var(--text);cursor:pointer;font-weight:500;margin-bottom:18px;transition:.2s;box-shadow:var(--shadow)}
-.back-btn:hover{border-color:var(--green);color:var(--green)}
-.center-banner{background:linear-gradient(135deg,#0f4f29,#2d8a52);color:#fff;border-radius:14px;padding:24px;margin-bottom:20px;display:flex;align-items:center;gap:16px}
-.banner-icon{width:56px;height:56px;background:rgba(255,255,255,.15);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
-.banner-info h3{font-family:'Noto Serif Bengali',serif;font-size:20px;font-weight:700;margin-bottom:4px}
-.banner-info p{font-size:13px;opacity:.85;display:flex;align-items:center;gap:6px}
-.banner-badge{margin-left:auto;background:rgba(255,255,255,.2);border-radius:10px;padding:6px 14px;font-size:13px;font-weight:700;flex-shrink:0}
+      /* ── SEEDLING VIEW ── */
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: 9px;
+        padding: 9px 16px;
+        font-size: 14px;
+        font-family: inherit;
+        color: var(--text);
+        cursor: pointer;
+        font-weight: 500;
+        margin-bottom: 18px;
+        transition: 0.2s;
+        box-shadow: var(--shadow);
+      }
+      .back-btn:hover {
+        border-color: var(--green);
+        color: var(--green);
+      }
+      .center-banner {
+        background: linear-gradient(135deg, #0f4f29, #2d8a52);
+        color: #fff;
+        border-radius: 14px;
+        padding: 24px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .banner-icon {
+        width: 56px;
+        height: 56px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        flex-shrink: 0;
+      }
+      .banner-info h3 {
+        font-family: "Noto Serif Bengali", serif;
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+      .banner-info p {
+        font-size: 13px;
+        opacity: 0.85;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .banner-badge {
+        margin-left: auto;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        padding: 6px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
 
-/* Seedling search */
-.seed-search{background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:8px;margin-bottom:16px;box-shadow:var(--shadow)}
-.seed-search i{color:#bbb;font-size:18px}
-.seed-search input{flex:1;border:none;outline:none;font-size:14px;font-family:inherit;color:var(--text);background:transparent}
+      /* Seedling search */
+      .seed-search {
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        box-shadow: var(--shadow);
+      }
+      .seed-search i {
+        color: #bbb;
+        font-size: 18px;
+      }
+      .seed-search input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 14px;
+        font-family: inherit;
+        color: var(--text);
+        background: transparent;
+      }
 
-/* Seedling table */
-.seed-wrap{background:#fff;border:1.5px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
-.cat-row{background:var(--green3);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
-.cat-row span{font-weight:700;color:var(--green);font-size:13px}
-.seed-row{display:grid;grid-template-columns:1fr auto auto;gap:16px;align-items:center;padding:13px 16px;border-bottom:1px solid #f4f4f4;transition:.15s}
-.seed-row:last-child{border-bottom:none}
-.seed-row:hover{background:#f9fdf9}
-.seed-name{font-weight:600;font-size:14px;line-height:1.3}
-.seed-variety{font-size:12px;color:var(--muted);margin-top:2px}
-.seed-stock{text-align:center}
-.stock-val{font-size:16px;font-weight:700}
-.stock-ok{color:var(--green)}
-.stock-low{color:var(--amber)}
-.stock-label{font-size:11px;color:var(--muted);margin-top:1px}
-.seed-price{text-align:right}
-.price-val{font-size:17px;font-weight:700;color:var(--green)}
-.price-unit{font-size:11px;color:var(--muted)}
+      /* Seedling table */
+      .seed-wrap {
+        background: #fff;
+        border: 1.5px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+      .cat-row {
+        background: var(--green3);
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid var(--border);
+      }
+      .cat-row span {
+        font-weight: 700;
+        color: var(--green);
+        font-size: 13px;
+      }
+      .seed-row {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 16px;
+        align-items: center;
+        padding: 13px 16px;
+        border-bottom: 1px solid #f4f4f4;
+        transition: 0.15s;
+      }
+      .seed-row:last-child {
+        border-bottom: none;
+      }
+      .seed-row:hover {
+        background: #f9fdf9;
+      }
+      .seed-name {
+        font-weight: 600;
+        font-size: 14px;
+        line-height: 1.3;
+      }
+      .seed-variety {
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .seed-stock {
+        text-align: center;
+      }
+      .stock-val {
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .stock-ok {
+        color: var(--green);
+      }
+      .stock-low {
+        color: var(--amber);
+      }
+      .stock-label {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 1px;
+      }
+      .seed-price {
+        text-align: right;
+      }
+      .price-val {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--green);
+      }
+      .price-unit {
+        font-size: 11px;
+        color: var(--muted);
+      }
 
-/* ── SEARCH RESULTS ── */
-.result-block{margin-bottom:20px}
-.result-header{background:var(--green);color:#fff;padding:12px 18px;border-radius:12px 12px 0 0;display:flex;align-items:center;gap:10px}
-.result-header i{font-size:18px}
-.result-header h3{font-size:15px;font-weight:600;flex:1}
-.result-header span{font-size:12px;opacity:.8}
-.result-body{border:1.5px solid var(--border);border-top:none;border-radius:0 0 12px 12px;overflow:hidden;background:#fff}
+      /* ── SEARCH RESULTS ── */
+      .result-block {
+        margin-bottom: 20px;
+      }
+      .result-header {
+        background: var(--green);
+        color: #fff;
+        padding: 12px 18px;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .result-header i {
+        font-size: 18px;
+      }
+      .result-header h3 {
+        font-size: 15px;
+        font-weight: 600;
+        flex: 1;
+      }
+      .result-header span {
+        font-size: 12px;
+        opacity: 0.8;
+      }
+      .result-body {
+        border: 1.5px solid var(--border);
+        border-top: none;
+        border-radius: 0 0 12px 12px;
+        overflow: hidden;
+        background: #fff;
+      }
 
-/* ── NOTICE ── */
-.notice{background:var(--amber2);border:1px solid #fde68a;border-radius:10px;padding:12px 16px;font-size:13px;color:#92400e;display:flex;gap:10px;align-items:flex-start;margin-top:16px}
-.notice i{font-size:18px;flex-shrink:0;margin-top:1px}
+      /* ── NOTICE ── */
+      .notice {
+        background: var(--amber2);
+        border: 1px solid #fde68a;
+        border-radius: 10px;
+        padding: 12px 16px;
+        font-size: 13px;
+        color: #92400e;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        margin-top: 16px;
+      }
+      .notice i {
+        font-size: 18px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
 
-/* ── EMPTY / LOADING ── */
-.empty{text-align:center;padding:56px 20px;color:var(--muted)}
-.empty-icon{font-size:56px;margin-bottom:14px;opacity:.5}
-.empty p{font-size:15px;font-weight:500;margin-bottom:4px}
-.empty small{font-size:13px;opacity:.7}
-.spinner-wrap{display:flex;justify-content:center;padding:40px}
-.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+      /* ── EMPTY / LOADING ── */
+      .empty {
+        text-align: center;
+        padding: 56px 20px;
+        color: var(--muted);
+      }
+      .empty-icon {
+        font-size: 56px;
+        margin-bottom: 14px;
+        opacity: 0.5;
+      }
+      .empty p {
+        font-size: 15px;
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      .empty small {
+        font-size: 13px;
+        opacity: 0.7;
+      }
+      .spinner-wrap {
+        display: flex;
+        justify-content: center;
+        padding: 40px;
+      }
+      .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--border);
+        border-top-color: var(--green);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
 
-/* ── MOBILE ── */
-@media(max-width:768px){
-  .hero{padding:28px 16px 70px}
-  .hero h2{font-size:20px}
-  .filter-card{padding:14px}
-  .filter-group{min-width:calc(50% - 6px)}
-  .filter-count,.filter-reset{width:100%}
-  .centers-grid{grid-template-columns:1fr}
-  .seed-row{grid-template-columns:1fr auto}
-  .seed-price{display:none}
-  .banner-badge{display:none}
-  .header-inner{padding:10px 14px}
-  .main{padding:0 14px 40px}
-  .filter-bar{padding:0 14px}
-}
-@media(max-width:480px){
-  .stab span{display:none}
-  .filter-group{min-width:100%}
-}
-</style>
-</head>
-<body>
+      /* ── MOBILE ── */
+      @media (max-width: 768px) {
+        .hero {
+          padding: 28px 16px 70px;
+        }
+        .hero h2 {
+          font-size: 20px;
+        }
+        .filter-card {
+          padding: 14px;
+        }
+        .filter-group {
+          min-width: calc(50% - 6px);
+        }
+        .filter-count,
+        .filter-reset {
+          width: 100%;
+        }
+        .centers-grid {
+          grid-template-columns: 1fr;
+        }
+        .seed-row {
+          grid-template-columns: 1fr auto;
+        }
+        .seed-price {
+          display: none;
+        }
+        .banner-badge {
+          display: none;
+        }
+        .header-inner {
+          padding: 10px 14px;
+        }
+        .main {
+          padding: 0 14px 40px;
+        }
+        .filter-bar {
+          padding: 0 14px;
+        }
+      }
+      @media (max-width: 480px) {
+        .stab span {
+          display: none;
+        }
+        .filter-group {
+          min-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- HEADER -->
+    <header class="header">
+      <div class="header-inner">
+        <div class="header-logo">🌿</div>
+        <div class="header-text">
+          <h1>হর্টিকালচার সেন্টার</h1>
+          <p>কৃষি সম্প্রসারণ অধিদপ্তর, বাংলাদেশ</p>
+        </div>
+        <div class="header-right">
+          <span
+            style="font-size: 12px; opacity: 0.7; display: none"
+            id="headerCount"
+          ></span>
+        </div>
+      </div>
+    </header>
 
-<!-- HEADER -->
-<header class="header">
-  <div class="header-inner">
-    <div class="header-logo">🌿</div>
-    <div class="header-text">
-      <h1>হর্টিকালচার সেন্টার</h1>
-      <p>কৃষি সম্প্রসারণ অধিদপ্তর, বাংলাদেশ</p>
-    </div>
-    <div class="header-right">
-      <span style="font-size:12px;opacity:.7;display:none" id="headerCount"></span>
-    </div>
-  </div>
-</header>
-
-<!-- HERO + SEARCH -->
-<div class="hero">
-  <h2>চারা অনুসন্ধান করুন</h2>
-  <p>বাংলাদেশের সব হর্টিকালচার সেন্টারের চারার তথ্য এক জায়গায়</p>
-  <div class="hero-search">
-    <div class="search-tabs">
-      <button class="stab active" id="tab-center" onclick="switchTab('center')">
-        <i class="ti ti-building"></i> <span>সেন্টার অনুযায়ী</span>
-      </button>
-      <button class="stab" id="tab-search" onclick="switchTab('search')">
-        <i class="ti ti-search"></i> <span>চারার নাম দিয়ে</span>
-      </button>
-    </div>
-    <div class="search-row" id="search-row" style="display:none">
-      <i class="ti ti-plant"></i>
-      <input type="text" id="searchInput" placeholder="চারার নাম লিখুন... যেমন: আম, কলা, লিচু"
-        onkeydown="if(event.key==='Enter') doSearch()"/>
-      <button class="search-btn" onclick="doSearch()">খুঁজুন</button>
-    </div>
-  </div>
-</div>
-
-<!-- FILTER BAR -->
-<div class="filter-bar" id="filterBar">
-  <div class="filter-card">
-    <div class="filter-group">
-      <label><i class="ti ti-map" style="font-size:13px"></i> বিভাগ</label>
-      <select id="fDivision" onchange="onDivisionChange()">
-        <option value="">সব বিভাগ</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label><i class="ti ti-map-pin" style="font-size:13px"></i> জেলা</label>
-      <select id="fDistrict" onchange="filterCenters()">
-        <option value="">সব জেলা</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label><i class="ti ti-map-pins" style="font-size:13px"></i> থানা</label>
-      <select id="fThana" onchange="filterCenters()">
-        <option value="">সব থানা</option>
-      </select>
-    </div>
-    <div class="filter-group">
-      <label><i class="ti ti-category" style="font-size:13px"></i> ক্যাটাগরি</label>
-      <select id="fCat" onchange="filterCenters()">
-        <option value="">সব ক্যাটাগরি</option>
-        <option value="A">ক্যাটাগরি-A (উপপরিচালক)</option>
-        <option value="B">ক্যাটাগরি-B (উদ্যানতত্ত্ববিদ)</option>
-        <option value="C">ক্যাটাগরি-C (নার্সারি তত্ত্বাবধায়ক)</option>
-      </select>
-    </div>
-    <button class="filter-reset" onclick="resetFilters()">
-      <i class="ti ti-refresh" style="font-size:14px"></i> রিসেট
-    </button>
-    <span class="filter-count" id="filterCount"></span>
-  </div>
-</div>
-
-<!-- MAIN CONTENT -->
-<main class="main">
-  <!-- CENTER LIST VIEW -->
-  <div id="view-centers">
-    <div class="section-head">
-      <h3><i class="ti ti-building-community" style="font-size:20px;color:var(--green)"></i> সেন্টার তালিকা</h3>
-    </div>
-    <div class="centers-grid" id="centersGrid">
-      <div style="grid-column:1/-1"><div class="spinner-wrap"><div class="spinner"></div></div></div>
-    </div>
-  </div>
-
-  <!-- SEEDLING VIEW -->
-  <div id="view-seedlings" style="display:none">
-    <button class="back-btn" onclick="showCenters()">
-      <i class="ti ti-arrow-left"></i> সব সেন্টার
-    </button>
-    <div id="seedlingsContent"></div>
-  </div>
-
-  <!-- SEARCH RESULTS -->
-  <div id="view-search" style="display:none">
-    <div id="searchResults">
-      <div class="empty">
-        <div class="empty-icon">🔍</div>
-        <p>চারার নাম লিখুন</p>
-        <small>সব সেন্টারে একসাথে খোঁজা হবে</small>
+    <!-- HERO + SEARCH -->
+    <div class="hero">
+      <h2>চারা অনুসন্ধান করুন</h2>
+      <p>বাংলাদেশের সব হর্টিকালচার সেন্টারের চারার তথ্য এক জায়গায়</p>
+      <div class="hero-search">
+        <div class="search-tabs">
+          <button
+            class="stab active"
+            id="tab-center"
+            onclick="switchTab('center')"
+          >
+            <i class="ti ti-building"></i> <span>সেন্টার অনুযায়ী</span>
+          </button>
+          <button class="stab" id="tab-search" onclick="switchTab('search')">
+            <i class="ti ti-search"></i> <span>চারার নাম দিয়ে</span>
+          </button>
+        </div>
+        <div class="search-row" id="search-row" style="display: none">
+          <i class="ti ti-plant"></i>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="চারার নাম লিখুন... যেমন: আম, কলা, লিচু"
+            onkeydown="if (event.key === 'Enter') doSearch();"
+          />
+          <button class="search-btn" onclick="doSearch()">খুঁজুন</button>
+        </div>
       </div>
     </div>
-  </div>
-</main>
 
-<script>
-const API = '/api/public';
-let allCenters = [];
-let currentTab = 'center';
+    <!-- FILTER BAR -->
+    <div class="filter-bar" id="filterBar">
+      <div class="filter-card">
+        <div class="filter-group">
+          <label><i class="ti ti-map" style="font-size: 13px"></i> বিভাগ</label>
+          <select id="fDivision" onchange="onDivisionChange()">
+            <option value="">সব বিভাগ</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label
+            ><i class="ti ti-map-pin" style="font-size: 13px"></i> জেলা</label
+          >
+          <select id="fDistrict" onchange="filterCenters()">
+            <option value="">সব জেলা</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label
+            ><i class="ti ti-map-pins" style="font-size: 13px"></i> থানা</label
+          >
+          <select id="fThana" onchange="filterCenters()">
+            <option value="">সব থানা</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label
+            ><i class="ti ti-category" style="font-size: 13px"></i>
+            ক্যাটাগরি</label
+          >
+          <select id="fCat" onchange="filterCenters()">
+            <option value="">সব ক্যাটাগরি</option>
+            <option value="A">ক্যাটাগরি-A (উপপরিচালক)</option>
+            <option value="B">ক্যাটাগরি-B (উদ্যানতত্ত্ববিদ)</option>
+            <option value="C">ক্যাটাগরি-C (নার্সারি তত্ত্বাবধায়ক)</option>
+          </select>
+        </div>
+        <button class="filter-reset" onclick="resetFilters()">
+          <i class="ti ti-refresh" style="font-size: 14px"></i> রিসেট
+        </button>
+        <span class="filter-count" id="filterCount"></span>
+      </div>
+    </div>
 
-// ── TAB SWITCH ──
-function switchTab(tab) {
-  currentTab = tab;
-  document.getElementById('tab-center').classList.toggle('active', tab==='center');
-  document.getElementById('tab-search').classList.toggle('active', tab==='search');
-  document.getElementById('search-row').style.display = tab==='search' ? 'flex' : 'none';
-  document.getElementById('filterBar').style.display = tab==='center' ? 'block' : 'none';
+    <!-- MAIN CONTENT -->
+    <main class="main">
+      <!-- CENTER LIST VIEW -->
+      <div id="view-centers">
+        <div class="section-head">
+          <h3>
+            <i
+              class="ti ti-building-community"
+              style="font-size: 20px; color: var(--green)"
+            ></i>
+            সেন্টার তালিকা
+          </h3>
+        </div>
+        <div class="centers-grid" id="centersGrid">
+          <div style="grid-column: 1/-1">
+            <div class="spinner-wrap"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
 
-  if (tab==='center') {
-    document.getElementById('view-centers').style.display = 'block';
-    document.getElementById('view-seedlings').style.display = 'none';
-    document.getElementById('view-search').style.display = 'none';
-  } else {
-    document.getElementById('view-centers').style.display = 'none';
-    document.getElementById('view-seedlings').style.display = 'none';
-    document.getElementById('view-search').style.display = 'block';
-    setTimeout(() => document.getElementById('searchInput').focus(), 100);
-  }
-}
+      <!-- SEEDLING VIEW -->
+      <div id="view-seedlings" style="display: none">
+        <button class="back-btn" onclick="showCenters()">
+          <i class="ti ti-arrow-left"></i> সব সেন্টার
+        </button>
+        <div id="seedlingsContent"></div>
+      </div>
 
-// ── LOAD CENTERS ──
-async function loadCenters() {
-  try {
-    const r = await fetch(`${API}/centers`);
-    const d = await r.json();
-    if (!d.success || !d.data.length) {
-      document.getElementById('centersGrid').innerHTML =
-        '<div style="grid-column:1/-1"><div class="empty"><div class="empty-icon">🏗️</div><p>কোনো সেন্টার পাওয়া যায়নি</p><small>পরে আবার চেষ্টা করুন</small></div></div>';
-      return;
-    }
-    allCenters = d.data;
-    populateFilters(d.data);
-    renderCenters(d.data);
-  } catch {
-    document.getElementById('centersGrid').innerHTML =
-      '<div style="grid-column:1/-1"><div class="empty"><div class="empty-icon">📡</div><p>সংযোগ সমস্যা হয়েছে</p><small>ইন্টারনেট সংযোগ চেক করুন</small></div></div>';
-  }
-}
+      <!-- SEARCH RESULTS -->
+      <div id="view-search" style="display: none">
+        <div id="searchResults">
+          <div class="empty">
+            <div class="empty-icon">🔍</div>
+            <p>চারার নাম লিখুন</p>
+            <small>সব সেন্টারে একসাথে খোঁজা হবে</small>
+          </div>
+        </div>
+      </div>
+    </main>
 
-// ── POPULATE FILTERS ──
-function populateFilters(centers) {
-  const divisions = [...new Set(centers.map(c=>c.division).filter(Boolean))].sort();
-  const divSel = document.getElementById('fDivision');
-  divisions.forEach(d => {
-    const o = document.createElement('option');
-    o.value = d; o.textContent = d;
-    divSel.appendChild(o);
-  });
-  populateDistricts(centers);
-  populateThanas(centers);
-}
+    <script>
+      const API = "/api/public";
+      let allCenters = [];
+      let currentTab = "center";
 
-function populateDistricts(centers) {
-  const div = document.getElementById('fDivision').value;
-  const filtered = div ? centers.filter(c=>c.division===div) : centers;
-  const districts = [...new Set(filtered.map(c=>c.district).filter(Boolean))].sort();
-  const sel = document.getElementById('fDistrict');
-  sel.innerHTML = '<option value="">সব জেলা</option>';
-  districts.forEach(d => {
-    const o = document.createElement('option');
-    o.value = d; o.textContent = d;
-    sel.appendChild(o);
-  });
-}
+      // ── TAB SWITCH ──
+      function switchTab(tab) {
+        currentTab = tab;
+        document
+          .getElementById("tab-center")
+          .classList.toggle("active", tab === "center");
+        document
+          .getElementById("tab-search")
+          .classList.toggle("active", tab === "search");
+        document.getElementById("search-row").style.display =
+          tab === "search" ? "flex" : "none";
+        document.getElementById("filterBar").style.display =
+          tab === "center" ? "block" : "none";
 
-function populateThanas(centers) {
-  const dist = document.getElementById('fDistrict').value;
-  const filtered = dist ? centers.filter(c=>c.district===dist) : centers;
-  const thanas = [...new Set(filtered.map(c=>c.thana||c.location).filter(Boolean))].sort();
-  const sel = document.getElementById('fThana');
-  sel.innerHTML = '<option value="">সব থানা/এলাকা</option>';
-  thanas.forEach(t => {
-    const o = document.createElement('option');
-    o.value = t; o.textContent = t;
-    sel.appendChild(o);
-  });
-}
+        if (tab === "center") {
+          document.getElementById("view-centers").style.display = "block";
+          document.getElementById("view-seedlings").style.display = "none";
+          document.getElementById("view-search").style.display = "none";
+        } else {
+          document.getElementById("view-centers").style.display = "none";
+          document.getElementById("view-seedlings").style.display = "none";
+          document.getElementById("view-search").style.display = "block";
+          setTimeout(() => document.getElementById("searchInput").focus(), 100);
+        }
+      }
 
-function onDivisionChange() {
-  document.getElementById('fDistrict').value = '';
-  document.getElementById('fThana').value = '';
-  populateDistricts(allCenters);
-  populateThanas(allCenters);
-  filterCenters();
-}
+      // ── LOAD CENTERS ──
+      async function loadCenters() {
+        try {
+          const r = await fetch(`${API}/centers`);
+          const d = await r.json();
+          if (!d.success || !d.data.length) {
+            document.getElementById("centersGrid").innerHTML =
+              '<div style="grid-column:1/-1"><div class="empty"><div class="empty-icon">🏗️</div><p>কোনো সেন্টার পাওয়া যায়নি</p><small>পরে আবার চেষ্টা করুন</small></div></div>';
+            return;
+          }
+          allCenters = d.data;
+          populateFilters(d.data);
+          renderCenters(d.data);
+        } catch {
+          document.getElementById("centersGrid").innerHTML =
+            '<div style="grid-column:1/-1"><div class="empty"><div class="empty-icon">📡</div><p>সংযোগ সমস্যা হয়েছে</p><small>ইন্টারনেট সংযোগ চেক করুন</small></div></div>';
+        }
+      }
 
-function filterCenters() {
-  const div  = document.getElementById('fDivision').value;
-  const dist = document.getElementById('fDistrict').value;
-  const thana = document.getElementById('fThana').value;
-  const cat  = document.getElementById('fCat').value;
+      // ── POPULATE FILTERS ──
+      function populateFilters(centers) {
+        const divisions = [
+          ...new Set(centers.map((c) => c.division).filter(Boolean)),
+        ].sort();
+        const divSel = document.getElementById("fDivision");
+        divisions.forEach((d) => {
+          const o = document.createElement("option");
+          o.value = d;
+          o.textContent = d;
+          divSel.appendChild(o);
+        });
+        populateDistricts(centers);
+        populateThanas(centers);
+      }
 
-  // Cascade: update thana options based on district
-  if (document.getElementById('fDistrict').value !== dist) {
-    populateThanas(allCenters.filter(c => !div || c.division===div));
-  }
+      function populateDistricts(centers) {
+        const div = document.getElementById("fDivision").value;
+        const filtered = div
+          ? centers.filter((c) => c.division === div)
+          : centers;
+        const districts = [
+          ...new Set(filtered.map((c) => c.district).filter(Boolean)),
+        ].sort();
+        const sel = document.getElementById("fDistrict");
+        sel.innerHTML = '<option value="">সব জেলা</option>';
+        districts.forEach((d) => {
+          const o = document.createElement("option");
+          o.value = d;
+          o.textContent = d;
+          sel.appendChild(o);
+        });
+      }
 
-  const filtered = allCenters.filter(c => {
-    if (div  && c.division !== div)  return false;
-    if (dist && c.district !== dist) return false;
-    if (thana && (c.thana||c.location) !== thana) return false;
-    if (cat  && c.category !== cat)  return false;
-    return true;
-  });
+      function populateThanas(centers) {
+        const dist = document.getElementById("fDistrict").value;
+        const filtered = dist
+          ? centers.filter((c) => c.district === dist)
+          : centers;
+        const thanas = [
+          ...new Set(
+            filtered.map((c) => c.thana || c.location).filter(Boolean),
+          ),
+        ].sort();
+        const sel = document.getElementById("fThana");
+        sel.innerHTML = '<option value="">সব থানা/এলাকা</option>';
+        thanas.forEach((t) => {
+          const o = document.createElement("option");
+          o.value = t;
+          o.textContent = t;
+          sel.appendChild(o);
+        });
+      }
 
-  document.getElementById('filterCount').textContent = `${toBn(filtered.length)}টি সেন্টার`;
-  renderCenters(filtered);
-}
+      function onDivisionChange() {
+        document.getElementById("fDistrict").value = "";
+        document.getElementById("fThana").value = "";
+        populateDistricts(allCenters);
+        populateThanas(allCenters);
+        filterCenters();
+      }
 
-function resetFilters() {
-  ['fDivision','fDistrict','fThana','fCat'].forEach(id => document.getElementById(id).value='');
-  populateDistricts(allCenters);
-  populateThanas(allCenters);
-  renderCenters(allCenters);
-  document.getElementById('filterCount').textContent = `${toBn(allCenters.length)}টি সেন্টার`;
-}
+      function filterCenters() {
+        const div = document.getElementById("fDivision").value;
+        const dist = document.getElementById("fDistrict").value;
+        const thana = document.getElementById("fThana").value;
+        const cat = document.getElementById("fCat").value;
 
-// ── RENDER CENTERS ──
-function renderCenters(centers) {
-  const catLabel = {A:'উপপরিচালক',B:'উদ্যানতত্ত্ববিদ',C:'নার্সারি তত্ত্বাবধায়ক'};
-  const catIcon  = {A:'🏛️',B:'🌳',C:'🪴'};
-  if (!centers.length) {
-    document.getElementById('centersGrid').innerHTML =
-      '<div style="grid-column:1/-1"><div class="empty"><div class="empty-icon">🔍</div><p>এই ফিল্টারে কোনো সেন্টার নেই</p><small>অন্য ফিল্টার ব্যবহার করুন</small></div></div>';
-    return;
-  }
-  document.getElementById('centersGrid').innerHTML = centers.map(c => `
-    <div class="center-card" onclick="loadSeedlings('${c.slug}','${esc(c.name_bn)}','${esc(c.location||c.district||'')}','${c.category||'B'}')">
-      <div class="cc-stripe cat${c.category||'B'}"></div>
+        // Cascade: update thana options based on district
+        if (document.getElementById("fDistrict").value !== dist) {
+          populateThanas(allCenters.filter((c) => !div || c.division === div));
+        }
+
+        const filtered = allCenters.filter((c) => {
+          if (div && c.division !== div) return false;
+          if (dist && c.district !== dist) return false;
+          if (thana && (c.thana || c.location) !== thana) return false;
+          if (cat && c.category !== cat) return false;
+          return true;
+        });
+
+        document.getElementById("filterCount").textContent =
+          `${toBn(filtered.length)}টি সেন্টার`;
+        renderCenters(filtered);
+      }
+
+      function resetFilters() {
+        ["fDivision", "fDistrict", "fThana", "fCat"].forEach(
+          (id) => (document.getElementById(id).value = ""),
+        );
+        populateDistricts(allCenters);
+        populateThanas(allCenters);
+        renderCenters(allCenters);
+        document.getElementById("filterCount").textContent =
+          `${toBn(allCenters.length)}টি সেন্টার`;
+      }
+
+      // ── RENDER CENTERS ──
+      function renderCenters(centers) {
+        const catLabel = {
+          A: "উপপরিচালক",
+          B: "উদ্যানতত্ত্ববিদ",
+          C: "নার্সারি তত্ত্বাবধায়ক",
+        };
+        const catIcon = { A: "🏛️", B: "🌳", C: "🪴" };
+        if (!centers.length) {
+          document.getElementById("centersGrid").innerHTML =
+            '<div style="grid-column:1/-1"><div class="empty"><div class="empty-icon">🔍</div><p>এই ফিল্টারে কোনো সেন্টার নেই</p><small>অন্য ফিল্টার ব্যবহার করুন</small></div></div>';
+          return;
+        }
+        document.getElementById("centersGrid").innerHTML = centers
+          .map(
+            (c) => `
+    <div class="center-card" onclick="loadSeedlings('${c.slug}','${esc(c.name_bn)}','${esc(c.location || c.district || "")}','${c.category || "B"}')">
+      <div class="cc-stripe cat${c.category || "B"}"></div>
       <div class="cc-body">
         <div class="cc-top">
-          <div class="cc-icon cat${c.category||'B'}">${catIcon[c.category]||'🌿'}</div>
+          <div class="cc-icon cat${c.category || "B"}">${catIcon[c.category] || "🌿"}</div>
           <div class="cc-info">
             <div class="cc-name">${c.name_bn}</div>
-            <div class="cc-en">${c.name_en||''}</div>
+            <div class="cc-en">${c.name_en || ""}</div>
           </div>
-          <div class="cc-cat cat${c.category||'B'}">
-            <span>${c.category||'B'}</span>
+          <div class="cc-cat cat${c.category || "B"}">
+            <span>${c.category || "B"}</span>
           </div>
         </div>
         <div class="cc-meta">
-          ${c.division?`<div class="cc-meta-item"><i class="ti ti-map" style="font-size:13px"></i>${c.division}</div>`:''}
-          ${c.district?`<div class="cc-meta-item"><i class="ti ti-map-pin" style="font-size:13px"></i>${c.district}</div>`:''}
-          ${c.location?`<div class="cc-meta-item"><i class="ti ti-home" style="font-size:13px"></i>${c.location}</div>`:''}
+          ${c.division ? `<div class="cc-meta-item"><i class="ti ti-map" style="font-size:13px"></i>${c.division}</div>` : ""}
+          ${c.district ? `<div class="cc-meta-item"><i class="ti ti-map-pin" style="font-size:13px"></i>${c.district}</div>` : ""}
+          ${c.location ? `<div class="cc-meta-item"><i class="ti ti-home" style="font-size:13px"></i>${c.location}</div>` : ""}
         </div>
         <div class="cc-footer">
           <div class="cc-meta-item" style="font-size:12px;flex:1">
             <i class="ti ti-category" style="font-size:13px;color:var(--green)"></i>
-            <span style="color:var(--muted)">${catLabel[c.category]||'উদ্যানতত্ত্ববিদ'}</span>
+            <span style="color:var(--muted)">${catLabel[c.category] || "উদ্যানতত্ত্ববিদ"}</span>
           </div>
-          <button class="cc-btn primary" onclick="event.stopPropagation();loadSeedlings('${c.slug}','${esc(c.name_bn)}','${esc(c.location||c.district||'')}','${c.category||'B'}')">
+          <button class="cc-btn primary" onclick="event.stopPropagation();loadSeedlings('${c.slug}','${esc(c.name_bn)}','${esc(c.location || c.district || "")}','${c.category || "B"}')">
             <i class="ti ti-plant"></i> চারা দেখুন
           </button>
         </div>
       </div>
-    </div>`).join('');
-}
+    </div>`,
+          )
+          .join("");
+      }
 
-// ── LOAD SEEDLINGS ──
-async function loadSeedlings(slug, nameBn, location, cat) {
-  switchTab('center');
-  document.getElementById('view-centers').style.display = 'none';
-  document.getElementById('view-seedlings').style.display = 'block';
-  document.getElementById('seedlingsContent').innerHTML =
-    '<div class="spinner-wrap"><div class="spinner"></div></div>';
+      // ── LOAD SEEDLINGS ──
+      async function loadSeedlings(slug, nameBn, location, cat) {
+        switchTab("center");
+        document.getElementById("view-centers").style.display = "none";
+        document.getElementById("view-seedlings").style.display = "block";
+        document.getElementById("seedlingsContent").innerHTML =
+          '<div class="spinner-wrap"><div class="spinner"></div></div>';
 
-  try {
-    const r = await fetch(`${API}/center/${slug}/seedlings`);
-    const d = await r.json();
-    if (!d.success) throw new Error(d.message);
+        try {
+          const r = await fetch(`${API}/center/${slug}/seedlings`);
+          const d = await r.json();
+          if (!d.success) throw new Error(d.message);
 
-    const catLabel = {A:'ক্যাটাগরি-A',B:'ক্যাটাগরি-B',C:'ক্যাটাগরি-C'};
-    const catIcon  = {A:'🏛️',B:'🌳',C:'🪴'};
-    const centerLoc = d.center?.location || location;
-    const centerDist = d.center?.district || '';
+          const catLabel = {
+            A: "ক্যাটাগরি-A",
+            B: "ক্যাটাগরি-B",
+            C: "ক্যাটাগরি-C",
+          };
+          const catIcon = { A: "🏛️", B: "🌳", C: "🪴" };
+          const centerLoc = d.center?.location || location;
+          const centerDist = d.center?.district || "";
 
-    if (!d.data.length) {
-      document.getElementById('seedlingsContent').innerHTML = `
+          if (!d.data.length) {
+            document.getElementById("seedlingsContent").innerHTML = `
         <div class="center-banner">
-          <div class="banner-icon">${catIcon[cat]||'🌿'}</div>
+          <div class="banner-icon">${catIcon[cat] || "🌿"}</div>
           <div class="banner-info">
             <h3>${nameBn}</h3>
             <p><i class="ti ti-map-pin"></i> ${centerLoc}</p>
@@ -465,52 +1145,60 @@ async function loadSeedlings(slug, nameBn, location, cat) {
           <p>এই সেন্টারে এখন চারা পাওয়া যাচ্ছে না</p>
           <small>পরে আবার চেক করুন</small>
         </div>`;
-      return;
-    }
+            return;
+          }
 
-    // Group by category
-    const byCategory = {};
-    d.data.forEach(s => {
-      const cat = s.category_bn || 'অন্যান্য';
-      if (!byCategory[cat]) byCategory[cat] = [];
-      byCategory[cat].push(s);
-    });
+          // Group by category
+          const byCategory = {};
+          d.data.forEach((s) => {
+            const cat = s.category_bn || "অন্যান্য";
+            if (!byCategory[cat]) byCategory[cat] = [];
+            byCategory[cat].push(s);
+          });
 
-    const rows = Object.entries(byCategory).map(([cat, items]) => `
+          const rows = Object.entries(byCategory)
+            .map(
+              ([cat, items]) => `
       <div class="cat-row">
         <i class="ti ti-leaf" style="color:var(--green);font-size:16px"></i>
         <span>${cat}</span>
         <span style="margin-left:auto;font-size:11px;color:var(--muted);font-weight:400">${toBn(items.length)}টি প্রজাতি</span>
       </div>
-      ${items.map(s => `
+      ${items
+        .map(
+          (s) => `
         <div class="seed-row">
           <div>
             <div class="seed-name">${s.name_bn}</div>
-            ${s.variety?`<div class="seed-variety">${s.variety}</div>`:''}
-            ${s.seedling_code?`<div style="font-size:11px;color:#bbb;margin-top:2px">কোড: ${s.seedling_code}</div>`:''}
+            ${s.variety ? `<div class="seed-variety">${s.variety}</div>` : ""}
+            ${s.seedling_code ? `<div style="font-size:11px;color:#bbb;margin-top:2px">কোড: ${s.seedling_code}</div>` : ""}
           </div>
           <div class="seed-stock">
-            <div class="stock-val ${s.current_stock>50?'stock-ok':'stock-low'}">${toBn(s.current_stock)}</div>
+            <div class="stock-val ${s.current_stock > 50 ? "stock-ok" : "stock-low"}">${toBn(s.current_stock)}</div>
             <div class="stock-label">টি আছে</div>
           </div>
           <div class="seed-price">
             <div class="price-val">৳${toBn(s.unit_price)}</div>
             <div class="price-unit">প্রতিটি</div>
           </div>
-        </div>`).join('')}
-    `).join('');
+        </div>`,
+        )
+        .join("")}
+    `,
+            )
+            .join("");
 
-    document.getElementById('seedlingsContent').innerHTML = `
+          document.getElementById("seedlingsContent").innerHTML = `
       <div class="center-banner">
-        <div class="banner-icon">${catIcon[cat]||'🌿'}</div>
+        <div class="banner-icon">${catIcon[cat] || "🌿"}</div>
         <div class="banner-info">
           <h3>${nameBn}</h3>
           <p>
-            ${centerDist?`<i class="ti ti-map-pin"></i> ${centerDist}${centerLoc?' •':''}`:''}
-            ${centerLoc?` ${centerLoc}`:''}
+            ${centerDist ? `<i class="ti ti-map-pin"></i> ${centerDist}${centerLoc ? " •" : ""}` : ""}
+            ${centerLoc ? ` ${centerLoc}` : ""}
           </p>
         </div>
-        <div class="banner-badge">${catLabel[cat]||'ক্যাটাগরি-B'}</div>
+        <div class="banner-badge">${catLabel[cat] || "ক্যাটাগরি-B"}</div>
       </div>
       <div class="seed-search">
         <i class="ti ti-search"></i>
@@ -522,130 +1210,159 @@ async function loadSeedlings(slug, nameBn, location, cat) {
         <div>চারা কিনতে সরাসরি সেন্টারে যোগাযোগ করুন। স্টকের পরিমাণ পরিবর্তনশীল।</div>
       </div>`;
 
-    // Store for local filter
-    window._localSeedData = d.data;
-    window._localCategories = byCategory;
-  } catch {
-    document.getElementById('seedlingsContent').innerHTML =
-      '<div class="empty"><div class="empty-icon">📡</div><p>তথ্য লোড হয়নি</p><small>আবার চেষ্টা করুন</small></div>';
-  }
-}
+          // Store for local filter
+          window._localSeedData = d.data;
+          window._localCategories = byCategory;
+        } catch {
+          document.getElementById("seedlingsContent").innerHTML =
+            '<div class="empty"><div class="empty-icon">📡</div><p>তথ্য লোড হয়নি</p><small>আবার চেষ্টা করুন</small></div>';
+        }
+      }
 
-function filterLocalSeedlings(q) {
-  const data = window._localSeedData || [];
-  const filtered = q ? data.filter(s =>
-    (s.name_bn||'').toLowerCase().includes(q.toLowerCase()) ||
-    (s.variety||'').toLowerCase().includes(q.toLowerCase())
-  ) : data;
+      function filterLocalSeedlings(q) {
+        const data = window._localSeedData || [];
+        const filtered = q
+          ? data.filter(
+              (s) =>
+                (s.name_bn || "").toLowerCase().includes(q.toLowerCase()) ||
+                (s.variety || "").toLowerCase().includes(q.toLowerCase()),
+            )
+          : data;
 
-  const byCategory = {};
-  filtered.forEach(s => {
-    const cat = s.category_bn || 'অন্যান্য';
-    if (!byCategory[cat]) byCategory[cat] = [];
-    byCategory[cat].push(s);
-  });
+        const byCategory = {};
+        filtered.forEach((s) => {
+          const cat = s.category_bn || "অন্যান্য";
+          if (!byCategory[cat]) byCategory[cat] = [];
+          byCategory[cat].push(s);
+        });
 
-  const rows = Object.entries(byCategory).map(([cat, items]) => `
+        const rows = Object.entries(byCategory)
+          .map(
+            ([cat, items]) => `
     <div class="cat-row">
       <i class="ti ti-leaf" style="color:var(--green);font-size:16px"></i>
       <span>${cat}</span>
       <span style="margin-left:auto;font-size:11px;color:var(--muted);font-weight:400">${toBn(items.length)}টি</span>
     </div>
-    ${items.map(s => `
+    ${items
+      .map(
+        (s) => `
       <div class="seed-row">
         <div>
           <div class="seed-name">${s.name_bn}</div>
-          ${s.variety?`<div class="seed-variety">${s.variety}</div>`:''}
+          ${s.variety ? `<div class="seed-variety">${s.variety}</div>` : ""}
         </div>
         <div class="seed-stock">
-          <div class="stock-val ${s.current_stock>50?'stock-ok':'stock-low'}">${toBn(s.current_stock)}</div>
+          <div class="stock-val ${s.current_stock > 50 ? "stock-ok" : "stock-low"}">${toBn(s.current_stock)}</div>
           <div class="stock-label">টি আছে</div>
         </div>
         <div class="seed-price">
           <div class="price-val">৳${toBn(s.unit_price)}</div>
           <div class="price-unit">প্রতিটি</div>
         </div>
-      </div>`).join('')}
-  `).join('');
+      </div>`,
+      )
+      .join("")}
+  `,
+          )
+          .join("");
 
-  const wrap = document.getElementById('localSeedWrap');
-  if (wrap) wrap.innerHTML = rows || '<div class="empty" style="padding:30px"><div class="empty-icon">🌱</div><p>"'+q+'" পাওয়া যায়নি</p></div>';
-}
+        const wrap = document.getElementById("localSeedWrap");
+        if (wrap)
+          wrap.innerHTML =
+            rows ||
+            '<div class="empty" style="padding:30px"><div class="empty-icon">🌱</div><p>"' +
+              q +
+              '" পাওয়া যায়নি</p></div>';
+      }
 
-// ── SEARCH ──
-async function doSearch() {
-  const q = document.getElementById('searchInput').value.trim();
-  if (!q) return;
-  const el = document.getElementById('searchResults');
-  el.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+      // ── SEARCH ──
+      async function doSearch() {
+        const q = document.getElementById("searchInput").value.trim();
+        if (!q) return;
+        const el = document.getElementById("searchResults");
+        el.innerHTML =
+          '<div class="spinner-wrap"><div class="spinner"></div></div>';
 
-  try {
-    const r = await fetch(`${API}/search?q=${encodeURIComponent(q)}`);
-    const d = await r.json();
+        try {
+          const r = await fetch(`${API}/search?q=${encodeURIComponent(q)}`);
+          const d = await r.json();
 
-    if (!d.success || !d.data.length) {
-      el.innerHTML = `<div class="empty">
+          if (!d.success || !d.data.length) {
+            el.innerHTML = `<div class="empty">
         <div class="empty-icon">🌱</div>
         <p>"${q}" পাওয়া যায়নি</p>
         <small>অন্য নাম বা জাত দিয়ে খোঁজ করুন</small>
       </div>`;
-      return;
-    }
+            return;
+          }
 
-    el.innerHTML = `
+          el.innerHTML = `
       <div style="margin-bottom:16px;font-size:14px;color:var(--muted)">
         <strong style="color:var(--green)">"${q}"</strong> —
         ${toBn(d.data.length)}টি সেন্টারে পাওয়া গেছে
       </div>
-      ${d.data.map(center => `
+      ${d.data
+        .map(
+          (center) => `
         <div class="result-block">
           <div class="result-header">
             <i class="ti ti-building"></i>
             <h3>${center.name_bn}</h3>
-            <span>${center.location||center.district||''}</span>
+            <span>${center.location || center.district || ""}</span>
           </div>
           <div class="result-body">
-            ${center.seedlings.map(s => `
+            ${center.seedlings
+              .map(
+                (s) => `
               <div class="seed-row">
                 <div>
                   <div class="seed-name">${s.name_bn}</div>
-                  ${s.variety?`<div class="seed-variety">${s.variety}</div>`:''}
+                  ${s.variety ? `<div class="seed-variety">${s.variety}</div>` : ""}
                 </div>
                 <div class="seed-stock">
-                  <div class="stock-val ${s.current_stock>50?'stock-ok':'stock-low'}">${toBn(s.current_stock)}</div>
+                  <div class="stock-val ${s.current_stock > 50 ? "stock-ok" : "stock-low"}">${toBn(s.current_stock)}</div>
                   <div class="stock-label">টি আছে</div>
                 </div>
                 <div class="seed-price">
                   <div class="price-val">৳${toBn(s.unit_price)}</div>
                   <div class="price-unit">প্রতিটি</div>
                 </div>
-              </div>`).join('')}
+              </div>`,
+              )
+              .join("")}
           </div>
-        </div>`).join('')}
+        </div>`,
+        )
+        .join("")}
       <div class="notice">
         <i class="ti ti-info-circle"></i>
         <div>চারা কিনতে সরাসরি সেন্টারে যোগাযোগ করুন। স্টকের পরিমাণ পরিবর্তনশীল।</div>
       </div>`;
-  } catch {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">📡</div><p>সংযোগ সমস্যা</p></div>';
-  }
-}
+        } catch {
+          el.innerHTML =
+            '<div class="empty"><div class="empty-icon">📡</div><p>সংযোগ সমস্যা</p></div>';
+        }
+      }
 
-// ── HELPERS ──
-function showCenters() {
-  document.getElementById('view-centers').style.display = 'block';
-  document.getElementById('view-seedlings').style.display = 'none';
-}
+      // ── HELPERS ──
+      function showCenters() {
+        document.getElementById("view-centers").style.display = "block";
+        document.getElementById("view-seedlings").style.display = "none";
+      }
 
-function toBn(n) {
-  return String(Math.round(n||0)).replace(/[0-9]/g, d=>'০১২৩৪৫৬৭৮৯'[d]);
-}
-function esc(s) {
-  return (s||'').replace(/'/g,"&#39;").replace(/"/g,'&quot;');
-}
+      function toBn(n) {
+        return String(Math.round(n || 0)).replace(
+          /[0-9]/g,
+          (d) => "০১২৩৪৫৬৭৮৯"[d],
+        );
+      }
+      function esc(s) {
+        return (s || "").replace(/'/g, "&#39;").replace(/"/g, "&quot;");
+      }
 
-// ── INIT ──
-loadCenters();
-</script>
-</body>
+      // ── INIT ──
+      loadCenters();
+    </script>
+  </body>
 </html>
