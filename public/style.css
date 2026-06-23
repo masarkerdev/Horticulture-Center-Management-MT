@@ -208,9 +208,9 @@ body {
 }
 .sbl h1 {
   font-family: var(--fb);
-  font-size: 16px;
+  font-size: 15px;
   color: #fff;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
 }
 .sbl p {
