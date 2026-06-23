@@ -207,7 +207,7 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 .sbl h1 {
-  font-family: var(--fb);
+  font-family: "Noto Sans Bengali", "Segoe UI", sans-serif;
   font-size: 15px;
   color: #fff;
   font-weight: 600;
